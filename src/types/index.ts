@@ -72,12 +72,17 @@ export interface JobTypeDefinition {
   tools: ToolPermission[]
 }
 
-export interface JobTypeRegistry {
-  register(job: JobTypeDefinition): void
-  get(id: string): JobTypeDefinition | undefined
-  getByDomain(domain: string): JobTypeDefinition[]
-  getAll(): JobTypeDefinition[]
+export interface RegisteredJobType {
+  id:                    string;
+  domain:                string;
+  agent:                 string;
+  timeout:               number;
+  modelOverride?:        string;   // forces a specific model regardless of routing profile
+  estimatedInputTokens?: number;   // used by pricing-catalog for upfront cost estimate
+  estimatedOutputTokens?: number;
 }
+
+export type JobTypeRegistry = Map<string, RegisteredJobType>;
 
 // ─── Agent Slots ────────────────────────────────────────────────
 export interface AgentSlotDefinition {

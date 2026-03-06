@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model UsageEvent {
+  id           String   @id @default(uuid())
+  userId       String
+  type         String
+  domain       String
+  jobId        String?
+  jobType      String?
+  modelUsed    String?
+  deltaCredits Float
+  balanceAfter Float
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now())
+
+  @@index([userId, domain])
+  @@index([userId, createdAt])
+}
+
+model CreditReservation {
+  id               String   @id @default(uuid())
+  userId           String
+  jobId            String
+  jobType          String
+  domain           String
+  estimatedCredits Float
+  status           String   @default("ACTIVE")
+  createdAt        DateTime @default(now())
+  resolvedAt       DateTime?
+
+  @@index([userId, status])
+  @@index([jobId])
+}
+
+model SpendCap {
+  id                String   @id @default(uuid())
+  userId            String
+  domain            String
+  dailyLimit        Float?
+  monthlyLimit      Float?
+  subscriptionLimit Float?
+  enabled           Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([userId, domain])
+  @@index([userId])
+}
+
+model UserSubscription {
+  id               String   @id @default(uuid())
+  userId           String
+  tier             String
+  domain           String
+  active           Boolean  @default(true)
+  billingAnchorDay Int      @default(1)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId, active])
+}
