@@ -17,61 +17,12 @@
  */
 
 import { prisma } from "../lib/prisma.js";
+import type { MemoryRecord, MemoryEdge, MemoryType, EdgeType, MemorySource } from "../types/index.js";
+export type { MemoryRecord, MemoryEdge, MemoryType, EdgeType, MemorySource } from "../types/index.js";
 
 // ---------------------------------------------------------------------------
-// Enums & Types
+// Types
 // ---------------------------------------------------------------------------
-
-export enum MemoryType {
-  FACT        = "Fact",
-  PREFERENCE  = "Preference",
-  DECISION    = "Decision",
-  IDENTITY    = "Identity",
-  EVENT       = "Event",
-  OBSERVATION = "Observation",
-  GOAL        = "Goal",
-  TODO        = "Todo",
-}
-
-export enum MemorySource {
-  CORTEX          = "cortex",
-  USER            = "user",
-  JOB_COMPLETION  = "job_completion",
-  ADMIN           = "admin",
-  INGEST          = "ingest",
-}
-
-export enum EdgeType {
-  RELATED_TO  = "RelatedTo",
-  UPDATES     = "Updates",
-  CONTRADICTS = "Contradicts",
-  CAUSED_BY   = "CausedBy",
-  PART_OF     = "PartOf",
-}
-
-export interface MemoryRecord {
-  id:            string;
-  userId:        string;
-  type:          MemoryType;
-  domain:        string;
-  content:       string;
-  importance:    number;       // 0.0 – 1.0
-  embedding:     number[];     // vector(1536)
-  createdAt:     Date;
-  lastAccessedAt: Date;
-  pinned:        boolean;
-  archived:      boolean;
-  source:        MemorySource;
-  supersededBy:  string | null;
-}
-
-export interface MemoryEdge {
-  id:        string;
-  fromId:    string;
-  toId:      string;
-  type:      EdgeType;
-  createdAt: Date;
-}
 
 export interface CreateMemoryInput {
   userId:      string;
@@ -112,14 +63,14 @@ export interface VectorSearchOptions extends MemorySearchOptions {
 // ---------------------------------------------------------------------------
 
 export const DEFAULT_DECAY_CONFIG: Record<MemoryType, number> = {
-  [MemoryType.FACT]:        60,
-  [MemoryType.PREFERENCE]:  180,
-  [MemoryType.DECISION]:    90,
-  [MemoryType.GOAL]:        45,
-  [MemoryType.OBSERVATION]: 30,
-  [MemoryType.EVENT]:       21,
-  [MemoryType.TODO]:        14,
-  [MemoryType.IDENTITY]:    365,  // identity records decay very slowly
+  Fact:        60,
+  Preference:  180,
+  Decision:    90,
+  Goal:        45,
+  Observation: 30,
+  Event:       21,
+  Todo:        14,
+  Identity:    365,  // identity records decay very slowly
 };
 
 // ---------------------------------------------------------------------------

@@ -46,12 +46,13 @@ export interface MemoryRecord {
   domain: string
   content: string
   importance: number
+  embedding: number[]
   pinned: boolean
   archived: boolean
   source: MemorySource
-  supersededBy?: string
+  supersededBy: string | null
   createdAt: Date
-  lastAccessed: Date
+  lastAccessedAt: Date
 }
 
 export interface MemoryEdge {
