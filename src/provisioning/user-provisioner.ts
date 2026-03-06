@@ -112,7 +112,7 @@ async function allocatePort(): Promise<number> {
     select: { port: true },
   });
 
-  const used = new Set(usedPorts.map((c) => c.port));
+  const used = new Set(usedPorts.map((c: { port: number }) => c.port));
 
   for (let port = PORT_RANGE_START; port <= PORT_RANGE_END; port++) {
     if (!used.has(port)) return port;
@@ -415,11 +415,11 @@ export async function getFleetStatus(): Promise<{
   });
 
   const byStatus = Object.fromEntries(
-    counts.map((r) => [r.status, r._count.id])
+    counts.map((r: { status: string; _count: { id: number } }) => [r.status, r._count.id])
   );
 
   return {
-    total:        counts.reduce((sum, r) => sum + r._count.id, 0),
+    total:        counts.reduce((sum: number, r: { _count: { id: number } }) => sum + r._count.id, 0),
     active:       byStatus[ContainerStatus.ACTIVE]       ?? 0,
     hibernating:  byStatus[ContainerStatus.HIBERNATING]  ?? 0,
     error:        byStatus[ContainerStatus.ERROR]        ?? 0,
