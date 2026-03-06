@@ -344,7 +344,7 @@ export async function vectorSearch(
     `
   );
 
-  return results.map((r) => ({
+  return results.map((r: Record<string, unknown>) => ({
     ...deserialiseMemory(r as Parameters<typeof deserialiseMemory>[0]),
     similarity: Number(r["similarity"]),
   }));
@@ -438,8 +438,8 @@ export async function getNeighbours(
     },
   });
 
-  const neighbourIds = [...new Set(edges.map((e) => e.toId))].filter(
-    (id) => !memoryIds.includes(id)
+  const neighbourIds = [...new Set(edges.map((e: { toId: string }) => e.toId))].filter(
+    (id: string) => !memoryIds.includes(id)
   );
 
   if (neighbourIds.length === 0) return [];
@@ -483,7 +483,7 @@ export async function applyDecay(
 
   let updated = 0;
 
-  for (const record of records) {
+  for (const record of records as Array<{ id: string; type: string; importance: number; lastAccessedAt: Date }>) {
     const halfLife    = decayConfig[record.type as MemoryType] ?? 30;
     const daysSince   = (Date.now() - record.lastAccessedAt.getTime()) / (1000 * 60 * 60 * 24);
     const decayFactor = Math.pow(0.5, daysSince / halfLife);
@@ -597,9 +597,9 @@ export async function getMemoryStats(userId: string): Promise<MemoryStats> {
     totalActive:   active,
     totalArchived: archived,
     totalPinned:   pinned,
-    byType:   Object.fromEntries(byType.map((r)   => [r.type,   r._count.id])),
-    byDomain: Object.fromEntries(byDomain.map((r) => [r.domain, r._count.id])),
-    bySource: Object.fromEntries(bySource.map((r) => [r.source, r._count.id])),
+    byType:   Object.fromEntries(byType.map((r: { type: string; _count: { id: number } })   => [r.type,   r._count.id])),
+    byDomain: Object.fromEntries(byDomain.map((r: { domain: string; _count: { id: number } }) => [r.domain, r._count.id])),
+    bySource: Object.fromEntries(bySource.map((r: { source: string; _count: { id: number } }) => [r.source, r._count.id])),
   };
 }
 
