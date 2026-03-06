@@ -87,10 +87,19 @@ export type JobTypeRegistry = Map<string, RegisteredJobType>;
 // ─── Agent Slots ────────────────────────────────────────────────
 export interface AgentSlotDefinition {
   slot: string
-  model: ModelTier
-  tools: ToolPermission[]
+  model: string
+  tools: string[]
   background?: boolean
   ephemeral?: boolean
+  modelOverride?: string
+}
+
+export interface ProvisionedContainer {
+  userId: string
+  host: string
+  port: number
+  gatewayToken: string
+  status: string
 }
 
 // ─── Routing ────────────────────────────────────────────────────
