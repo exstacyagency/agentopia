@@ -90,3 +90,36 @@ model ContainerRecord {
   @@index([userId, status])
   @@index([status, lastHeartbeatAt])
 }
+
+model MemoryRecord {
+  id             String   @id @default(uuid())
+  userId         String
+  type           String
+  domain         String
+  content        String
+  importance     Float
+  embedding      String
+  createdAt      DateTime @default(now())
+  lastAccessedAt DateTime @default(now())
+  pinned         Boolean  @default(false)
+  archived       Boolean  @default(false)
+  source         String
+  supersededBy   String?
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId, archived, pinned])
+  @@index([userId, domain, type])
+  @@index([lastAccessedAt])
+}
+
+model MemoryEdge {
+  id        String   @id @default(uuid())
+  fromId    String
+  toId      String
+  type      String
+  createdAt DateTime @default(now())
+
+  @@index([fromId])
+  @@index([toId])
+  @@index([type])
+}
