@@ -175,3 +175,13 @@ model IngestQueue {
   @@index([userId, status])
   @@index([userId, createdAt])
 }
+
+model CronJob {
+  id         String   @id
+  name       String
+  status     String   @default("idle")
+  lastError  String?
+  lastRunAt  DateTime?
+  lastDoneAt DateTime?
+  updatedAt  DateTime @updatedAt
+}
