@@ -438,7 +438,7 @@ export async function getNeighbours(
     },
   });
 
-  const neighbourIds = [...new Set(edges.map((e: { toId: string }) => e.toId))].filter(
+  const neighbourIds = ([...new Set(edges.map((e: { toId: string }) => e.toId))] as string[]).filter(
     (id: string) => !memoryIds.includes(id)
   );
 
@@ -483,7 +483,7 @@ export async function applyDecay(
 
   let updated = 0;
 
-  for (const record of records as Array<{ id: string; type: string; importance: number; lastAccessedAt: Date }>) {
+  for (const record of (records as Array<{ id: string; type: string; importance: number; lastAccessedAt: Date }>)) {
     const halfLife    = decayConfig[record.type as MemoryType] ?? 30;
     const daysSince   = (Date.now() - record.lastAccessedAt.getTime()) / (1000 * 60 * 60 * 24);
     const decayFactor = Math.pow(0.5, daysSince / halfLife);
