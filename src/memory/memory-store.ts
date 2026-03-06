@@ -540,7 +540,7 @@ export async function hardDeleteExpiredArchives(userId: string): Promise<{ delet
     select: { id: true },
   });
 
-  const ids = expired.map((r) => r.id);
+  const ids = expired.map((r: { id: string }) => r.id);
 
   if (ids.length === 0) return { deleted: 0 };
 
