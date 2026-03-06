@@ -123,3 +123,22 @@ model MemoryEdge {
   @@index([toId])
   @@index([type])
 }
+
+model ChannelRoute {
+  id                String    @id @default(uuid())
+  userId            String
+  containerId       String
+  platform          String
+  platformUserId    String
+  platformChannelId String
+  gatewayPort       Int
+  gatewayToken      String
+  active            Boolean   @default(true)
+  lastMessageAt     DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([platform, platformUserId])
+  @@index([active])
+}

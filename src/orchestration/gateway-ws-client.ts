@@ -370,6 +370,10 @@ class GatewayFleetManager {
     return this.clients.get(userId);
   }
 
+  entries(): IterableIterator<[string, GatewayWsClient]> {
+    return this.clients.entries();
+  }
+
   /** Cleanly destroy and remove a user's client (container teardown). */
   remove(userId: string): void {
     const client = this.clients.get(userId);
