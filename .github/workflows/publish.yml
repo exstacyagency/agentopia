@@ -19,4 +19,6 @@ jobs:
       - run: npx prisma generate
       - run: npm run build
       - run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
-      - run:       - run:       - run:       - run:E_AUTH_TOKE      - run:       - _TOKEN }}
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -154,6 +154,15 @@ export class ModelRouter {
     return this.failover.getFlaggedKeys();
   }
 
+  pick(requested: "haiku" | "sonnet" | "opus" | ModelString): { key: string; model: ModelString } {
+    const model = this._toModelString(requested);
+    const failoverResult = this.failover.selectKey(model);
+    return {
+      key: failoverResult.key.key,
+      model: failoverResult.model as ModelString,
+    };
+  }
+
   // ── Internal ───────────────────────────────────────────────────────────
 
   private _toModelString(tierOrModel: string): ModelString {

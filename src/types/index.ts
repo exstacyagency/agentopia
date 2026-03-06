@@ -126,6 +126,7 @@ export interface DecayConfig {
   Fact: number
   Preference: number
   Decision: number
+  Identity: number
   Goal: number
   Observation: number
   Event: number

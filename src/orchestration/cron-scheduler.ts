@@ -144,6 +144,23 @@ export class CronScheduler {
     }
   }
 
+  /** Register or replace a named handler (used by scheduler-integrated modules). */
+  registerHandler(jobType: string, handler: () => Promise<void>): void {
+    const existing = this.jobs.get(jobType);
+    if (existing) {
+      existing.def.handler = handler;
+      return;
+    }
+
+    this.register({
+      id: jobType,
+      name: jobType,
+      intervalMs: 60_000,
+      respectActiveHours: false,
+      handler,
+    });
+  }
+
   /** Disable a registered job without restarting the scheduler. */
   disable(jobId: string): void {
     const state = this.jobs.get(jobId);

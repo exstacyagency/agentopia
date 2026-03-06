@@ -1,2 +1,2 @@
-// placeholder — module not yet implemented
-export {}
+export * from './failover-manager.js'
+export * from './model-router.js'
