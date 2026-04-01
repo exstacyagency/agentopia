@@ -1,6 +1,6 @@
 services:
   paperclip:
-    image: paperclipai/paperclip:latest
+    image: ${PAPERCLIP_IMAGE}
     container_name: agentopia-paperclip
     ports:
       - "3100:3100"
@@ -10,7 +10,7 @@ services:
       - ./config/paperclip:/app/config/paperclip
       - ./config/hermes:/app/config/hermes
     healthcheck:
-      test: ["CMD-SHELL", "echo ok"]
+      test: ["CMD-SHELL", "test -n \"$PAPERCLIP_URL\" && test -n \"$PAPERCLIP_API_KEY\" || true"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -19,7 +19,7 @@ services:
       - runtime
 
   hermes:
-    image: ghcr.io/hermes-agent/hermes:latest
+    image: ${HERMES_IMAGE}
     container_name: agentopia-hermes
     env_file:
       - .env
@@ -30,7 +30,7 @@ services:
       paperclip:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "echo ok"]
+      test: ["CMD-SHELL", "test -n \"$HERMES_MODEL_PROVIDER\" && test -n \"$HERMES_MODEL\" && test -n \"$HERMES_API_KEY\" || true"]
       interval: 10s
       timeout: 5s
       retries: 3

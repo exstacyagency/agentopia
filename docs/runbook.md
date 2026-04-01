@@ -23,7 +23,7 @@ cp .env.example .env
 
 ## Current limitations
 
-- Compose services are placeholders until the real runtime targets are confirmed.
+- Compose services rely on `.env` runtime targets.
 - Health checks are only stubs until real service probes are available.
 - Secrets should live in `.env` or a secret store, never in the repo.
 - Business logic is intentionally deferred.

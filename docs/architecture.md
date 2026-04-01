@@ -48,9 +48,9 @@ The repo currently contains:
 
 - config stubs for Paperclip and Hermes
 - setup, validation, doctor, and smoke scripts
-- compose wiring placeholders
+- compose wiring that points at runtime targets from `.env`
 - contribution and roadmap docs
-- docs for architecture, runbook, and example flow
+- docs for architecture, runbook, example flow, and implementation phases
 
 ## What is still missing
 
