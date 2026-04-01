@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-from scripts.contract_runner import validate_request
+from contract_runner import ContractRunner
+
+
+def make_runner() -> ContractRunner:
+    return ContractRunner(Path('.'))
 
 
 def test_validate_request_accepts_expected_shape():
+    runner = make_runner()
     request = {
         "task": {
             "id": "task-123",
@@ -24,11 +28,12 @@ def test_validate_request_accepts_expected_shape():
         }
     }
 
-    task = validate_request(request)
+    task = runner.validate_request(request)
     assert task["id"] == "task-123"
 
 
 def test_validate_request_rejects_bad_routing():
+    runner = make_runner()
     request = {
         "task": {
             "id": "task-123",
@@ -47,7 +52,7 @@ def test_validate_request_rejects_bad_routing():
     }
 
     try:
-        validate_request(request)
+        runner.validate_request(request)
     except AssertionError as exc:
         assert "paperclip" in str(exc) or "routing" in str(exc)
     else:
