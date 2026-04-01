@@ -14,6 +14,7 @@
 10. Validate request/result contracts in code
 11. Validate runtime env requirements in code
 12. Move contract demo to repo-local artifacts and tests
+13. Add unit tests for the contract runner
 
 ## Next passes
 
