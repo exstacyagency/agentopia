@@ -56,7 +56,7 @@ Paperclip records:
 
 ## Request schema
 
-The request contract is now validated in `scripts/contract-runner.py`.
+The request contract is now validated in `scripts/contract_runner.py`.
 
 ```yaml
 task:
@@ -82,7 +82,7 @@ task:
 
 ## Response schema
 
-The result contract is also validated in `scripts/contract-runner.py`.
+The result contract is also validated in `scripts/contract_runner.py`.
 
 ```yaml
 result:
