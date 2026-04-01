@@ -11,6 +11,7 @@
 7. Add a tiny runnable contract runner
 8. Connect the contract runner to repo artifacts
 9. Define implementation phases
+10. Validate request/result contracts in code
 
 ## Next passes
 
