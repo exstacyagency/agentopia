@@ -17,6 +17,7 @@ The repo should remain business-agnostic until a real use case requires domain l
 - budgets and approvals
 - policy and audit behavior
 - deployment orchestration
+- request schema validation
 
 ### Hermes owns
 
@@ -24,6 +25,7 @@ The repo should remain business-agnostic until a real use case requires domain l
 - skills and memory
 - tool access
 - subagent execution
+- result schema generation
 
 ### This repo owns
 
@@ -48,7 +50,7 @@ The repo currently contains:
 - setup, validation, doctor, and smoke scripts
 - compose wiring placeholders
 - contribution and roadmap docs
-- docs for architecture and runbook flow
+- docs for architecture, runbook, and example flow
 
 ## What is still missing
 
@@ -57,7 +59,7 @@ The repo currently contains:
 - real secret management
 - real task routing between Paperclip and Hermes
 - deployment and upgrade procedures
-- a concrete example task flow
+- a concrete example task flow wired into code
 
 ## Concrete runtime targets
 

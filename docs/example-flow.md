@@ -54,20 +54,44 @@ Paperclip records:
 - what was produced
 - any follow-up needed
 
-## Message contract sketch
+## Request schema sketch
 
 ```yaml
 task:
   id: task-123
   title: Summarize repo changes
   priority: medium
-  requester: human
-  constraints:
+  requester:
+    id: human
+    displayName: human
+  budget:
+    maxCostUsd: 5
     maxRuntimeMinutes: 15
-    approvalRequired: false
-  output:
-    format: markdown
-    length: short
+  approval:
+    required: false
+  constraints:
+    outputFormat: markdown
+    outputLength: short
+    allowNetwork: false
+  routing:
+    inbound: paperclip
+    outbound: hermes
+```
+
+## Response schema sketch
+
+```yaml
+result:
+  taskId: task-123
+  status: success
+  summary: "Repository scaffold updated and documented."
+  artifacts:
+    - README.md
+    - docs/example-flow.md
+  audit:
+    approvedBy: paperclip
+    executedBy: hermes
+    runtimeSeconds: 12
 ```
 
 ## Why this matters
