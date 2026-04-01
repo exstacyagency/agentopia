@@ -5,8 +5,9 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-REQUEST_PATH = ROOT / "artifacts" / "request.json"
-RESULT_PATH = ROOT / "artifacts" / "result.json"
+ARTIFACTS = ROOT / "artifacts"
+REQUEST_PATH = ARTIFACTS / "request.json"
+RESULT_PATH = ARTIFACTS / "result.json"
 
 
 def load_json(path: Path) -> dict:
@@ -35,6 +36,7 @@ def main() -> None:
         }
     }
 
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
     RESULT_PATH.write_text(json.dumps(result, indent=2) + "\n")
     print("contract runner ok")
 
