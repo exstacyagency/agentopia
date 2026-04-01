@@ -19,6 +19,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 
 ## Repo layout
 
+- `artifacts/` — contract demo inputs/outputs
 - `config/paperclip/` — governance and org config
 - `config/hermes/` — agent/runtime config
 - `docs/` — architecture, example flow, and runbook notes
@@ -37,6 +38,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `scripts/validate.sh`
 - `scripts/doctor.sh`
 - `scripts/smoke.sh`
+- `scripts/contract-runner.py`
 - `scripts/contract-demo.sh`
 - `docs/architecture.md`
 - `docs/example-flow.md`
