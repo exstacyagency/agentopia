@@ -24,6 +24,7 @@ cp .env.example .env
 ## Current limitations
 
 - Compose services are placeholders until the real runtime targets are confirmed.
+- Health checks are only stubs until real service probes are available.
 - Secrets should live in `.env` or a secret store, never in the repo.
 - Business logic is intentionally deferred.
 
@@ -32,3 +33,4 @@ cp .env.example .env
 - If validation fails, check for missing files or directories.
 - If smoke fails, check the compose file for the expected service names and profiles.
 - If a config file is blank, rerun `./scripts/setup.sh`.
+- If runtime startup fails, confirm the real Paperclip and Hermes images or commands are correct.

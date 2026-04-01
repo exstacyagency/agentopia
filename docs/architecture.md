@@ -48,6 +48,7 @@ The repo currently contains:
 - setup, validation, doctor, and smoke scripts
 - compose wiring placeholders
 - contribution and roadmap docs
+- docs for architecture and runbook flow
 
 ## What is still missing
 
@@ -56,3 +57,4 @@ The repo currently contains:
 - real secret management
 - real task routing between Paperclip and Hermes
 - deployment and upgrade procedures
+- a concrete example task flow

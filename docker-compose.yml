@@ -9,6 +9,11 @@ services:
     volumes:
       - ./config/paperclip:/app/config/paperclip
       - ./config/hermes:/app/config/hermes
+    healthcheck:
+      test: ["CMD-SHELL", "echo ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     restart: unless-stopped
     profiles:
       - runtime
@@ -22,7 +27,13 @@ services:
       - ./config/hermes:/app/config/hermes
       - ./config/paperclip:/app/config/paperclip
     depends_on:
-      - paperclip
+      paperclip:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "echo ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     restart: unless-stopped
     profiles:
       - runtime
