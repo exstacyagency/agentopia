@@ -24,6 +24,8 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `scripts/` — bootstrap, update, and validation helpers
 - `docker-compose.yml` — local stack wiring
 - `.env.example` — documented env vars
+- `CONTRIBUTING.md` — branch and PR norms
+- `ROADMAP.md` — current and upcoming work
 
 ## Current scaffold
 
@@ -32,6 +34,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `scripts/setup.sh`
 - `scripts/update.sh`
 - `scripts/validate.sh`
+- `scripts/doctor.sh`
 
 ## How to start
 
@@ -39,6 +42,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 cp .env.example .env
 ./scripts/setup.sh
 ./scripts/validate.sh
+./scripts/doctor.sh
 ```
 
 ## Notes
