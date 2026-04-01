@@ -21,7 +21,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 
 - `config/paperclip/` — governance and org config
 - `config/hermes/` — agent/runtime config
-- `scripts/` — bootstrap, update, and validation helpers
+- `scripts/` — bootstrap, update, validation, and smoke helpers
 - `docker-compose.yml` — local stack wiring
 - `.env.example` — documented env vars
 - `CONTRIBUTING.md` — branch and PR norms
@@ -35,6 +35,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `scripts/update.sh`
 - `scripts/validate.sh`
 - `scripts/doctor.sh`
+- `scripts/smoke.sh`
 
 ## How to start
 
@@ -43,6 +44,7 @@ cp .env.example .env
 ./scripts/setup.sh
 ./scripts/validate.sh
 ./scripts/doctor.sh
+./scripts/smoke.sh
 ```
 
 ## Notes
