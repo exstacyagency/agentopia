@@ -6,7 +6,7 @@
 2. Add config stubs for Paperclip and Hermes
 3. Add setup, validation, and doctor checks
 4. Document contribution and branching norms
-5. Document architecture and runbook flow
+5. Document architecture, runbook, and example flow
 
 ## Next passes
 

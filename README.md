@@ -21,7 +21,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 
 - `config/paperclip/` — governance and org config
 - `config/hermes/` — agent/runtime config
-- `docs/` — architecture and runbook notes
+- `docs/` — architecture, example flow, and runbook notes
 - `scripts/` — bootstrap, update, validation, and smoke helpers
 - `docker-compose.yml` — local stack wiring
 - `.env.example` — documented env vars
@@ -38,6 +38,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `scripts/doctor.sh`
 - `scripts/smoke.sh`
 - `docs/architecture.md`
+- `docs/example-flow.md`
 - `docs/runbook.md`
 
 ## Runtime targets
