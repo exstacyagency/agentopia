@@ -12,14 +12,15 @@
 8. Connect the contract runner to repo artifacts
 9. Define implementation phases
 10. Validate request/result contracts in code
+11. Validate runtime env requirements in code
 
 ## Next passes
 
-- tighten Docker Compose to match the real runtime targets
 - replace placeholder images or settings once the actual services are confirmed
 - wire real Paperclip/Hermes execution paths
 - replace the contract demo with real code paths
 - add a minimal smoke test for the compose stack
+- tighten compose health checks once real services are available
 
 ## Deferred
 
