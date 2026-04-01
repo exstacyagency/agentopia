@@ -36,7 +36,12 @@ cat > artifacts/request.json <<'JSON'
 JSON
 
 python3 scripts/contract-runner.py
-
-grep -q '"status": "success"' artifacts/result.json
-
-echo "contract demo ok"
+python3 - <<'PY'
+import json
+from pathlib import Path
+result = json.loads(Path('artifacts/result.json').read_text())
+assert result['result']['status'] == 'success'
+assert result['result']['audit']['approvedBy'] == 'paperclip'
+assert result['result']['audit']['executedBy'] == 'hermes'
+print('contract demo ok')
+PY

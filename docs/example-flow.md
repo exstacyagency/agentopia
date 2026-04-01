@@ -54,7 +54,9 @@ Paperclip records:
 - what was produced
 - any follow-up needed
 
-## Request schema sketch
+## Request schema
+
+The request contract is now validated in `scripts/contract-runner.py`.
 
 ```yaml
 task:
@@ -78,7 +80,9 @@ task:
     outbound: hermes
 ```
 
-## Response schema sketch
+## Response schema
+
+The result contract is also validated in `scripts/contract-runner.py`.
 
 ```yaml
 result:
