@@ -2,10 +2,19 @@ organization:
   name: agentopia
   description: Agent orchestration and governance layer
 
+runtime:
+  mode: local
+  apiUrl: ${PAPERCLIP_URL}
+  token: ${PAPERCLIP_API_KEY}
+
 budgets:
   default:
     maxCostUsd: 25
     maxRuntimeMinutes: 60
+
+routing:
+  taskInbound: paperclip
+  taskOutbound: hermes
 
 audit:
   enabled: true
