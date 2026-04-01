@@ -1,0 +1,12 @@
+agent:
+  name: hermes
+  role: worker
+  memory:
+    enabled: true
+    path: ./memory
+  skills:
+    path: ./skills
+  tools:
+    mcp: true
+    exec: true
+    web: true
