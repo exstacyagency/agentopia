@@ -22,7 +22,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `artifacts/` — contract demo inputs/outputs
 - `config/paperclip/` — governance and org config
 - `config/hermes/` — agent/runtime config
-- `docs/` — architecture, example flow, and runbook notes
+- `docs/` — architecture, example flow, implementation phases, and runbook notes
 - `scripts/` — bootstrap, update, validation, smoke, and contract helpers
 - `docker-compose.yml` — local stack wiring
 - `.env.example` — documented env vars
@@ -42,6 +42,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `scripts/contract-demo.sh`
 - `docs/architecture.md`
 - `docs/example-flow.md`
+- `docs/implementation-phases.md`
 - `docs/runbook.md`
 
 ## Runtime targets
