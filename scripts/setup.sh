@@ -2,7 +2,6 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-
 cd "$ROOT_DIR"
 
 echo "Setting up agentopia..."
@@ -13,10 +12,7 @@ fi
 
 mkdir -p config/paperclip config/hermes memory skills
 
-for f in \
-  config/paperclip/paperclip.yml \
-  config/hermes/hermes.yml
-  do
+for f in config/paperclip/paperclip.yml config/hermes/hermes.yml; do
   if [ ! -f "$f" ]; then
     printf '\n' > "$f"
   fi
