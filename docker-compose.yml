@@ -10,6 +10,8 @@ services:
       - ./config/paperclip:/app/config/paperclip
       - ./config/hermes:/app/config/hermes
     restart: unless-stopped
+    profiles:
+      - runtime
 
   hermes:
     image: ghcr.io/hermes-agent/hermes:latest
@@ -22,3 +24,5 @@ services:
     depends_on:
       - paperclip
     restart: unless-stopped
+    profiles:
+      - runtime
