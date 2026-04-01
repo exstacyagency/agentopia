@@ -13,6 +13,7 @@
 9. Define implementation phases
 10. Validate request/result contracts in code
 11. Validate runtime env requirements in code
+12. Move contract demo to repo-local artifacts and tests
 
 ## Next passes
 
