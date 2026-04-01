@@ -6,6 +6,7 @@ cd "$ROOT_DIR"
 
 ./scripts/validate.sh
 ./scripts/doctor.sh
+./scripts/contract-demo.sh
 
 grep -q '^services:$' docker-compose.yml
 grep -q '^  paperclip:$' docker-compose.yml

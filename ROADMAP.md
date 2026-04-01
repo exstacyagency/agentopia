@@ -9,6 +9,7 @@
 5. Document architecture, runbook, and example flow
 6. Add a contract demo for request/result handoff
 7. Add a tiny runnable contract runner
+8. Connect the contract runner to repo artifacts
 
 ## Next passes
 
