@@ -40,6 +40,18 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `docs/architecture.md`
 - `docs/runbook.md`
 
+## Runtime targets
+
+The runtime stack now expects the following env vars to be set in `.env`:
+
+- `PAPERCLIP_IMAGE`
+- `HERMES_IMAGE`
+- `PAPERCLIP_URL`
+- `PAPERCLIP_API_KEY`
+- `HERMES_MODEL_PROVIDER`
+- `HERMES_MODEL`
+- `HERMES_API_KEY`
+
 ## How to start
 
 ```bash

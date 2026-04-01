@@ -28,6 +28,18 @@ cp .env.example .env
 - Secrets should live in `.env` or a secret store, never in the repo.
 - Business logic is intentionally deferred.
 
+## Concrete runtime targets
+
+Set these values in `.env` before trying to boot the runtime stack:
+
+- `PAPERCLIP_IMAGE`
+- `HERMES_IMAGE`
+- `PAPERCLIP_URL`
+- `PAPERCLIP_API_KEY`
+- `HERMES_MODEL_PROVIDER`
+- `HERMES_MODEL`
+- `HERMES_API_KEY`
+
 ## Troubleshooting
 
 - If validation fails, check for missing files or directories.

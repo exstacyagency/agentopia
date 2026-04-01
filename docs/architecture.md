@@ -58,3 +58,15 @@ The repo currently contains:
 - real task routing between Paperclip and Hermes
 - deployment and upgrade procedures
 - a concrete example task flow
+
+## Concrete runtime targets
+
+The current scaffold expects these runtime targets to be supplied through `.env`:
+
+- `PAPERCLIP_IMAGE`
+- `HERMES_IMAGE`
+- `PAPERCLIP_URL`
+- `PAPERCLIP_API_KEY`
+- `HERMES_MODEL_PROVIDER`
+- `HERMES_MODEL`
+- `HERMES_API_KEY`

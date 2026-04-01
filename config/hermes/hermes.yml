@@ -1,12 +1,24 @@
 agent:
   name: hermes
   role: worker
-  memory:
-    enabled: true
-    path: ./memory
-  skills:
-    path: ./skills
-  tools:
-    mcp: true
-    exec: true
-    web: true
+
+runtime:
+  provider: ${HERMES_MODEL_PROVIDER}
+  model: ${HERMES_MODEL}
+  apiKey: ${HERMES_API_KEY}
+
+memory:
+  enabled: true
+  path: ./memory
+
+skills:
+  path: ./skills
+
+tools:
+  mcp: true
+  exec: true
+  web: true
+
+integrations:
+  paperclipUrl: ${PAPERCLIP_URL}
+  paperclipToken: ${PAPERCLIP_API_KEY}
