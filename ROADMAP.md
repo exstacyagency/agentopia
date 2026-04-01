@@ -8,6 +8,7 @@
 4. Document contribution and branching norms
 5. Document architecture, runbook, and example flow
 6. Add a contract demo for request/result handoff
+7. Add a tiny runnable contract runner
 
 ## Next passes
 
