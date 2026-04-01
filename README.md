@@ -25,6 +25,13 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `docker-compose.yml` — local stack wiring
 - `.env.example` — documented env vars
 
+## Current scaffold
+
+- `config/paperclip/paperclip.yml`
+- `config/hermes/hermes.yml`
+- `scripts/setup.sh`
+- `scripts/update.sh`
+
 ## Notes
 
 - Do not commit secrets.

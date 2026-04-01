@@ -1,0 +1,24 @@
+services:
+  paperclip:
+    image: paperclipai/paperclip:latest
+    container_name: agentopia-paperclip
+    ports:
+      - "3100:3100"
+    env_file:
+      - .env
+    volumes:
+      - ./config/paperclip:/app/config/paperclip
+      - ./config/hermes:/app/config/hermes
+    restart: unless-stopped
+
+  hermes:
+    image: ghcr.io/hermes-agent/hermes:latest
+    container_name: agentopia-hermes
+    env_file:
+      - .env
+    volumes:
+      - ./config/hermes:/app/config/hermes
+      - ./config/paperclip:/app/config/paperclip
+    depends_on:
+      - paperclip
+    restart: unless-stopped

@@ -1,0 +1,16 @@
+organization:
+  name: agentopia
+  description: Agent orchestration and governance layer
+
+budgets:
+  default:
+    maxCostUsd: 25
+    maxRuntimeMinutes: 60
+
+audit:
+  enabled: true
+  retentionDays: 30
+
+approvals:
+  enabled: true
+  requireHumanOnHighRisk: true
