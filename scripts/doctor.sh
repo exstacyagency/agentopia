@@ -5,5 +5,6 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 ./scripts/validate.sh
+python3 ./scripts/env-validator.py
 
 echo "doctor ok"
