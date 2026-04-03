@@ -24,9 +24,19 @@ class TaskOutput:
 
     def to_dict(self) -> dict:
         data = asdict(self)
-        data["task_id"] = data.pop("task_id")
-        data["handoff_from"] = data.pop("handoff_from")
-        data["handoff_to"] = data.pop("handoff_to")
-        data["policy"] = data["policy"]
-        data["notes"] = list(data["notes"])
+        data["task"] = {
+            "id": data.pop("task_id"),
+            "title": data.pop("title"),
+            "priority": data.pop("priority"),
+        }
+        data["handoff"] = {
+            "from": data.pop("handoff_from"),
+            "to": data.pop("handoff_to"),
+            "policy": data.pop("policy"),
+        }
+        data["execution"] = {
+            "status": data.pop("status"),
+            "summary": data.pop("summary"),
+            "notes": list(data.pop("notes")),
+        }
         return data

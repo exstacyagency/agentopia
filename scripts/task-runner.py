@@ -50,33 +50,13 @@ class TaskRunner(ContractRunner):
                 },
             }
         }
-        output_dict = {
-            "task": {
-                "id": output.task_id,
-                "title": output.title,
-                "priority": output.priority,
-            },
-            "handoff": {
-                "from": output.handoff_from,
-                "to": output.handoff_to,
-                "policy": {
-                    "budgetUsd": output.policy.budget_usd,
-                    "runtimeMinutes": output.policy.runtime_minutes,
-                    "approvalRequired": output.policy.approval_required,
-                },
-            },
-            "execution": {
-                "status": output.status,
-                "summary": output.summary,
-                "notes": list(output.notes),
-            },
-        }
+        output_dict = output.to_dict()
         self.require_keys(result, "result envelope", {"result"})
         self.require_keys(result["result"], "result", {"taskId", "status", "summary", "artifacts", "audit"})
         self.require_keys(output_dict, "output envelope", {"task", "handoff", "execution"})
         self.require_keys(output_dict["task"], "output.task", {"id", "title", "priority"})
         self.require_keys(output_dict["handoff"], "output.handoff", {"from", "to", "policy"})
-        self.require_keys(output_dict["handoff"]["policy"], "output.handoff.policy", {"budgetUsd", "runtimeMinutes", "approvalRequired"})
+        self.require_keys(output_dict["handoff"]["policy"], "output.handoff.policy", {"budget_usd", "runtime_minutes", "approval_required"})
         self.require_keys(output_dict["execution"], "output.execution", {"status", "summary", "notes"})
         self.artifacts.mkdir(parents=True, exist_ok=True)
         self.result_path.write_text(json.dumps(result, indent=2) + "\n")

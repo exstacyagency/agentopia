@@ -113,9 +113,9 @@ handoff:
   from: paperclip
   to: hermes
   policy:
-    budgetUsd: 5
-    runtimeMinutes: 15
-    approvalRequired: false
+    budget_usd: 5
+    runtime_minutes: 15
+    approval_required: false
 execution:
   status: success
   summary: "Completed task: Summarize repo changes"
