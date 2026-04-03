@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from contract_runner import ContractRunner
@@ -64,7 +65,7 @@ def test_validate_request_rejects_bad_routing():
         raise AssertionError("expected validation to fail")
 
 
-def test_task_runner_writes_summary(tmp_path: Path):
+def test_task_runner_writes_structured_output(tmp_path: Path):
     runner = make_task_runner()
     runner.root = tmp_path
     request = {
@@ -84,6 +85,10 @@ def test_task_runner_writes_summary(tmp_path: Path):
         }
     }
     runner.artifacts.mkdir(parents=True, exist_ok=True)
-    runner.request_path.write_text(__import__('json').dumps(request))
+    runner.request_path.write_text(json.dumps(request))
     runner.run()
+    output = json.loads((runner.artifacts / 'output.json').read_text())
+    assert output['handoff']['from'] == 'paperclip'
+    assert output['handoff']['to'] == 'hermes'
+    assert output['execution']['status'] == 'success'
     assert (runner.artifacts / 'summary.txt').read_text().startswith('Completed task: Write summary')
