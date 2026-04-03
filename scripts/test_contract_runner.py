@@ -90,5 +90,6 @@ def test_task_runner_writes_structured_output(tmp_path: Path):
     output = json.loads((runner.artifacts / 'output.json').read_text())
     assert output['handoff']['from'] == 'paperclip'
     assert output['handoff']['to'] == 'hermes'
+    assert output['handoff']['policy']['approvalRequired'] is False
     assert output['execution']['status'] == 'success'
     assert (runner.artifacts / 'summary.txt').read_text().startswith('Completed task: Write summary')

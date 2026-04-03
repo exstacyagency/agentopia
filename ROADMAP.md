@@ -24,6 +24,8 @@
 20. Add a more realistic task execution path
 21. Write structured output artifacts
 22. Add a single command entrypoint wrapper
+23. Simplify workflow wrapper and docs
+24. Expand task output structure and metadata
 
 ## Next passes
 

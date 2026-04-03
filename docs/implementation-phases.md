@@ -12,6 +12,7 @@ This is the working checklist for moving from scaffold to real integration.
 - the result schema is represented in code
 - invalid inputs fail fast
 - the contract demo runs against repo-local artifacts
+- the task runner writes structured output
 
 ## Phase 2 — Runtime wiring
 

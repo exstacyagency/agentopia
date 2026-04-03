@@ -22,10 +22,20 @@ class TaskRunner(ContractRunner):
             "handoff": {
                 "from": "paperclip",
                 "to": "hermes",
+                "policy": {
+                    "budgetUsd": task["budget"]["maxCostUsd"],
+                    "runtimeMinutes": task["budget"]["maxRuntimeMinutes"],
+                    "approvalRequired": task["approval"]["required"],
+                },
             },
             "execution": {
                 "status": "success",
                 "summary": f"Completed task: {task['title']}",
+                "notes": [
+                    "Validated request contract",
+                    "Validated budget/approval policy",
+                    "Wrote structured output",
+                ],
             },
         }
         result = {
@@ -45,8 +55,9 @@ class TaskRunner(ContractRunner):
         self.require_keys(result["result"], "result", {"taskId", "status", "summary", "artifacts", "audit"})
         self.require_keys(output, "output envelope", {"task", "handoff", "execution"})
         self.require_keys(output["task"], "output.task", {"id", "title", "priority"})
-        self.require_keys(output["handoff"], "output.handoff", {"from", "to"})
-        self.require_keys(output["execution"], "output.execution", {"status", "summary"})
+        self.require_keys(output["handoff"], "output.handoff", {"from", "to", "policy"})
+        self.require_keys(output["handoff"]["policy"], "output.handoff.policy", {"budgetUsd", "runtimeMinutes", "approvalRequired"})
+        self.require_keys(output["execution"], "output.execution", {"status", "summary", "notes"})
         self.artifacts.mkdir(parents=True, exist_ok=True)
         self.result_path.write_text(json.dumps(result, indent=2) + "\n")
         self.output_path.write_text(json.dumps(output, indent=2) + "\n")
