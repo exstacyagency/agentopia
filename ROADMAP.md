@@ -19,6 +19,7 @@
 15. Add a Makefile with one-command workflow wrappers
 16. Add sample task artifact creation
 17. Add reusable task templates
+18. Add template selector and template checks
 
 ## Next passes
 
