@@ -13,6 +13,10 @@ class TaskRunner(ContractRunner):
     def output_path(self) -> Path:
         return self.artifacts / "output.json"
 
+    @property
+    def fixture_path(self) -> Path:
+        return self.root / "scripts" / "output_fixture.json"
+
     def build_output(self, task: dict) -> TaskOutput:
         return TaskOutput(
             task_id=task["id"],
