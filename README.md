@@ -27,6 +27,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `scripts/` — bootstrap, update, validation, smoke, contract, env helpers, and contract tests
 - `docker-compose.yml` — local stack wiring
 - `Makefile` — one-command workflow wrappers
+- `scripts/agentopia` — single entrypoint for common commands
 - `.env.example` — documented env vars
 - `CONTRIBUTING.md` — branch and PR norms
 - `ROADMAP.md` — current and upcoming work
@@ -48,6 +49,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `scripts/contract_runner.py`
 - `scripts/env-validator.py`
 - `scripts/test_contract_runner.py`
+- `scripts/agentopia`
 - `docs/architecture.md`
 - `docs/example-flow.md`
 - `docs/implementation-phases.md`
@@ -56,7 +58,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 ## Quick flow
 
 ```bash
-make boot
+scripts/agentopia boot
 ```
 
 That runs:
@@ -87,7 +89,7 @@ The runtime stack now expects the following env vars to be set in `.env`:
 
 ```bash
 cp .env.example .env
-make boot
+scripts/agentopia boot
 ```
 
 ## Notes

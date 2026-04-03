@@ -23,6 +23,7 @@
 19. Add a real task runner and summary artifact
 20. Add a more realistic task execution path
 21. Write structured output artifacts
+22. Add a single command entrypoint wrapper
 
 ## Next passes
 
