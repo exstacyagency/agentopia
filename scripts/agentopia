@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+cmd="${1:-help}"
+shift || true
+
+case "$cmd" in
+  boot)
+    make boot
+    ;;
+  demo)
+    make demo
+    ;;
+  setup)
+    make setup
+    ;;
+  validate)
+    make validate
+    ;;
+  doctor)
+    make doctor
+    ;;
+  smoke)
+    make smoke
+    ;;
+  sample-task)
+    make sample-task
+    ;;
+  task-run)
+    make task-run
+    ;;
+  contract-demo)
+    make contract-demo
+    ;;
+  test-contract)
+    make test-contract
+    ;;
+  template-check)
+    make template-check
+    ;;
+  help|*)
+    cat <<'EOF'
+Usage: scripts/agentopia <command>
+
+Commands:
+  boot
+  demo
+  setup
+  validate
+  doctor
+  smoke
+  sample-task
+  task-run
+  contract-demo
+  test-contract
+  template-check
+EOF
+    ;;
+esac
