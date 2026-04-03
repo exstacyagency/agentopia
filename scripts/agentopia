@@ -7,10 +7,6 @@ cd "$ROOT_DIR"
 cmd="${1:-help}"
 shift || true
 
-status_ok() {
-  python3 scripts/env-validator.py >/tmp/agentopia-status.txt
-}
-
 case "$cmd" in
   boot)
     ./scripts/setup.sh
@@ -42,8 +38,9 @@ case "$cmd" in
     python3 scripts/env-validator.py
     ;;
   start)
-    if ! status_ok; then
-      cat /tmp/agentopia-status.txt
+    status_json="$(python3 scripts/env-validator.py)"
+    printf '%s\n' "$status_json"
+    if ! printf '%s' "$status_json" | tail -n 1 | grep -q 'env validation ok'; then
       exit 1
     fi
     ./scripts/agentopia boot
