@@ -29,6 +29,9 @@ case "$cmd" in
   sample-task)
     make sample-task
     ;;
+  sample-task-budget)
+    make sample-task-budget
+    ;;
   task-run)
     make task-run
     ;;
@@ -53,6 +56,7 @@ Commands:
   doctor
   smoke
   sample-task
+  sample-task-budget
   task-run
   contract-demo
   test-contract

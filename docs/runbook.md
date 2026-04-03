@@ -4,16 +4,27 @@
 
 ```bash
 cp .env.example .env
-./scripts/setup.sh
+scripts/agentopia setup
 ```
 
 ## Validation
 
 ```bash
-./scripts/validate.sh
-./scripts/doctor.sh
-./scripts/smoke.sh
+scripts/agentopia validate
+scripts/agentopia doctor
+scripts/agentopia smoke
 ```
+
+## Workflow commands
+
+- `scripts/agentopia boot` — full repo workflow
+- `scripts/agentopia demo` — setup, validation, smoke, task demo, and checks
+- `scripts/agentopia sample-task` — generate the default task artifact
+- `scripts/agentopia sample-task-budget` — generate the budget gate task artifact
+- `scripts/agentopia task-run` — run the task runner directly
+- `scripts/agentopia contract-demo` — run the contract demo
+- `scripts/agentopia test-contract` — run the contract validation check
+- `scripts/agentopia template-check` — verify template selection behavior
 
 ## Branching
 
@@ -44,5 +55,5 @@ Set these values in `.env` before trying to boot the runtime stack:
 
 - If validation fails, check for missing files or directories.
 - If smoke fails, check the compose file for the expected service names and profiles.
-- If a config file is blank, rerun `./scripts/setup.sh`.
+- If a config file is blank, rerun `scripts/agentopia setup`.
 - If runtime startup fails, confirm the real Paperclip and Hermes images or commands are correct.
