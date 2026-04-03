@@ -73,6 +73,10 @@ That runs:
 - `template-check`
 - `task-run`
 
+## Preferred command surface
+
+Use `scripts/agentopia <command>` for the common workflow actions.
+
 ## Runtime targets
 
 The runtime stack now expects the following env vars to be set in `.env`:
