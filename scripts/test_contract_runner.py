@@ -108,3 +108,4 @@ def test_output_models_are_constructible():
     )
     assert output.policy.budget_usd == 5
     assert output.handoff_from == 'paperclip'
+    assert output.to_dict()['execution']['summary'] == 'Completed task: Task'

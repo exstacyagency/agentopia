@@ -100,6 +100,31 @@ result:
     runtimeSeconds: 12
 ```
 
+## Structured output contract
+
+The task runner now builds output from `scripts/output_models.py` and writes it to `artifacts/output.json`.
+
+```yaml
+task:
+  id: task-123
+  title: Summarize repo changes
+  priority: medium
+handoff:
+  from: paperclip
+  to: hermes
+  policy:
+    budgetUsd: 5
+    runtimeMinutes: 15
+    approvalRequired: false
+execution:
+  status: success
+  summary: "Completed task: Summarize repo changes"
+  notes:
+    - Validated request contract
+    - Validated budget/approval policy
+    - Wrote structured output
+```
+
 ## Why this matters
 
 This repo stays clearer when the boundary between orchestration and execution is explicit.

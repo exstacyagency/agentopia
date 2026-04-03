@@ -28,6 +28,7 @@
 24. Expand task output structure and metadata
 25. Add dedicated output models
 26. Add a reusable output fixture for tests
+27. Add a package-like output helper with `to_dict`
 
 ## Next passes
 
