@@ -22,7 +22,9 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `artifacts/` — contract demo inputs/outputs
 - `artifacts/templates/` — reusable sample task inputs
 - `config/paperclip/` — governance and org config
+- `config/paperclip/healthcheck.py` — runtime health check helper
 - `config/hermes/` — agent/runtime config
+- `config/hermes/healthcheck.py` — runtime health check helper
 - `docs/` — architecture, example flow, implementation phases, and runbook notes
 - `scripts/` — bootstrap, update, validation, smoke, contract, env helpers, and contract tests
 - `docker-compose.yml` — local stack wiring
@@ -35,7 +37,9 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 ## Current scaffold
 
 - `config/paperclip/paperclip.yml`
+- `config/paperclip/healthcheck.py`
 - `config/hermes/hermes.yml`
+- `config/hermes/healthcheck.py`
 - `scripts/setup.sh`
 - `scripts/update.sh`
 - `scripts/validate.sh`
@@ -105,4 +109,3 @@ scripts/agentopia boot
 - Do not commit secrets.
 - Keep changes small and reviewable.
 - Prefer additive changes over rewrites.
-
