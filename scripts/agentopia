@@ -12,6 +12,7 @@ case "$cmd" in
     ./scripts/setup.sh
     ./scripts/validate.sh
     ./scripts/doctor.sh
+    python3 scripts/env-validator.py
     ./scripts/smoke.sh
     ./scripts/sample-task.sh
     ./scripts/contract-demo.sh
@@ -32,6 +33,9 @@ case "$cmd" in
     ;;
   doctor)
     ./scripts/doctor.sh
+    ;;
+  runtime-check)
+    python3 scripts/env-validator.py
     ;;
   smoke)
     ./scripts/smoke.sh
@@ -56,9 +60,6 @@ case "$cmd" in
     ./scripts/template-selector.py budget-check
     ! ./scripts/template-selector.py unknown-template
     ;;
-  runtime-check)
-    python3 scripts/env-validator.py
-    ;;
   help|*)
     cat <<'EOF'
 Usage: scripts/agentopia <command>
@@ -69,6 +70,7 @@ Commands:
   setup
   validate
   doctor
+  runtime-check
   smoke
   sample-task
   sample-task-budget
@@ -76,7 +78,6 @@ Commands:
   contract-demo
   test-contract
   template-check
-  runtime-check
 EOF
     ;;
 esac
