@@ -45,11 +45,11 @@ class RuntimeTargets:
 
     def report(self) -> str:
         lines = ["runtime readiness report:"]
-        fields = [
+        services = [
             ("PAPERCLIP", self.paperclip_image, self.paperclip_url, self.paperclip_api_key),
             ("HERMES", self.hermes_image, self.hermes_model_provider, self.hermes_model, self.hermes_api_key),
         ]
-        for name, *values in fields:
+        for name, *values in services:
             lines.append(f"- {name}:")
             labels = ["image", "url/provider", "model", "api key"]
             for label, value in zip(labels, values, strict=False):
