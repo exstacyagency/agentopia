@@ -79,5 +79,16 @@ class RuntimeTargets:
     def report_json(self) -> str:
         return json.dumps(self.report_data(), indent=2) + "\n"
 
+    def dashboard(self) -> str:
+        data = self.report_data()
+        lines = ["runtime dashboard:"]
+        for service_name in ("paperclip", "hermes"):
+            service = data[service_name]
+            line = f"- {service_name.title():<9} | "
+            line += "ready" if all(service.values()) else "not ready"
+            lines.append(line)
+        lines.append(f"overall    | {'ready' if data['ok'] else 'not ready'}")
+        return "\n".join(lines)
+
     def ok(self) -> bool:
         return not self.missing()

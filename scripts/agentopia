@@ -34,10 +34,7 @@ case "$cmd" in
   doctor)
     ./scripts/doctor.sh
     ;;
-  runtime-check)
-    python3 scripts/env-validator.py
-    ;;
-  status)
+  runtime-check|status)
     python3 scripts/env-validator.py
     ;;
   smoke)
