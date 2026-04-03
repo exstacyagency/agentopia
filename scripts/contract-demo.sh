@@ -11,11 +11,11 @@ import json
 from pathlib import Path
 result = json.loads(Path('artifacts/result.json').read_text())
 output = json.loads(Path('artifacts/output.json').read_text())
+fixture = json.loads(Path('scripts/output_fixture.json').read_text())
 assert result['result']['status'] == 'success'
 assert result['result']['audit']['approvedBy'] == 'paperclip'
 assert result['result']['audit']['executedBy'] == 'hermes'
-assert output['execution']['status'] == 'success'
-assert 'approvalRequired' in output['handoff']['policy']
+assert output == fixture
 assert Path('artifacts/summary.txt').read_text().startswith('Completed task:')
 print('contract demo ok')
 PY

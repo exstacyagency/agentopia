@@ -26,6 +26,8 @@
 22. Add a single command entrypoint wrapper
 23. Simplify workflow wrapper and docs
 24. Expand task output structure and metadata
+25. Add dedicated output models
+26. Add a reusable output fixture for tests
 
 ## Next passes
 

@@ -82,16 +82,18 @@ task:
 
 ## Response schema
 
-The result contract is also validated in `scripts/contract_runner.py`.
+The result contract is also validated in `scripts/contract_runner.py`, and the structured output lives in `scripts/output_models.py` with a fixture at `scripts/output_fixture.json`.
 
 ```yaml
 result:
   taskId: task-123
   status: success
-  summary: "Repository scaffold updated and documented."
+  summary: "Completed task: Summarize repo changes"
   artifacts:
     - README.md
     - docs/example-flow.md
+    - artifacts/result.json
+    - artifacts/output.json
   audit:
     approvedBy: paperclip
     executedBy: hermes

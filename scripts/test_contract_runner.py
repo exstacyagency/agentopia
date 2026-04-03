@@ -94,6 +94,7 @@ def test_task_runner_writes_structured_output(tmp_path: Path):
     assert output['handoff']['policy']['approvalRequired'] is False
     assert output['execution']['status'] == 'success'
     assert (runner.artifacts / 'summary.txt').read_text().startswith('Completed task: Write summary')
+    assert output == json.loads((runner.fixture_path).read_text())
 
 
 def test_output_models_are_constructible():
