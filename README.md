@@ -101,8 +101,7 @@ The runtime stack now expects the following env vars to be set in `.env`:
 
 ```bash
 cp .env.example .env
-scripts/agentopia boot
-scripts/agentopia status
+scripts/agentopia start
 ```
 
 ## Notes

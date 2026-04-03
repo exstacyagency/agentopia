@@ -7,6 +7,10 @@ cd "$ROOT_DIR"
 cmd="${1:-help}"
 shift || true
 
+status_ok() {
+  python3 scripts/env-validator.py >/tmp/agentopia-status.txt
+}
+
 case "$cmd" in
   boot)
     ./scripts/setup.sh
@@ -36,6 +40,13 @@ case "$cmd" in
     ;;
   runtime-check|status)
     python3 scripts/env-validator.py
+    ;;
+  start)
+    if ! status_ok; then
+      cat /tmp/agentopia-status.txt
+      exit 1
+    fi
+    ./scripts/agentopia boot
     ;;
   smoke)
     ./scripts/smoke.sh
@@ -72,6 +83,7 @@ Commands:
   doctor
   runtime-check
   status
+  start
   smoke
   sample-task
   sample-task-budget

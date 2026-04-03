@@ -29,6 +29,7 @@ scripts/agentopia smoke
 - `scripts/agentopia template-check` — verify template selection behavior
 - `scripts/agentopia runtime-check` — validate runtime env targets and print a JSON status report
 - `scripts/agentopia status` — quick runtime readiness check
+- `scripts/agentopia start` — fail fast on bad readiness, otherwise run the boot flow
 
 ## Branching
 
