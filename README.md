@@ -23,8 +23,9 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `config/paperclip/` — governance and org config
 - `config/hermes/` — agent/runtime config
 - `docs/` — architecture, example flow, implementation phases, and runbook notes
-- `scripts/` — bootstrap, update, validation, smoke, contract, and env helpers
+- `scripts/` — bootstrap, update, validation, smoke, contract, env helpers, and contract tests
 - `docker-compose.yml` — local stack wiring
+- `Makefile` — one-command workflow wrappers
 - `.env.example` — documented env vars
 - `CONTRIBUTING.md` — branch and PR norms
 - `ROADMAP.md` — current and upcoming work
@@ -48,6 +49,21 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `docs/implementation-phases.md`
 - `docs/runbook.md`
 
+## Quick flow
+
+```bash
+make boot
+```
+
+That runs:
+
+- `setup`
+- `validate`
+- `doctor`
+- `smoke`
+- `contract-demo`
+- `test-contract`
+
 ## Runtime targets
 
 The runtime stack now expects the following env vars to be set in `.env`:
@@ -64,11 +80,7 @@ The runtime stack now expects the following env vars to be set in `.env`:
 
 ```bash
 cp .env.example .env
-./scripts/setup.sh
-./scripts/validate.sh
-./scripts/doctor.sh
-./scripts/smoke.sh
-./scripts/contract-demo.sh
+make boot
 ```
 
 ## Notes

@@ -16,6 +16,7 @@
 12. Move contract demo to repo-local artifacts and tests
 13. Add unit tests for the contract runner
 14. Split runner logic into a reusable module
+15. Add a Makefile with one-command workflow targets
 
 ## Next passes
 
@@ -24,6 +25,7 @@
 - replace the contract demo with real code paths
 - add a minimal smoke test for the compose stack
 - tighten compose health checks once real services are available
+- add real task execution tests instead of runner-only checks
 
 ## Deferred
 
