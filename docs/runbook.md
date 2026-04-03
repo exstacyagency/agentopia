@@ -37,7 +37,7 @@ scripts/agentopia smoke
 ## Current limitations
 
 - Compose services rely on `.env` runtime targets.
-- Health checks are only stubs until real service probes are available.
+- Health checks now print JSON but still only validate env-backed readiness, not real process health.
 - Secrets should live in `.env` or a secret store, never in the repo.
 - Business logic is intentionally deferred.
 
