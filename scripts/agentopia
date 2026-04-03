@@ -56,6 +56,9 @@ case "$cmd" in
     ./scripts/template-selector.py budget-check
     ! ./scripts/template-selector.py unknown-template
     ;;
+  runtime-check)
+    python3 scripts/env-validator.py
+    ;;
   help|*)
     cat <<'EOF'
 Usage: scripts/agentopia <command>
@@ -73,6 +76,7 @@ Commands:
   contract-demo
   test-contract
   template-check
+  runtime-check
 EOF
     ;;
 esac
