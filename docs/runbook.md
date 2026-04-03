@@ -13,6 +13,7 @@ scripts/agentopia setup
 scripts/agentopia validate
 scripts/agentopia doctor
 scripts/agentopia runtime-check
+scripts/agentopia status
 scripts/agentopia smoke
 ```
 
@@ -27,6 +28,7 @@ scripts/agentopia smoke
 - `scripts/agentopia test-contract` — run the contract validation check
 - `scripts/agentopia template-check` — verify template selection behavior
 - `scripts/agentopia runtime-check` — validate runtime env targets and print a JSON status report
+- `scripts/agentopia status` — quick runtime readiness check
 
 ## Branching
 
@@ -37,7 +39,7 @@ scripts/agentopia smoke
 ## Current limitations
 
 - Compose services rely on `.env` runtime targets.
-- Health checks now print JSON but still only validate env-backed readiness, not real process health.
+- Health checks are only stubs until real service probes are available.
 - Secrets should live in `.env` or a secret store, never in the repo.
 - Business logic is intentionally deferred.
 
