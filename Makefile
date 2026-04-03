@@ -1,37 +1,36 @@
 .PHONY: setup validate doctor smoke contract-demo test-contract demo boot sample-task sample-task-budget template-check task-run
 
 setup:
-	./scripts/setup.sh
+	./scripts/agentopia setup
 
 validate:
-	./scripts/validate.sh
+	./scripts/agentopia validate
 
 doctor:
-	./scripts/doctor.sh
+	./scripts/agentopia doctor
 
 smoke:
-	./scripts/smoke.sh
+	./scripts/agentopia smoke
 
 sample-task:
-	./scripts/sample-task.sh repo-summary
+	./scripts/agentopia sample-task
 
 sample-task-budget:
-	./scripts/sample-task.sh budget-check
+	./scripts/agentopia sample-task-budget
 
 template-check:
-	python3 scripts/template-selector.py repo-summary
-	python3 scripts/template-selector.py budget-check
-	! python3 scripts/template-selector.py unknown-template
+	./scripts/agentopia template-check
 
 contract-demo:
-	./scripts/contract-demo.sh
+	./scripts/agentopia contract-demo
 
 task-run:
-	./scripts/task-runner.py
+	./scripts/agentopia task-run
 
 test-contract:
-	python3 -c "import runpy; from pathlib import Path; ns = runpy.run_path('scripts/contract_runner.py'); runner = ns['ContractRunner'](Path('.')); request = {'task': {'id': 'task-123', 'title': 'Summarize repo changes', 'priority': 'medium', 'requester': {'id': 'human', 'displayName': 'human'}, 'budget': {'maxCostUsd': 5, 'maxRuntimeMinutes': 15}, 'approval': {'required': False}, 'constraints': {'outputFormat': 'markdown', 'outputLength': 'short', 'allowNetwork': False}, 'routing': {'inbound': 'paperclip', 'outbound': 'hermes'}}}; assert runner.validate_request(request)['id'] == 'task-123'; print('test-contract ok')"
+	./scripts/agentopia test-contract
 
-demo: setup validate doctor smoke sample-task contract-demo test-contract template-check task-run
+demo: boot
 
-boot: demo
+boot:
+	./scripts/agentopia boot

@@ -26,8 +26,8 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `docs/` — architecture, example flow, implementation phases, and runbook notes
 - `scripts/` — bootstrap, update, validation, smoke, contract, env helpers, and contract tests
 - `docker-compose.yml` — local stack wiring
-- `Makefile` — one-command workflow wrappers
-- `scripts/agentopia` — single entrypoint for common commands
+- `Makefile` — compatibility wrapper for common commands
+- `scripts/agentopia` — canonical single entrypoint for common commands
 - `.env.example` — documented env vars
 - `CONTRIBUTING.md` — branch and PR norms
 - `ROADMAP.md` — current and upcoming work
