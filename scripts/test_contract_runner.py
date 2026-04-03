@@ -3,10 +3,15 @@ from __future__ import annotations
 from pathlib import Path
 
 from contract_runner import ContractRunner
+from task_runner import TaskRunner
 
 
 def make_runner() -> ContractRunner:
     return ContractRunner(Path('.'))
+
+
+def make_task_runner() -> TaskRunner:
+    return TaskRunner(Path('.'))
 
 
 def test_validate_request_accepts_expected_shape():
@@ -57,3 +62,28 @@ def test_validate_request_rejects_bad_routing():
         assert "paperclip" in str(exc) or "routing" in str(exc)
     else:
         raise AssertionError("expected validation to fail")
+
+
+def test_task_runner_writes_summary(tmp_path: Path):
+    runner = make_task_runner()
+    runner.root = tmp_path
+    request = {
+        "task": {
+            "id": "task-999",
+            "title": "Write summary",
+            "priority": "low",
+            "requester": {"id": "human", "displayName": "human"},
+            "budget": {"maxCostUsd": 1, "maxRuntimeMinutes": 3},
+            "approval": {"required": False},
+            "constraints": {
+                "outputFormat": "markdown",
+                "outputLength": "short",
+                "allowNetwork": False,
+            },
+            "routing": {"inbound": "paperclip", "outbound": "hermes"},
+        }
+    }
+    runner.artifacts.mkdir(parents=True, exist_ok=True)
+    runner.request_path.write_text(__import__('json').dumps(request))
+    runner.run()
+    assert (runner.artifacts / 'summary.txt').read_text().startswith('Completed task: Write summary')

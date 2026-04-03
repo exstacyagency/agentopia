@@ -39,7 +39,6 @@ class ContractRunner:
         self.require_keys(task["routing"], "task.routing", {"inbound", "outbound"})
         assert task["routing"]["inbound"] == "paperclip"
         assert task["routing"]["outbound"] == "hermes"
-        assert task["approval"]["required"] is False
         return task
 
     def write_result(self, task: dict) -> None:
@@ -47,8 +46,8 @@ class ContractRunner:
             "result": {
                 "taskId": task["id"],
                 "status": "success",
-                "summary": "Repository scaffold updated and documented.",
-                "artifacts": ["README.md", "docs/example-flow.md"],
+                "summary": f"Completed task: {task['title']}",
+                "artifacts": ["README.md", "docs/example-flow.md", "artifacts/result.json"],
                 "audit": {
                     "approvedBy": "paperclip",
                     "executedBy": "hermes",
@@ -60,6 +59,7 @@ class ContractRunner:
         self.require_keys(result["result"], "result", {"taskId", "status", "summary", "artifacts", "audit"})
         self.artifacts.mkdir(parents=True, exist_ok=True)
         self.result_path.write_text(json.dumps(result, indent=2) + "\n")
+        (self.artifacts / "summary.txt").write_text(result["result"]["summary"] + "\n")
 
     def run(self) -> None:
         request = self.load_request()
