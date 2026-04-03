@@ -90,5 +90,26 @@ class RuntimeTargets:
         lines.append(f"overall    | {'ready' if data['ok'] else 'not ready'}")
         return "\n".join(lines)
 
+    def startup_plan(self) -> dict:
+        data = self.report_data()
+        return {
+            "ready": data["ok"],
+            "steps": [
+                {
+                    "name": "paperclip",
+                    "ready": all(data["paperclip"].values()),
+                    "missing": [k for k, v in data["paperclip"].items() if not v],
+                },
+                {
+                    "name": "hermes",
+                    "ready": all(data["hermes"].values()),
+                    "missing": [k for k, v in data["hermes"].items() if not v],
+                },
+            ],
+        }
+
+    def startup_plan_json(self) -> str:
+        return json.dumps(self.startup_plan(), indent=2) + "\n"
+
     def ok(self) -> bool:
         return not self.missing()
