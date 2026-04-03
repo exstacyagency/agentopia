@@ -16,7 +16,8 @@
 12. Move contract demo to repo-local artifacts and tests
 13. Add unit tests for the contract runner
 14. Split runner logic into a reusable module
-15. Add a Makefile with one-command workflow targets
+15. Add a Makefile with one-command workflow wrappers
+16. Add sample task artifact creation
 
 ## Next passes
 

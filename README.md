@@ -39,6 +39,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `scripts/validate.sh`
 - `scripts/doctor.sh`
 - `scripts/smoke.sh`
+- `scripts/sample-task.sh`
 - `scripts/contract-runner.py`
 - `scripts/contract-demo.sh`
 - `scripts/contract_runner.py`
@@ -61,6 +62,7 @@ That runs:
 - `validate`
 - `doctor`
 - `smoke`
+- `sample-task`
 - `contract-demo`
 - `test-contract`
 
