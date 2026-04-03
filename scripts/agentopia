@@ -9,40 +9,52 @@ shift || true
 
 case "$cmd" in
   boot)
-    make boot
+    ./scripts/setup.sh
+    ./scripts/validate.sh
+    ./scripts/doctor.sh
+    ./scripts/smoke.sh
+    ./scripts/sample-task.sh
+    ./scripts/contract-demo.sh
+    python3 -c "import runpy; from pathlib import Path; ns = runpy.run_path('scripts/contract_runner.py'); runner = ns['ContractRunner'](Path('.')); request = {'task': {'id': 'task-123', 'title': 'Summarize repo changes', 'priority': 'medium', 'requester': {'id': 'human', 'displayName': 'human'}, 'budget': {'maxCostUsd': 5, 'maxRuntimeMinutes': 15}, 'approval': {'required': False}, 'constraints': {'outputFormat': 'markdown', 'outputLength': 'short', 'allowNetwork': False}, 'routing': {'inbound': 'paperclip', 'outbound': 'hermes'}}}; assert runner.validate_request(request)['id'] == 'task-123'; print('test-contract ok')"
+    ./scripts/template-selector.py repo-summary
+    ./scripts/template-selector.py budget-check
+    ! ./scripts/template-selector.py unknown-template
+    ./scripts/task-runner.py
     ;;
   demo)
-    make demo
+    "$0" boot
     ;;
   setup)
-    make setup
+    ./scripts/setup.sh
     ;;
   validate)
-    make validate
+    ./scripts/validate.sh
     ;;
   doctor)
-    make doctor
+    ./scripts/doctor.sh
     ;;
   smoke)
-    make smoke
+    ./scripts/smoke.sh
     ;;
   sample-task)
-    make sample-task
+    ./scripts/sample-task.sh
     ;;
   sample-task-budget)
-    make sample-task-budget
+    ./scripts/sample-task.sh budget-check
     ;;
   task-run)
-    make task-run
+    ./scripts/task-runner.py
     ;;
   contract-demo)
-    make contract-demo
+    ./scripts/contract-demo.sh
     ;;
   test-contract)
-    make test-contract
+    python3 -c "import runpy; from pathlib import Path; ns = runpy.run_path('scripts/contract_runner.py'); runner = ns['ContractRunner'](Path('.')); request = {'task': {'id': 'task-123', 'title': 'Summarize repo changes', 'priority': 'medium', 'requester': {'id': 'human', 'displayName': 'human'}, 'budget': {'maxCostUsd': 5, 'maxRuntimeMinutes': 15}, 'approval': {'required': False}, 'constraints': {'outputFormat': 'markdown', 'outputLength': 'short', 'allowNetwork': False}, 'routing': {'inbound': 'paperclip', 'outbound': 'hermes'}}}; assert runner.validate_request(request)['id'] == 'task-123'; print('test-contract ok')"
     ;;
   template-check)
-    make template-check
+    ./scripts/template-selector.py repo-summary
+    ./scripts/template-selector.py budget-check
+    ! ./scripts/template-selector.py unknown-template
     ;;
   help|*)
     cat <<'EOF'

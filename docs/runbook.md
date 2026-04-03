@@ -18,7 +18,7 @@ scripts/agentopia smoke
 ## Workflow commands
 
 - `scripts/agentopia boot` — full repo workflow
-- `scripts/agentopia demo` — setup, validation, smoke, task demo, and checks
+- `scripts/agentopia demo` — alias for `boot`
 - `scripts/agentopia sample-task` — generate the default task artifact
 - `scripts/agentopia sample-task-budget` — generate the budget gate task artifact
 - `scripts/agentopia task-run` — run the task runner directly
