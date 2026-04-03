@@ -1,4 +1,4 @@
-.PHONY: setup validate doctor smoke contract-demo test-contract demo boot sample-task
+.PHONY: setup validate doctor smoke contract-demo test-contract demo boot sample-task sample-task-budget
 
 setup:
 	./scripts/setup.sh
@@ -13,7 +13,10 @@ smoke:
 	./scripts/smoke.sh
 
 sample-task:
-	./scripts/sample-task.sh
+	./scripts/sample-task.sh repo-summary
+
+sample-task-budget:
+	./scripts/sample-task.sh budget-check
 
 contract-demo:
 	./scripts/contract-demo.sh

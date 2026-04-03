@@ -5,34 +5,12 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 mkdir -p artifacts
-cat > artifacts/request.json <<'JSON'
-{
-  "task": {
-    "id": "task-123",
-    "title": "Summarize repo changes",
-    "priority": "medium",
-    "requester": {
-      "id": "human",
-      "displayName": "human"
-    },
-    "budget": {
-      "maxCostUsd": 5,
-      "maxRuntimeMinutes": 15
-    },
-    "approval": {
-      "required": false
-    },
-    "constraints": {
-      "outputFormat": "markdown",
-      "outputLength": "short",
-      "allowNetwork": false
-    },
-    "routing": {
-      "inbound": "paperclip",
-      "outbound": "hermes"
-    }
-  }
-}
-JSON
+TEMPLATE="${1:-repo-summary}"
+TEMPLATE_PATH="artifacts/templates/${TEMPLATE}.json"
+if [ ! -f "$TEMPLATE_PATH" ]; then
+  echo "unknown template: $TEMPLATE" >&2
+  exit 1
+fi
 
-echo "sample task written"
+cp "$TEMPLATE_PATH" artifacts/request.json
+echo "sample task written: $TEMPLATE"

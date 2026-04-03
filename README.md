@@ -20,6 +20,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 ## Repo layout
 
 - `artifacts/` — contract demo inputs/outputs
+- `artifacts/templates/` — reusable sample task inputs
 - `config/paperclip/` — governance and org config
 - `config/hermes/` — agent/runtime config
 - `docs/` — architecture, example flow, implementation phases, and runbook notes
