@@ -49,6 +49,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `scripts/contract_runner.py`
 - `scripts/env-validator.py`
 - `scripts/test_contract_runner.py`
+- `scripts/output_models.py`
 - `scripts/agentopia`
 - `docs/architecture.md`
 - `docs/example-flow.md`

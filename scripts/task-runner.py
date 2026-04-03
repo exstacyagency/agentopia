@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from contract_runner import ContractRunner
+from output_models import HandoffPolicy, TaskOutput
 
 
 class TaskRunner(ContractRunner):
@@ -12,56 +13,71 @@ class TaskRunner(ContractRunner):
     def output_path(self) -> Path:
         return self.artifacts / "output.json"
 
+    def build_output(self, task: dict) -> TaskOutput:
+        return TaskOutput(
+            task_id=task["id"],
+            title=task["title"],
+            priority=task["priority"],
+            policy=HandoffPolicy(
+                budget_usd=task["budget"]["maxCostUsd"],
+                runtime_minutes=task["budget"]["maxRuntimeMinutes"],
+                approval_required=task["approval"]["required"],
+            ),
+            summary=f"Completed task: {task['title']}",
+            notes=(
+                "Validated request contract",
+                "Validated budget/approval policy",
+                "Wrote structured output",
+            ),
+        )
+
     def write_result(self, task: dict) -> None:
-        output = {
-            "task": {
-                "id": task["id"],
-                "title": task["title"],
-                "priority": task["priority"],
-            },
-            "handoff": {
-                "from": "paperclip",
-                "to": "hermes",
-                "policy": {
-                    "budgetUsd": task["budget"]["maxCostUsd"],
-                    "runtimeMinutes": task["budget"]["maxRuntimeMinutes"],
-                    "approvalRequired": task["approval"]["required"],
-                },
-            },
-            "execution": {
-                "status": "success",
-                "summary": f"Completed task: {task['title']}",
-                "notes": [
-                    "Validated request contract",
-                    "Validated budget/approval policy",
-                    "Wrote structured output",
-                ],
-            },
-        }
+        output = self.build_output(task)
         result = {
             "result": {
-                "taskId": task["id"],
-                "status": "success",
-                "summary": output["execution"]["summary"],
+                "taskId": output.task_id,
+                "status": output.status,
+                "summary": output.summary,
                 "artifacts": ["README.md", "docs/example-flow.md", "artifacts/result.json", "artifacts/output.json"],
                 "audit": {
-                    "approvedBy": "paperclip",
-                    "executedBy": "hermes",
+                    "approvedBy": output.handoff_from,
+                    "executedBy": output.handoff_to,
                     "runtimeSeconds": 12,
                 },
             }
         }
+        output_dict = {
+            "task": {
+                "id": output.task_id,
+                "title": output.title,
+                "priority": output.priority,
+            },
+            "handoff": {
+                "from": output.handoff_from,
+                "to": output.handoff_to,
+                "policy": {
+                    "budgetUsd": output.policy.budget_usd,
+                    "runtimeMinutes": output.policy.runtime_minutes,
+                    "approvalRequired": output.policy.approval_required,
+                },
+            },
+            "execution": {
+                "status": output.status,
+                "summary": output.summary,
+                "notes": list(output.notes),
+            },
+        }
         self.require_keys(result, "result envelope", {"result"})
         self.require_keys(result["result"], "result", {"taskId", "status", "summary", "artifacts", "audit"})
-        self.require_keys(output, "output envelope", {"task", "handoff", "execution"})
-        self.require_keys(output["task"], "output.task", {"id", "title", "priority"})
-        self.require_keys(output["handoff"], "output.handoff", {"from", "to", "policy"})
-        self.require_keys(output["handoff"]["policy"], "output.handoff.policy", {"budgetUsd", "runtimeMinutes", "approvalRequired"})
-        self.require_keys(output["execution"], "output.execution", {"status", "summary", "notes"})
+        self.require_keys(output_dict, "output envelope", {"task", "handoff", "execution"})
+        self.require_keys(output_dict["task"], "output.task", {"id", "title", "priority"})
+        self.require_keys(output_dict["handoff"], "output.handoff", {"from", "to", "policy"})
+        self.require_keys(output_dict["handoff"]["policy"], "output.handoff.policy", {"budgetUsd", "runtimeMinutes", "approvalRequired"})
+        self.require_keys(output_dict["execution"], "output.execution", {"status", "summary", "notes"})
         self.artifacts.mkdir(parents=True, exist_ok=True)
         self.result_path.write_text(json.dumps(result, indent=2) + "\n")
-        self.output_path.write_text(json.dumps(output, indent=2) + "\n")
-        (self.artifacts / "summary.txt").write_text(output["execution"]["summary"] + "\n")
+        self.output_path.write_text(json.dumps(output_dict, indent=2) + "\n")
+        (self.artifacts / "summary.txt").write_text(output.summary + "\n")
 
 
 def main() -> int:
