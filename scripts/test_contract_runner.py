@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from contract_runner import ContractRunner
+from output_models import HandoffPolicy, TaskOutput
 from task_runner import TaskRunner
 
 
@@ -93,3 +94,16 @@ def test_task_runner_writes_structured_output(tmp_path: Path):
     assert output['handoff']['policy']['approvalRequired'] is False
     assert output['execution']['status'] == 'success'
     assert (runner.artifacts / 'summary.txt').read_text().startswith('Completed task: Write summary')
+
+
+def test_output_models_are_constructible():
+    output = TaskOutput(
+        task_id='task-1',
+        title='Task',
+        priority='medium',
+        policy=HandoffPolicy(5, 15, False),
+        summary='Completed task: Task',
+        notes=('a', 'b'),
+    )
+    assert output.policy.budget_usd == 5
+    assert output.handoff_from == 'paperclip'
