@@ -43,5 +43,25 @@ class RuntimeTargets:
                 missing.append(key.upper())
         return missing
 
+    def report(self) -> str:
+        lines = ["runtime readiness report:"]
+        fields = [
+            ("PAPERCLIP", self.paperclip_image, self.paperclip_url, self.paperclip_api_key),
+            ("HERMES", self.hermes_image, self.hermes_model_provider, self.hermes_model, self.hermes_api_key),
+        ]
+        for name, *values in fields:
+            lines.append(f"- {name}:")
+            labels = ["image", "url/provider", "model", "api key"]
+            for label, value in zip(labels, values, strict=False):
+                status = "ok" if value else "missing"
+                lines.append(f"  - {label}: {status}")
+        missing = self.missing()
+        if missing:
+            lines.append("missing vars:")
+            lines.extend(f"- {key}" for key in missing)
+        else:
+            lines.append("all runtime targets present")
+        return "\n".join(lines)
+
     def ok(self) -> bool:
         return not self.missing()
