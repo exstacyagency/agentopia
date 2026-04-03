@@ -52,6 +52,7 @@ Agentopia is the current repo for the infrastructure plan: a lightweight scaffol
 - `scripts/output_models.py`
 - `scripts/output_fixture.json`
 - `scripts/agentopia`
+- `scripts/runtimes.py`
 - `docs/architecture.md`
 - `docs/example-flow.md`
 - `docs/implementation-phases.md`
@@ -74,6 +75,7 @@ That runs:
 - `test-contract`
 - `template-check`
 - `task-run`
+- `runtime-check`
 
 ## Preferred command surface
 

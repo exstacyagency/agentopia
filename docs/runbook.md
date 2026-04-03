@@ -12,6 +12,7 @@ scripts/agentopia setup
 ```bash
 scripts/agentopia validate
 scripts/agentopia doctor
+scripts/agentopia runtime-check
 scripts/agentopia smoke
 ```
 
@@ -25,6 +26,7 @@ scripts/agentopia smoke
 - `scripts/agentopia contract-demo` — run the contract demo
 - `scripts/agentopia test-contract` — run the contract validation check
 - `scripts/agentopia template-check` — verify template selection behavior
+- `scripts/agentopia runtime-check` — validate runtime env targets
 
 ## Branching
 
