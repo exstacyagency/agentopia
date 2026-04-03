@@ -45,14 +45,28 @@ class RuntimeTargets:
 
     def report(self) -> str:
         lines = ["runtime readiness report:"]
-        fields = [
-            ("PAPERCLIP", self.paperclip_image, self.paperclip_url, self.paperclip_api_key),
-            ("HERMES", self.hermes_image, self.hermes_model_provider, self.hermes_model, self.hermes_api_key),
+        services = [
+            (
+                "PAPERCLIP",
+                {
+                    "image": self.paperclip_image,
+                    "url": self.paperclip_url,
+                    "api key": self.paperclip_api_key,
+                },
+            ),
+            (
+                "HERMES",
+                {
+                    "image": self.hermes_image,
+                    "model provider": self.hermes_model_provider,
+                    "model": self.hermes_model,
+                    "api key": self.hermes_api_key,
+                },
+            ),
         ]
-        for name, *values in fields:
+        for name, values in services:
             lines.append(f"- {name}:")
-            labels = ["image", "url/provider", "model", "api key"]
-            for label, value in zip(labels, values, strict=False):
+            for label, value in values.items():
                 status = "ok" if value else "missing"
                 lines.append(f"  - {label}: {status}")
         missing = self.missing()
