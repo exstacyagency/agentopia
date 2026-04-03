@@ -1,0 +1,27 @@
+{
+  "task": {
+    "id": "task-456",
+    "title": "Check budget and approval gates",
+    "priority": "high",
+    "requester": {
+      "id": "human",
+      "displayName": "human"
+    },
+    "budget": {
+      "maxCostUsd": 2,
+      "maxRuntimeMinutes": 5
+    },
+    "approval": {
+      "required": true
+    },
+    "constraints": {
+      "outputFormat": "json",
+      "outputLength": "short",
+      "allowNetwork": false
+    },
+    "routing": {
+      "inbound": "paperclip",
+      "outbound": "hermes"
+    }
+  }
+}

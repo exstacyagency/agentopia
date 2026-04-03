@@ -1,0 +1,27 @@
+{
+  "task": {
+    "id": "task-123",
+    "title": "Summarize repo changes",
+    "priority": "medium",
+    "requester": {
+      "id": "human",
+      "displayName": "human"
+    },
+    "budget": {
+      "maxCostUsd": 5,
+      "maxRuntimeMinutes": 15
+    },
+    "approval": {
+      "required": false
+    },
+    "constraints": {
+      "outputFormat": "markdown",
+      "outputLength": "short",
+      "allowNetwork": false
+    },
+    "routing": {
+      "inbound": "paperclip",
+      "outbound": "hermes"
+    }
+  }
+}
