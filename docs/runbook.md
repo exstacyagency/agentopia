@@ -26,7 +26,7 @@ scripts/agentopia smoke
 - `scripts/agentopia contract-demo` — run the contract demo
 - `scripts/agentopia test-contract` — run the contract validation check
 - `scripts/agentopia template-check` — verify template selection behavior
-- `scripts/agentopia runtime-check` — validate runtime env targets and report missing values clearly
+- `scripts/agentopia runtime-check` — validate runtime env targets and print a JSON status report
 
 ## Branching
 
@@ -56,7 +56,7 @@ Set these values in `.env` before trying to boot the runtime stack:
 ## Troubleshooting
 
 - If validation fails, check for missing files or directories.
-- If runtime-check fails, it will print exactly which runtime targets are missing for each service.
+- If runtime-check fails, it will print exactly which runtime targets are missing for each service and a JSON report.
 - If smoke fails, check the compose file for the expected service names and profiles.
 - If a config file is blank, rerun `scripts/agentopia setup`.
 - If runtime startup fails, confirm the real Paperclip and Hermes images or commands are correct.

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -43,39 +44,40 @@ class RuntimeTargets:
                 missing.append(key.upper())
         return missing
 
+    def report_data(self) -> dict:
+        return {
+            "paperclip": {
+                "image": bool(self.paperclip_image),
+                "url": bool(self.paperclip_url),
+                "api_key": bool(self.paperclip_api_key),
+            },
+            "hermes": {
+                "image": bool(self.hermes_image),
+                "model_provider": bool(self.hermes_model_provider),
+                "model": bool(self.hermes_model),
+                "api_key": bool(self.hermes_api_key),
+            },
+            "missing": self.missing(),
+            "ok": self.ok(),
+        }
+
     def report(self) -> str:
+        data = self.report_data()
         lines = ["runtime readiness report:"]
-        services = [
-            (
-                "PAPERCLIP",
-                {
-                    "image": self.paperclip_image,
-                    "url": self.paperclip_url,
-                    "api key": self.paperclip_api_key,
-                },
-            ),
-            (
-                "HERMES",
-                {
-                    "image": self.hermes_image,
-                    "model provider": self.hermes_model_provider,
-                    "model": self.hermes_model,
-                    "api key": self.hermes_api_key,
-                },
-            ),
-        ]
-        for name, values in services:
-            lines.append(f"- {name}:")
-            for label, value in values.items():
-                status = "ok" if value else "missing"
+        for service, values in (("PAPERCLIP", data["paperclip"]), ("HERMES", data["hermes"])):
+            lines.append(f"- {service}:")
+            for label, ok in values.items():
+                status = "ok" if ok else "missing"
                 lines.append(f"  - {label}: {status}")
-        missing = self.missing()
-        if missing:
+        if data["missing"]:
             lines.append("missing vars:")
-            lines.extend(f"- {key}" for key in missing)
+            lines.extend(f"- {key}" for key in data["missing"])
         else:
             lines.append("all runtime targets present")
         return "\n".join(lines)
+
+    def report_json(self) -> str:
+        return json.dumps(self.report_data(), indent=2) + "\n"
 
     def ok(self) -> bool:
         return not self.missing()
