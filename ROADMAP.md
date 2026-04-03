@@ -19,7 +19,9 @@
 15. Add a Makefile with one-command workflow wrappers
 16. Add sample task artifact creation
 17. Add reusable task templates
-18. Add template selector and template checks
+18. Add template selector and checks
+19. Add a real task runner and summary artifact
+20. Add a more realistic task execution path
 
 ## Next passes
 
@@ -29,6 +31,7 @@
 - add a minimal smoke test for the compose stack
 - tighten compose health checks once real services are available
 - add real task execution tests instead of runner-only checks
+- add a real output schema beyond the summary text file
 
 ## Deferred
 
