@@ -30,6 +30,13 @@ CREATE TABLE IF NOT EXISTS audit_events (
     created_at TEXT NOT NULL,
     FOREIGN KEY(task_id) REFERENCES tasks(id)
 );
+
+CREATE TABLE IF NOT EXISTS task_results (
+    task_id TEXT PRIMARY KEY,
+    result_payload TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY(task_id) REFERENCES tasks(id)
+);
 """
 
 
@@ -102,3 +109,19 @@ class PaperclipDB:
             item["payload"] = json.loads(item.pop("payload_json"))
             events.append(item)
         return events
+
+    def store_result(self, task_id: str, payload: dict, created_at: str) -> None:
+        self.conn.execute(
+            "INSERT OR REPLACE INTO task_results (task_id, result_payload, created_at) VALUES (?, ?, ?)",
+            (task_id, json.dumps(payload), created_at),
+        )
+        self.conn.commit()
+
+    def get_result(self, task_id: str) -> dict | None:
+        row = self.conn.execute("SELECT result_payload, created_at FROM task_results WHERE task_id = ?", (task_id,)).fetchone()
+        if row is None:
+            return None
+        return {
+            "payload": json.loads(row["result_payload"]),
+            "created_at": row["created_at"],
+        }
