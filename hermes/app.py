@@ -23,8 +23,32 @@ class HermesHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _send_html(self, status: int, html: str) -> None:
+        body = html.encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
+        if parsed.path == "/":
+            self._send_html(200, """<!doctype html>
+<html>
+  <head><meta charset=\"utf-8\"><title>Hermes</title></head>
+  <body>
+    <h1>Hermes</h1>
+    <p>Status: healthy</p>
+    <p>Role: execution plane</p>
+    <h2>Available endpoints</h2>
+    <ul>
+      <li><code>GET /health</code></li>
+      <li><code>POST /internal/execute</code></li>
+    </ul>
+  </body>
+</html>""")
+            return
         if parsed.path == "/health":
             self._send(200, {"ok": True, "service": "hermes"})
             return
@@ -55,8 +79,9 @@ class HermesHandler(BaseHTTPRequestHandler):
 
 
 def main() -> int:
-    server = ThreadingHTTPServer(("0.0.0.0", 3200), HermesHandler)
-    print("hermes listening on http://0.0.0.0:3200")
+    port = int(os.environ.get("HERMES_PORT", "3200"))
+    server = ThreadingHTTPServer(("0.0.0.0", port), HermesHandler)
+    print(f"hermes listening on http://0.0.0.0:{port}")
     server.serve_forever()
     return 0
 

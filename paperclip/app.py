@@ -24,9 +24,36 @@ class PaperclipHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _send_html(self, status: int, html: str) -> None:
+        body = html.encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
         parts = [part for part in parsed.path.split("/") if part]
+        if parsed.path == "/":
+            self._send_html(200, """<!doctype html>
+<html>
+  <head><meta charset=\"utf-8\"><title>Paperclip</title></head>
+  <body>
+    <h1>Paperclip</h1>
+    <p>Status: healthy</p>
+    <p>Role: control plane</p>
+    <h2>Available endpoints</h2>
+    <ul>
+      <li><code>GET /health</code></li>
+      <li><code>POST /tasks</code></li>
+      <li><code>GET /tasks/&lt;id&gt;</code></li>
+      <li><code>GET /tasks/&lt;id&gt;/audit</code></li>
+      <li><code>POST /internal/tasks/&lt;id&gt;/result</code></li>
+    </ul>
+  </body>
+</html>""")
+            return
         if parsed.path == "/health":
             self._send(200, {"ok": True, "service": "paperclip"})
             return
@@ -74,8 +101,9 @@ class PaperclipHandler(BaseHTTPRequestHandler):
 
 
 def main() -> int:
-    server = ThreadingHTTPServer(("0.0.0.0", 3100), PaperclipHandler)
-    print("paperclip listening on http://0.0.0.0:3100")
+    port = int(os.environ.get("PAPERCLIP_PORT", "3100"))
+    server = ThreadingHTTPServer(("0.0.0.0", port), PaperclipHandler)
+    print(f"paperclip listening on http://0.0.0.0:{port}")
     server.serve_forever()
     return 0
 
