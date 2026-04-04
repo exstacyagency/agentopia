@@ -1,0 +1,45 @@
+{
+  "schema_version": "v1",
+  "task_id": "task_123",
+  "run": {
+    "run_id": "run_001",
+    "status": "succeeded",
+    "started_at": "2026-04-03T18:01:10Z",
+    "finished_at": "2026-04-03T18:01:21Z",
+    "runtime_seconds": 11
+  },
+  "result": {
+    "summary": "Repository changes summarized successfully.",
+    "output_format": "markdown",
+    "output": "## Summary\n- Added contract runner\n- Added task output models\n- Added runtime validation",
+    "notes": [
+      "Validated request payload",
+      "Read repository docs",
+      "Generated short summary"
+    ],
+    "error": null
+  },
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "artifacts/output.md",
+      "content_type": "text/markdown"
+    },
+    {
+      "type": "structured_output",
+      "path": "artifacts/output.json",
+      "content_type": "application/json"
+    }
+  ],
+  "usage": {
+    "estimated_cost_usd": 0.18,
+    "actual_cost_usd": 0.21,
+    "model_provider": "openrouter",
+    "model_name": "gpt-5.4",
+    "tool_calls": 4
+  },
+  "trace": {
+    "trace_id": "trace_abc123",
+    "reported_at": "2026-04-03T18:01:21Z"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentopia.dev/schemas/task_result_v1.json",
+  "title": "Agentopia Task Result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_id", "run", "result", "artifacts", "usage", "trace"],
+  "properties": {
+    "schema_version": {
+      "const": "v1"
+    },
+    "task_id": { "type": "string", "minLength": 1 },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "status", "started_at", "finished_at", "runtime_seconds"],
+      "properties": {
+        "run_id": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "enum": ["running", "succeeded", "failed", "cancelled"] },
+        "started_at": { "type": "string", "format": "date-time" },
+        "finished_at": { "type": "string", "format": "date-time" },
+        "runtime_seconds": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "output_format", "output", "notes", "error"],
+      "properties": {
+        "summary": { "type": "string", "minLength": 1 },
+        "output_format": { "type": "string", "enum": ["markdown", "json", "text"] },
+        "output": { "type": "string" },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "error": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["code", "message", "retryable"],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "enum": [
+                    "VALIDATION_FAILED",
+                    "PERMISSION_DENIED",
+                    "APPROVAL_REQUIRED",
+                    "BUDGET_EXCEEDED",
+                    "EXECUTION_FAILED",
+                    "EXECUTION_TIMEOUT",
+                    "TOOL_FAILURE",
+                    "NETWORK_DISABLED",
+                    "INTERNAL_ERROR"
+                  ]
+                },
+                "message": { "type": "string", "minLength": 1 },
+                "retryable": { "type": "boolean" }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "path", "content_type"],
+        "properties": {
+          "type": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "minLength": 1 },
+          "content_type": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actual_cost_usd", "model_provider", "model_name", "tool_calls"],
+      "properties": {
+        "estimated_cost_usd": { "type": "number", "minimum": 0 },
+        "actual_cost_usd": { "type": "number", "minimum": 0 },
+        "model_provider": { "type": "string", "minLength": 1 },
+        "model_name": { "type": "string", "minLength": 1 },
+        "tool_calls": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "reported_at"],
+      "properties": {
+        "trace_id": { "type": "string", "minLength": 1 },
+        "reported_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

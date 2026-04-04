@@ -1,0 +1,38 @@
+{
+  "schema_version": "v1",
+  "task_id": "task_123",
+  "run": {
+    "run_id": "run_001",
+    "status": "done",
+    "started_at": "2026-04-03T18:01:10Z",
+    "finished_at": "yesterday",
+    "runtime_seconds": -3
+  },
+  "result": {
+    "summary": "",
+    "output_format": "html",
+    "output": "<p>bad</p>",
+    "notes": ["one note"],
+    "error": {
+      "code": "SOMETHING_NEW",
+      "message": "Bad error code",
+      "retryable": "sometimes"
+    }
+  },
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "artifacts/output.md"
+    }
+  ],
+  "usage": {
+    "actual_cost_usd": -2,
+    "model_provider": "",
+    "model_name": "gpt-5.4",
+    "tool_calls": -1
+  },
+  "trace": {
+    "trace_id": "trace_abc123",
+    "reported_at": "not-a-date"
+  }
+}
