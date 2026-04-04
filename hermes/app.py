@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 import json
-from http.server import BaseHTTPRequestHandler, HTTPServer
+import os
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib import request
 from urllib.parse import urlparse
 
 from hermes.executor import HermesExecutor
 
 ROOT = Path(__file__).resolve().parent.parent
 EXECUTOR = HermesExecutor(ROOT)
+PAPERCLIP_RESULT_URL = os.environ.get("PAPERCLIP_RESULT_URL", "http://127.0.0.1:3100/internal/tasks/{task_id}/result")
 
 
 class HermesHandler(BaseHTTPRequestHandler):
@@ -36,12 +39,23 @@ class HermesHandler(BaseHTTPRequestHandler):
         raw = self.rfile.read(length) if length else b"{}"
         body = json.loads(raw.decode())
         result = EXECUTOR.execute(body)
+        result_url = PAPERCLIP_RESULT_URL.format(task_id=result["task_id"])
+        req = request.Request(
+            result_url,
+            data=json.dumps(result).encode(),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            request.urlopen(req).read()
+        except Exception:
+            pass
         status = 200 if result["run"]["status"] == "succeeded" else 400
         self._send(status, result)
 
 
 def main() -> int:
-    server = HTTPServer(("0.0.0.0", 3200), HermesHandler)
+    server = ThreadingHTTPServer(("0.0.0.0", 3200), HermesHandler)
     print("hermes listening on http://0.0.0.0:3200")
     server.serve_forever()
     return 0

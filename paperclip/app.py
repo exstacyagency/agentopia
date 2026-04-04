@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 import json
-from http.server import BaseHTTPRequestHandler, HTTPServer
+import os
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
+from paperclip.dispatch import HermesDispatchClient
 from paperclip.service import PaperclipService
 
 ROOT = Path(__file__).resolve().parent.parent
-SERVICE = PaperclipService(ROOT / "data" / "paperclip.sqlite3")
+PAPERCLIP_DB_PATH = Path(os.environ.get("PAPERCLIP_DB_PATH", str(ROOT / "data" / "paperclip.sqlite3")))
+HERMES_BASE_URL = os.environ.get("HERMES_BASE_URL", "http://127.0.0.1:3200")
+SERVICE = PaperclipService(PAPERCLIP_DB_PATH, dispatch_client=HermesDispatchClient(HERMES_BASE_URL))
 
 
 class PaperclipHandler(BaseHTTPRequestHandler):
@@ -49,9 +53,15 @@ class PaperclipHandler(BaseHTTPRequestHandler):
                 task = SERVICE.submit_task(body)
                 self._send(201, task)
                 return
+            if len(parts) == 4 and parts[0] == "internal" and parts[1] == "tasks" and parts[3] == "result":
+                task = SERVICE.record_result(parts[2], body)
+                self._send(200, task)
+                return
             if len(parts) == 3 and parts[0] == "tasks" and parts[2] in {"approve", "reject"}:
                 target_state = "approved" if parts[2] == "approve" else "rejected"
                 task = SERVICE.transition_task(parts[1], target_state, actor="human", details={"action": parts[2]})
+                if target_state == "approved":
+                    task = SERVICE.dispatch_task(parts[1])
                 self._send(200, task)
                 return
         except KeyError:
@@ -64,7 +74,7 @@ class PaperclipHandler(BaseHTTPRequestHandler):
 
 
 def main() -> int:
-    server = HTTPServer(("0.0.0.0", 3100), PaperclipHandler)
+    server = ThreadingHTTPServer(("0.0.0.0", 3100), PaperclipHandler)
     print("paperclip listening on http://0.0.0.0:3100")
     server.serve_forever()
     return 0
