@@ -4,7 +4,6 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-from hermes.executor import HermesExecutor
 from paperclip.db import PaperclipDB
 from paperclip.dispatch import HermesDispatchClient
 from paperclip.state_machine import assert_transition
@@ -16,10 +15,9 @@ def utcnow() -> str:
 
 
 class PaperclipService:
-    def __init__(self, db_path: Path, dispatch_client: HermesDispatchClient | None = None, hermes_root: Path | None = None):
+    def __init__(self, db_path: Path, dispatch_client: HermesDispatchClient | None = None):
         self.db = PaperclipDB(db_path)
-        root = hermes_root or Path(__file__).resolve().parent.parent
-        self.dispatch_client = dispatch_client or HermesDispatchClient(HermesExecutor(root))
+        self.dispatch_client = dispatch_client or HermesDispatchClient()
 
     def submit_task(self, payload: dict) -> dict:
         errors = validate_payload("task_request_v1.json", payload)
@@ -80,8 +78,8 @@ class PaperclipService:
             raise ValueError(f"task must be approved before dispatch: {task_id}")
         self.transition_task(task_id, "queued", actor="paperclip", details={"dispatch": "hermes"})
         self.transition_task(task_id, "running", actor="paperclip", details={"dispatch": "hermes"})
-        result = self.dispatch_client.submit(task["request_payload"])
-        return self.record_result(task_id, result)
+        self.dispatch_client.submit(task["request_payload"])
+        return self.get_task(task_id)
 
     def record_result(self, task_id: str, result: dict) -> dict:
         status = result["run"]["status"]
