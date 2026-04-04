@@ -104,6 +104,17 @@ cp .env.example .env
 scripts/agentopia start
 ```
 
+## Hermes browser UI
+
+Hermes does not currently ship a Paperclip-style native board UI in this repo.
+The supported browser path is **Hermes API server + Open WebUI**.
+
+See:
+- `docs/hermes-openwebui.md`
+- `docker-compose.hermes-openwebui.yml`
+- `scripts/hermes-openwebui-up.sh`
+- `scripts/hermes-openwebui-down.sh`
+
 ## Notes
 
 - Do not commit secrets.
