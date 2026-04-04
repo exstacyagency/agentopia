@@ -1,0 +1,49 @@
+{
+  "schema_version": "v1",
+  "task": {
+    "id": "",
+    "type": "repo_summary",
+    "title": "Summarize repository changes",
+    "description": "Analyze recent repository changes and return a concise summary.",
+    "priority": "critical",
+    "risk_level": "low",
+    "requester": {
+      "id": "user_001"
+    },
+    "created_at": "not-a-date"
+  },
+  "execution_policy": {
+    "budget": {
+      "max_cost_usd": -1,
+      "max_runtime_minutes": 0
+    },
+    "approval": {
+      "required": false,
+      "status": "approved"
+    },
+    "permissions": {
+      "allow_network": false,
+      "allow_memory": true,
+      "allow_tools": true,
+      "allowed_tool_classes": ["repo_read"],
+      "write_scope": "everywhere"
+    },
+    "output_requirements": {
+      "format": "markdown",
+      "length": "short",
+      "include_artifacts": true
+    }
+  },
+  "routing": {
+    "source": "paperclip",
+    "destination": "hermes",
+    "callback": {
+      "result_url": "not-a-uri",
+      "auth_mode": "shared_token"
+    }
+  },
+  "trace": {
+    "trace_id": "",
+    "submitted_at": "also-not-a-date"
+  }
+}

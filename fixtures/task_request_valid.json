@@ -1,0 +1,56 @@
+{
+  "schema_version": "v1",
+  "task": {
+    "id": "task_123",
+    "type": "repo_summary",
+    "title": "Summarize repository changes",
+    "description": "Analyze recent repository changes and return a concise summary.",
+    "priority": "medium",
+    "risk_level": "low",
+    "requester": {
+      "id": "user_001",
+      "display_name": "xtcagent"
+    },
+    "context": {
+      "repo": "exstacyagency/agentopia",
+      "branch": "main"
+    },
+    "created_at": "2026-04-03T18:00:00Z"
+  },
+  "execution_policy": {
+    "budget": {
+      "max_cost_usd": 5.0,
+      "max_runtime_minutes": 15
+    },
+    "approval": {
+      "required": false,
+      "status": "approved",
+      "approved_by": "paperclip",
+      "approved_at": "2026-04-03T18:01:00Z"
+    },
+    "permissions": {
+      "allow_network": false,
+      "allow_memory": true,
+      "allow_tools": true,
+      "allowed_tool_classes": ["repo_read", "local_exec"],
+      "write_scope": "artifacts_only"
+    },
+    "output_requirements": {
+      "format": "markdown",
+      "length": "short",
+      "include_artifacts": true
+    }
+  },
+  "routing": {
+    "source": "paperclip",
+    "destination": "hermes",
+    "callback": {
+      "result_url": "http://paperclip:3100/internal/tasks/task_123/result",
+      "auth_mode": "shared_token"
+    }
+  },
+  "trace": {
+    "trace_id": "trace_abc123",
+    "submitted_at": "2026-04-03T18:01:05Z"
+  }
+}
