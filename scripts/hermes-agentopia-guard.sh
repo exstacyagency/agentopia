@@ -16,3 +16,11 @@ if [ "$CURRENT_HOME" = "$HOME/.hermes" ]; then
   echo "Refusing to continue: shared Hermes home is forbidden for Agentopia scripts." >&2
   exit 1
 fi
+if [ -z "${API_SERVER_KEY:-}" ]; then
+  echo "Refusing to continue: API_SERVER_KEY is not set." >&2
+  exit 1
+fi
+if [ "$API_SERVER_KEY" = "agentopia-secret" ] || [ "$API_SERVER_KEY" = "REPLACE_ME" ]; then
+  echo "Refusing to continue: API_SERVER_KEY must be replaced with a real local secret." >&2
+  exit 1
+fi

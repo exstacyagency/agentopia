@@ -12,6 +12,10 @@ if [ -z "$HERMES_BIN" ]; then
   echo "hermes binary not found" >&2
   exit 1
 fi
+if [ -z "${API_SERVER_KEY:-}" ]; then
+  echo "API_SERVER_KEY must be exported before installing the launchd service." >&2
+  exit 1
+fi
 mkdir -p "$HOME/.hermes-agentopia/logs"
 cat > "$PLIST" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -23,7 +27,7 @@ cat > "$PLIST" <<PLIST
   <array>
     <string>/bin/bash</string>
     <string>-lc</string>
-    <string>export HERMES_HOME="$HOME/.hermes-agentopia" API_SERVER_ENABLED=true API_SERVER_KEY=agentopia-secret API_SERVER_PORT=8742; exec "$HERMES_BIN" gateway run --replace</string>
+    <string>export HERMES_HOME="$HOME/.hermes-agentopia" API_SERVER_ENABLED=true API_SERVER_KEY="$API_SERVER_KEY" API_SERVER_PORT=8742; exec "$HERMES_BIN" gateway run --replace</string>
   </array>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>

@@ -5,6 +5,7 @@
 node_modules/
 coverage/
 artifacts/
+data/
 
 __pycache__/
 *.pyc
