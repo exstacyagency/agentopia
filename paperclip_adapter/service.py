@@ -27,13 +27,32 @@ class PaperclipAdapterService:
             goal_id=goal_id,
             execution_agent_id=execution_agent_id,
         )
-        issue = self.http_client.create_issue_obj(plan["issue_create"])
+        raw_issue = self.http_client.create_issue_obj(plan["issue_create"])
+        issue = self.http_client.normalize_issue(raw_issue)
         approval = None
         if plan["approval_create"]:
-            approval = self.http_client.create_approval_obj(plan["approval_create"] | {"linked_issue_ids": [issue["id"]]})
-        wake = self.http_client.wake_agent_obj(plan["execution_trigger"] | {"payload": plan["execution_trigger"]["payload"] | {"issueId": issue["id"]}})
+            approval = self.http_client.create_approval_obj(
+                plan["approval_create"] | {"linked_issue_ids": [issue.id]}
+            )
+        wake = self.http_client.wake_agent_obj(
+            plan["execution_trigger"]
+            | {"payload": plan["execution_trigger"]["payload"] | {"issueId": issue.id, "issueIdentifier": issue.identifier}}
+        )
         return {
-            "issue": issue,
+            "issue": {
+                "id": issue.id,
+                "identifier": issue.identifier,
+                "issue_number": issue.issue_number,
+                "company_id": issue.company_id,
+                "project_id": issue.project_id,
+                "goal_id": issue.goal_id,
+                "status": issue.status,
+                "priority": issue.priority,
+                "created_by_user_id": issue.created_by_user_id,
+                "created_at": issue.created_at,
+                "updated_at": issue.updated_at,
+                "raw": raw_issue,
+            },
             "approval": approval,
             "wake": wake,
         }
