@@ -13,6 +13,12 @@ Connect Agentopia to a real locally running Paperclip control plane and isolated
 5. Hermes execution in the isolated Agentopia runtime
 6. Result / artifact / run linkage back into Agentopia
 
+## Repo boundary rule
+
+- **Agentopia is the only repo to update/push/PR for this integration work.**
+- **Paperclip changes remain local-only dependency/runtime patches unless the user explicitly says otherwise.**
+- Treat the upstream/local Paperclip checkout as a patched local control-plane dependency for Agentopia development, not as a repo to operationalize through GitHub by default.
+
 ## Non-negotiable constraints
 
 - Refer to the orchestration repo/product as **Paperclip** in user-facing discussion.
