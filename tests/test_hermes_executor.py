@@ -59,3 +59,19 @@ def test_text_generation_supported() -> None:
     assert result["run"]["status"] == "succeeded"
     assert "# Text Generation" in result["result"]["output"]
     assert "Draft release note" in result["result"]["output"]
+
+
+def test_result_metadata_contains_bridge_fields() -> None:
+    executor = HermesExecutor(Path.cwd())
+    result = executor.execute(build_payload("text_generation", {
+        "prompt": "Draft release note",
+        "tone": "concise",
+        "issue_id": "ISS-9",
+        "paperclip_run_id": "run-999",
+        "agent_id": "agent-9",
+    }))
+    metadata = result["result"]["metadata"]
+    assert metadata["task_type"] == "text_generation"
+    assert metadata["paperclip_issue_id"] == "ISS-9"
+    assert metadata["paperclip_run_id"] == "run-999"
+    assert metadata["agent_id"] == "agent-9"

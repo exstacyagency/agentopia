@@ -59,6 +59,7 @@ class HermesExecutor:
                 "Generated v1 result envelope",
             ]
 
+        context = task.get("context", {})
         return {
             "schema_version": "v1",
             "task_id": task["id"],
@@ -74,6 +75,13 @@ class HermesExecutor:
                 "output_format": "markdown",
                 "output": summary,
                 "notes": notes,
+                "metadata": {
+                    "task_type": task["type"],
+                    "paperclip_issue_id": context.get("issue_id"),
+                    "paperclip_run_id": context.get("paperclip_run_id"),
+                    "agent_id": context.get("agent_id"),
+                    "context": context,
+                },
                 "error": None,
             },
             "artifacts": [
@@ -81,6 +89,10 @@ class HermesExecutor:
                     "type": "structured_output",
                     "path": "artifacts/output.json",
                     "content_type": "application/json",
+                    "metadata": {
+                        "task_type": task["type"],
+                        "task_id": task["id"],
+                    },
                 }
             ],
             "usage": {
