@@ -1,16 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 
 from scripts.contracts import validate_payload
 
-SUPPORTED_TASK_TYPES = {"repo_summary"}
-
-
-@dataclass(frozen=True)
-class ExecutionResult:
-    payload: dict
+SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation"}
 
 
 class HermesExecutor:
@@ -40,7 +34,31 @@ class HermesExecutor:
                 retryable=False,
             )
 
-        summary = self.build_repo_summary(task)
+        if task["type"] == "repo_summary":
+            summary = self.build_repo_summary(task)
+            result_summary = f"Repository summary completed for {task['title']}"
+            notes = [
+                "Validated request payload",
+                "Executed Hermes repo_summary task",
+                "Generated v1 result envelope",
+            ]
+        elif task["type"] == "file_analysis":
+            summary = self.build_file_analysis(task)
+            result_summary = f"File analysis completed for {task['title']}"
+            notes = [
+                "Validated request payload",
+                "Executed Hermes file_analysis task",
+                "Generated v1 result envelope",
+            ]
+        else:
+            summary = self.build_text_generation(task)
+            result_summary = f"Text generation completed for {task['title']}"
+            notes = [
+                "Validated request payload",
+                "Executed Hermes text_generation task",
+                "Generated v1 result envelope",
+            ]
+
         return {
             "schema_version": "v1",
             "task_id": task["id"],
@@ -52,14 +70,10 @@ class HermesExecutor:
                 "runtime_seconds": 0,
             },
             "result": {
-                "summary": f"Repository summary completed for {task['title']}",
+                "summary": result_summary,
                 "output_format": "markdown",
                 "output": summary,
-                "notes": [
-                    "Validated request payload",
-                    "Executed minimal Hermes repo_summary task",
-                    "Generated v1 result envelope",
-                ],
+                "notes": notes,
                 "error": None,
             },
             "artifacts": [
@@ -88,11 +102,42 @@ class HermesExecutor:
         branch = context.get("branch", "unknown-branch")
         return "\n".join(
             [
-                f"# Repo Summary",
+                "# Repo Summary",
                 f"- Repo: {repo}",
                 f"- Branch: {branch}",
                 f"- Task: {task['title']}",
                 f"- Description: {task['description']}",
+            ]
+        )
+
+    def build_file_analysis(self, task: dict) -> str:
+        context = task.get("context", {})
+        file_path = context.get("file_path") or context.get("path") or "unknown-file"
+        objective = context.get("objective") or task["description"]
+        return "\n".join(
+            [
+                "# File Analysis",
+                f"- File: {file_path}",
+                f"- Objective: {objective}",
+                f"- Task: {task['title']}",
+                "- Status: analysis scaffold completed",
+            ]
+        )
+
+    def build_text_generation(self, task: dict) -> str:
+        context = task.get("context", {})
+        prompt = context.get("prompt") or task["description"]
+        audience = context.get("audience") or "general"
+        tone = context.get("tone") or "neutral"
+        return "\n".join(
+            [
+                "# Text Generation",
+                f"- Audience: {audience}",
+                f"- Tone: {tone}",
+                f"- Task: {task['title']}",
+                "",
+                "Generated draft:",
+                f"{prompt}",
             ]
         )
 
