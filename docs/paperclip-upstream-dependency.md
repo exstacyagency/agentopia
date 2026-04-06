@@ -29,3 +29,7 @@ Agentopia is the integration/orchestration glue repo.
 Paperclip remains the upstream control-plane repo.
 
 Until the relevant Paperclip fixes land upstream, Agentopia local development depends on that patched Paperclip checkout.
+
+## Repo boundary
+
+Agentopia is the repo of record for this integration. Any Paperclip modifications are local-only patches for development/runtime bring-up unless the user explicitly requests upstream Paperclip changes.
