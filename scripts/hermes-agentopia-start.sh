@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
-source "$(cd "$(dirname "$0")" && pwd)/hermes-agentopia-env.sh"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/hermes-agentopia-env.sh"
+source "$SCRIPT_DIR/hermes-agentopia-guard.sh"
 cd "$HERMES_HOME"
 echo "Starting isolated Hermes Agentopia instance"
 echo "HERMES_HOME=$HERMES_HOME"
