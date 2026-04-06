@@ -12,10 +12,23 @@ This setup creates a second Hermes environment on the same machine without inter
 ## Scripts
 
 - `scripts/hermes-agentopia-env.sh`
+- `scripts/hermes-agentopia-guard.sh`
 - `scripts/hermes-agentopia-start.sh`
 - `scripts/hermes-agentopia-status.sh`
 - `scripts/hermes-agentopia-openwebui-up.sh`
 - `scripts/hermes-agentopia-openwebui-down.sh`
+- `scripts/hermes-agentopia-launchd-install.sh`
+- `scripts/hermes-agentopia-launchd-status.sh`
+- `scripts/hermes-agentopia-launchd-uninstall.sh`
+
+## Protective measures
+
+These scripts are designed to refuse running against the shared Hermes home.
+
+The guard script aborts if:
+- `HERMES_HOME` is unset
+- `HERMES_HOME` is not `~/.hermes-agentopia`
+- `HERMES_HOME` points at the shared `~/.hermes`
 
 ## Start isolated Hermes
 

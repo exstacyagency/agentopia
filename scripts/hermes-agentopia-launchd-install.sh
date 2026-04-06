@@ -8,6 +8,10 @@ p = shutil.which('hermes')
 print(os.path.realpath(p) if p else '')
 PY
 )"
+if [ -z "$HERMES_BIN" ]; then
+  echo "hermes binary not found" >&2
+  exit 1
+fi
 mkdir -p "$HOME/.hermes-agentopia/logs"
 cat > "$PLIST" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>

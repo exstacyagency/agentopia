@@ -109,11 +109,15 @@ scripts/agentopia start
 Hermes does not currently ship a Paperclip-style native board UI in this repo.
 The supported browser path is **Hermes API server + Open WebUI**.
 
+For a machine that already has a shared Hermes instance, use the isolated Agentopia setup instead of the shared default home.
+
 See:
 - `docs/hermes-openwebui.md`
+- `docs/hermes-agentopia-isolation.md`
 - `docker-compose.hermes-openwebui.yml`
 - `scripts/hermes-openwebui-up.sh`
 - `scripts/hermes-openwebui-down.sh`
+- `scripts/hermes-agentopia-*.sh`
 
 ## Notes
 
