@@ -41,7 +41,49 @@ class PaperclipIssueCreate:
     priority: str
     project_id: str | None
     goal_id: str | None
-    metadata: dict[str, Any]
+    status: str = "backlog"
+    metadata: dict[str, Any] | None = None
+
+
+@dataclass(frozen=True)
+class PaperclipIssueRecord:
+    id: str
+    identifier: str | None
+    issue_number: int | None
+    company_id: str
+    project_id: str | None
+    project_workspace_id: str | None
+    goal_id: str | None
+    parent_id: str | None
+    title: str
+    description: str | None
+    status: str
+    priority: str
+    assignee_agent_id: str | None
+    assignee_user_id: str | None
+    checkout_run_id: str | None
+    execution_run_id: str | None
+    execution_agent_name_key: str | None
+    execution_locked_at: str | None
+    created_by_agent_id: str | None
+    created_by_user_id: str | None
+    origin_kind: str | None
+    origin_id: str | None
+    origin_run_id: str | None
+    request_depth: int
+    billing_code: str | None
+    assignee_adapter_overrides: dict[str, Any] | None
+    execution_workspace_id: str | None
+    execution_workspace_preference: str | None
+    execution_workspace_settings: dict[str, Any] | None
+    started_at: str | None
+    completed_at: str | None
+    cancelled_at: str | None
+    hidden_at: str | None
+    labels: list[dict[str, Any]]
+    label_ids: list[str]
+    created_at: str
+    updated_at: str
 
 
 @dataclass(frozen=True)
