@@ -9,6 +9,16 @@ This setup creates a second Hermes environment on the same machine without inter
 - API server port: `8742`
 - Open WebUI port: `3001`
 
+## Secret handling
+
+Do not commit a real API server key.
+
+Before using the scripts, export your own local secret:
+
+```bash
+export API_SERVER_KEY='your-local-secret'
+```
+
 ## Scripts
 
 - `scripts/hermes-agentopia-env.sh`
