@@ -161,6 +161,9 @@ class HermesExecutor:
                         "existed_before": file_write["existed_before"],
                         "changed": file_write["changed"],
                         "previous_bytes": file_write["previous_bytes"],
+                        "previous_sha256": file_write["previous_sha256"],
+                        "new_sha256": file_write["new_sha256"],
+                        "change_preview": file_write["change_preview"],
                         "overwrite": file_write["overwrite"],
                     },
                 }
@@ -184,6 +187,9 @@ class HermesExecutor:
                 "existed_before": file_write["existed_before"],
                 "changed": file_write["changed"],
                 "previous_bytes": file_write["previous_bytes"],
+                "previous_sha256": file_write["previous_sha256"],
+                "new_sha256": file_write["new_sha256"],
+                "change_preview": file_write["change_preview"],
                 "overwrite": file_write["overwrite"],
             }
 
@@ -326,6 +332,9 @@ class HermesExecutor:
             "existed_before": write_result.existed_before,
             "changed": write_result.changed,
             "previous_bytes": write_result.previous_bytes,
+            "previous_sha256": write_result.previous_sha256,
+            "new_sha256": write_result.new_sha256,
+            "change_preview": write_result.change_preview,
             "overwrite": overwrite,
             "summary": "\n".join(
                 [
@@ -334,6 +343,9 @@ class HermesExecutor:
                     f"- Bytes: {write_result.bytes_written}",
                     f"- Previous bytes: {write_result.previous_bytes}",
                     f"- Overwrite: {overwrite}",
+                    f"- Previous hash: {write_result.previous_sha256}",
+                    f"- New hash: {write_result.new_sha256}",
+                    f"- Change preview: {write_result.change_preview}",
                     f"- Status: {status}",
                     "",
                     "Written content:",
