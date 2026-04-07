@@ -201,6 +201,8 @@ class HermesExecutor:
             "task_type": task["type"],
             "paperclip_issue_id": context.get("issue_id"),
             "paperclip_run_id": context.get("paperclip_run_id"),
+            "paperclip_approval_id": context.get("paperclip_approval_id"),
+            "paperclip_approval_status": context.get("paperclip_approval_status"),
             "agent_id": context.get("agent_id"),
             "context": context,
             "policy": {

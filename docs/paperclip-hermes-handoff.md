@@ -160,7 +160,7 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
-### Phase: operator write-action review layer
+### Phase: Paperclip approval linkage
 
 Current validated state:
 - allowed route live validation passed with `policy.mode = allow`
@@ -173,31 +173,30 @@ Current validated state:
 - overwrite-specific approval escalation and diff-preview metadata are implemented and live-validated
 - constrained `repo_write` support is implemented and live-validated
 - `repo_write` preview mode and per-change overwrite approval controls are implemented and live-validated
-- an operator-facing write-action summary script is now added
-- write-action summary normalization for legacy result shapes and compact operator states is now implemented
+- an operator-facing write-action summary script is added and normalized
+- Paperclip approval id/status linkage is now added to write-result metadata and operator summaries
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
-- make recent write actions and approval outcomes easier to inspect
-- validate the normalized write-action summary output against recent persisted runs
+- surface Paperclip approval context clearly in write-review tooling
+- validate approval linkage in persisted write runs
 
 After that, choose between:
-1. integrate these review surfaces more directly with Paperclip approvals
+1. link approval data more deeply into Agentopia service/mapping layers
 2. add a third narrow write-capable route
 
 ## Recommended next action for the next agent
 
 The immediate next task should be:
 
-**Validate the normalized write-action summary against recent persisted write runs.**
+**Validate Paperclip approval linkage in write-result metadata and the write-action summary.**
 
 ### Suggested concrete sequence
-1. run `python3 scripts/list_write_actions.py`
-2. confirm recent `file_write` and `repo_write` runs appear
-3. confirm `operator_status` distinguishes preview, approved writes, policy blocks, and scope blocks
-4. confirm `legacy_result_shape` helps explain older thinner metadata
-5. update this handoff doc again in the same PR if the summary output needs refinement
+1. trigger or inspect a write-capable run carrying `paperclip_approval_id` and `paperclip_approval_status`
+2. confirm those fields appear in persisted result metadata
+3. confirm `python3 scripts/list_write_actions.py` surfaces them clearly
+4. update this handoff doc again in the same PR if the operator output needs refinement
 
 ## Working rule from here on
 
