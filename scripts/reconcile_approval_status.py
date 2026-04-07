@@ -2,7 +2,10 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+
+from paperclip_adapter.http_client import PaperclipHttpClient
 
 root = Path(__file__).resolve().parent.parent
 runs_base = root / "var" / "hermes" / "runs"
@@ -19,6 +22,21 @@ if state_file.exists():
     except Exception:
         current_state = {}
 
+paperclip_base_url = os.environ.get("PAPERCLIP_BASE_URL", "http://127.0.0.1:3100")
+paperclip_company_id = os.environ.get("PAPERCLIP_COMPANY_ID")
+client = PaperclipHttpClient(base_url=paperclip_base_url)
+
+
+def resolve_current_status(approval_id: str) -> tuple[str | None, str]:
+    if paperclip_company_id:
+        try:
+            approval = client.get_approval(paperclip_company_id, approval_id)
+            return approval.get("status"), "paperclip_live"
+        except Exception:
+            pass
+    return current_state.get(approval_id), "local_fallback"
+
+
 items = []
 for path in sorted(runs_base.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
     try:
@@ -32,7 +50,7 @@ for path in sorted(runs_base.glob("*.json"), key=lambda p: p.stat().st_mtime, re
     stored_status = metadata.get("paperclip_approval_status")
     if not approval_id:
         continue
-    current_status = current_state.get(approval_id)
+    current_status, source = resolve_current_status(approval_id)
     items.append(
         {
             "task_id": envelope.get("task_id"),
@@ -40,6 +58,7 @@ for path in sorted(runs_base.glob("*.json"), key=lambda p: p.stat().st_mtime, re
             "approval_id": approval_id,
             "stored_status": stored_status,
             "current_status": current_status,
+            "status_source": source,
             "status_match": stored_status == current_status if current_status is not None else None,
         }
     )

@@ -160,7 +160,7 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
-### Phase: approval reconciliation and drift inspection
+### Phase: live Paperclip approval reconciliation
 
 Current validated state:
 - allowed route live validation passed with `policy.mode = allow`
@@ -176,29 +176,29 @@ Current validated state:
 - an operator-facing write-action summary script is added and normalized
 - Paperclip approval id/status linkage is validated in write-result metadata and operator summaries
 - approval linkage is formalized in the mapping/bridge/result-contract docs and code
-- a lightweight approval reconciliation inspector is now added
+- approval reconciliation is implemented with local fallback and now supports live Paperclip lookup
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
-- make approval-state drift visible over time
-- validate the reconciliation output with matched and mismatched approval states
+- prefer live Paperclip approval state when reconciling approval-linked runs
+- validate live Paperclip reconciliation when a real company/approval target is available
 
 After that, choose between:
-1. integrate live Paperclip approval lookups into reconciliation
+1. enrich mismatch handling and approval drift alerting
 2. add a third narrow write-capable route
 
 ## Recommended next action for the next agent
 
 The immediate next task should be:
 
-**Validate approval reconciliation output with both matched and mismatched states.**
+**Validate live Paperclip approval reconciliation when a real company/approval target is available, with local fallback preserved.**
 
 ### Suggested concrete sequence
-1. create or update `var/hermes/approval-status.json` with a current status map
+1. set `PAPERCLIP_COMPANY_ID` for the active local Paperclip company
 2. run `python3 scripts/reconcile_approval_status.py`
-3. confirm stored approval-linked runs appear
-4. confirm at least one matched and one mismatched status case if possible
+3. confirm `status_source = paperclip_live` appears when live approval lookup succeeds
+4. confirm fallback remains `local_fallback` when live lookup is unavailable
 5. update this handoff doc again in the same PR with the validation result
 
 ## Working rule from here on

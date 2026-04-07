@@ -107,6 +107,9 @@ class PaperclipHttpClient:
     def create_approval_obj(self, approval: dict[str, Any]) -> dict[str, Any]:
         return self.create_approval(PaperclipApprovalCreate(**approval))
 
+    def get_approval(self, company_id: str, approval_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/api/companies/{company_id}/approvals/{approval_id}")
+
     def wake_agent(self, trigger: PaperclipExecutionTrigger) -> dict[str, Any]:
         payload = {
             "source": trigger.source,
