@@ -160,7 +160,7 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
-### Phase: repo write preview and overwrite-aware control
+### Phase: operator write-action review layer
 
 Current validated state:
 - allowed route live validation passed with `policy.mode = allow`
@@ -172,32 +172,31 @@ Current validated state:
 - overwrite and change-tracking controls are implemented and live-validated
 - overwrite-specific approval escalation and diff-preview metadata are implemented and live-validated
 - constrained `repo_write` support is implemented and live-validated
-- `repo_write` preview mode and per-change overwrite approval controls are now implemented in code and docs
+- `repo_write` preview mode and per-change overwrite approval controls are implemented and live-validated
+- an operator-facing write-action summary script is now added
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
-- keep deny-by-default behavior for broader write-capable routes
-- validate `repo_write` preview mode and overwrite-specific approval behavior live
+- make recent write actions and approval outcomes easier to inspect
+- validate the write-action summary output against recent persisted runs
 
 After that, choose between:
-1. add a third narrow write-capable route
-2. add richer policy tiers or approval classes beyond boolean approval state
+1. integrate these review surfaces more directly with Paperclip approvals
+2. add a third narrow write-capable route
 
 ## Recommended next action for the next agent
 
 The immediate next task should be:
 
-**Validate `repo_write` preview mode and overwrite-specific approval behavior live.**
+**Validate the write-action summary against recent persisted write runs and blocked approvals.**
 
 ### Suggested concrete sequence
-1. submit a preview `repo_write` task with `apply = false`
-2. confirm it returns `policy.mode = preview` and does not write files
-3. submit an apply `repo_write` task with an overwrite change but without `overwrite_approved = true`
-4. confirm it fails with `error.code = POLICY_BLOCKED`
-5. submit an apply `repo_write` task with `overwrite = true` and `overwrite_approved = true`
-6. confirm it succeeds and reports per-file hash/preview metadata
-7. update this handoff doc again in the same PR with the live validation result
+1. run `python3 scripts/list_write_actions.py`
+2. confirm recent `file_write` and `repo_write` runs appear
+3. confirm preview, allow, and deny states are visible through `policy_mode` and `policy_reason`
+4. confirm write metadata is readable enough for operator review
+5. update this handoff doc again in the same PR if the summary output needs refinement
 
 ## Working rule from here on
 
