@@ -206,8 +206,7 @@ class HermesExecutor:
         goal = context.get("goal") or task["description"]
         impacted_files = context.get("impacted_files") or ["TBD"]
         validation_checks = context.get("validation_checks") or ["Run targeted tests", "Review edge cases"]
-        return "
-".join(
+        return "\n".join(
             [
                 "# Implementation Draft",
                 f"- Goal: {goal}",
