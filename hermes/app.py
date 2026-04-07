@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 EXECUTOR = HermesExecutor(ROOT)
 PERSISTENCE = HermesPersistence(ROOT)
 CALLBACK_STORE = HermesCallbackStore(ROOT)
-PAPERCLIP_RESULT_URL = os.environ.get("PAPERCLIP_RESULT_URL", "http://127.0.0.1:3100/internal/tasks/{task_id}/result")
+PAPERCLIP_RESULT_URL = os.environ.get("PAPERCLIP_RESULT_URL", "http://127.0.0.1:3200/internal/tasks/{task_id}/result")
 
 
 class HermesHandler(BaseHTTPRequestHandler):

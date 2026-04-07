@@ -35,7 +35,7 @@ class HttpIntegrationTests(unittest.TestCase):
             env["PYTHONPATH"] = "."
             env["PAPERCLIP_DB_PATH"] = db_path
             env["HERMES_BASE_URL"] = "http://127.0.0.1:3200"
-            env["PAPERCLIP_RESULT_URL"] = "http://127.0.0.1:3100/internal/tasks/{task_id}/result"
+            env["PAPERCLIP_RESULT_URL"] = "http://127.0.0.1:3200/internal/tasks/{task_id}/result"
 
             paperclip = subprocess.Popen(
                 [str(ROOT / ".venv" / "bin" / "python3"), "paperclip/app.py"],
