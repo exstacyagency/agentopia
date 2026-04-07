@@ -160,7 +160,7 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
-### Phase: real safe file writing
+### Phase: overwrite and change-safety hardening
 
 Current validated state:
 - allowed route live validation passed with `policy.mode = allow`
@@ -168,32 +168,32 @@ Current validated state:
 - blocked route metadata correctly reports `policy.reason = write_capable_requires_explicit_policy`
 - approved `file_write` live validation passed with `policy.reason = explicit_file_write_approval`
 - `shell_command` remains blocked under deny-by-default policy
-- real workspace-scoped `file_write` behavior is now implemented in code
+- real workspace-scoped `file_write` behavior is implemented and live-validated
+- overwrite and change-tracking controls are now implemented in code
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
 - keep deny-by-default behavior for broader write-capable routes
-- validate real workspace-scoped writes and out-of-scope rejection live
+- validate overwrite rejection and explicit overwrite success live
 
 After that, choose between:
-1. harden `file_write` further with diff/overwrite controls
-2. add richer approval-state / policy-mode handling beyond simple allow-or-deny
+1. add diff previews or overwrite-specific approval escalation
+2. add a second narrowly approved write-capable route
 
 ## Recommended next action for the next agent
 
 The immediate next task should be:
 
-**Validate real workspace-scoped `file_write` behavior live, plus one out-of-scope rejection.**
+**Validate overwrite rejection and explicit overwrite success for `file_write`.**
 
 ### Suggested concrete sequence
-1. submit an approved `file_write` task targeting a safe workspace-relative path
-2. confirm the file is actually written on disk
-3. confirm result metadata includes `file_write.path` and `file_write.bytes_written`
-4. confirm the result includes a `file_write` artifact
-5. submit an approved `file_write` task targeting an out-of-scope path
-6. confirm it fails with `error.code = WRITE_SCOPE_VIOLATION`
-7. update this handoff doc again in the same PR with the live validation result
+1. submit an approved `file_write` task creating a new file with `overwrite = false`
+2. submit a second approved `file_write` task changing that file with `overwrite = false`
+3. confirm it fails with `error.code = WRITE_SCOPE_VIOLATION`
+4. submit a third approved `file_write` task changing the same file with `overwrite = true`
+5. confirm it succeeds and reports `existed_before = true` and `changed = true`
+6. update this handoff doc again in the same PR with the live validation result
 
 ## Working rule from here on
 
