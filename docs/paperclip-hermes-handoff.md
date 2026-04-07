@@ -165,6 +165,7 @@ Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - validate and refine the local inspector workflow
 - improve the operator/debugging path around recent runs, callback outcomes, and persisted artifacts
+- reconcile any mismatch between live callback-sink validation claims and the callback records currently persisted under `var/hermes/`
 
 After that, choose between:
 1. add policy gating for higher-risk task types
@@ -181,7 +182,8 @@ The immediate next task should be:
 2. run `python3 scripts/list_callback_results.py`
 3. confirm the latest live callback-sink validation is visible in the output
 4. improve output shape if key fields are missing or awkward for operators
-5. update this handoff doc again in the same PR if the operator workflow changes
+5. if callback-results are empty, fall back to callback-attempt inspection and note the mismatch explicitly
+6. update this handoff doc again in the same PR if the operator workflow changes
 
 ## Working rule from here on
 
