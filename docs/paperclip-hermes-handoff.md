@@ -160,7 +160,7 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
-### Phase: overwrite and change-safety hardening
+### Phase: diff preview and overwrite-risk escalation
 
 Current validated state:
 - allowed route live validation passed with `policy.mode = allow`
@@ -169,30 +169,31 @@ Current validated state:
 - approved `file_write` live validation passed with `policy.reason = explicit_file_write_approval`
 - `shell_command` remains blocked under deny-by-default policy
 - real workspace-scoped `file_write` behavior is implemented and live-validated
-- overwrite and change-tracking controls are now implemented in code
+- overwrite and change-tracking controls are implemented and live-validated
+- overwrite-specific approval escalation and diff-preview metadata are now implemented in code
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
 - keep deny-by-default behavior for broader write-capable routes
-- validate overwrite rejection and explicit overwrite success live
+- validate overwrite-specific approval rejection and success live
 
 After that, choose between:
-1. add diff previews or overwrite-specific approval escalation
-2. add a second narrowly approved write-capable route
+1. add a second narrowly approved write-capable route
+2. add richer policy tiers or approval classes beyond boolean approval state
 
 ## Recommended next action for the next agent
 
 The immediate next task should be:
 
-**Validate overwrite rejection and explicit overwrite success for `file_write`.**
+**Validate overwrite-specific approval rejection and success for `file_write`.**
 
 ### Suggested concrete sequence
-1. submit an approved `file_write` task creating a new file with `overwrite = false`
-2. submit a second approved `file_write` task changing that file with `overwrite = false`
-3. confirm it fails with `error.code = WRITE_SCOPE_VIOLATION`
-4. submit a third approved `file_write` task changing the same file with `overwrite = true`
-5. confirm it succeeds and reports `existed_before = true` and `changed = true`
+1. create a baseline file with approved `file_write`
+2. submit an overwrite request with `overwrite = true` but without `overwrite_approved = true`
+3. confirm it fails with `error.code = POLICY_BLOCKED`
+4. submit a second overwrite request with `overwrite = true` and `overwrite_approved = true`
+5. confirm it succeeds and reports hash/preview metadata
 6. update this handoff doc again in the same PR with the live validation result
 
 ## Working rule from here on

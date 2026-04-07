@@ -25,6 +25,9 @@ Default behavior:
 - `execution_policy.permissions.write_scope = workspace_scoped`
 - `task.context.file_path` is present
 
+Additional overwrite rule:
+- if `task.context.overwrite = true`, then `task.context.overwrite_approved = true` is also required
+
 When allowed, Hermes performs a real workspace-scoped file write.
 
 Result metadata includes:
@@ -35,6 +38,9 @@ Result metadata includes:
 - `file_write.existed_before`
 - `file_write.changed`
 - `file_write.previous_bytes`
+- `file_write.previous_sha256`
+- `file_write.new_sha256`
+- `file_write.change_preview`
 - `file_write.overwrite`
 
 Result artifacts include a `file_write` artifact pointing at the written workspace-relative path.
@@ -51,6 +57,10 @@ That means:
 Overwrite rejections return:
 - `error.code = WRITE_SCOPE_VIOLATION`
 - `error.message = target file exists and overwrite is false`
+
+Overwrite policy rejections return:
+- `error.code = POLICY_BLOCKED`
+- `result.metadata.policy.reason = overwrite_requires_explicit_approval`
 
 ## Still blocked task types
 - `repo_write`

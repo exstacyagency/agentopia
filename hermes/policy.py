@@ -33,8 +33,15 @@ def evaluate_task_policy(payload: dict) -> PolicyDecision:
     if task_type == "file_write":
         approval = payload.get("execution_policy", {}).get("approval", {})
         permissions = payload.get("execution_policy", {}).get("permissions", {})
-        target_path = task.get("context", {}).get("file_path", "")
+        context = task.get("context", {})
+        target_path = context.get("file_path", "")
+        overwrite = bool(context.get("overwrite", False))
+        overwrite_approved = bool(context.get("overwrite_approved", False))
         if approval.get("required") and approval.get("status") == "approved" and permissions.get("write_scope") == "workspace_scoped" and target_path:
+            if overwrite:
+                if overwrite_approved:
+                    return PolicyDecision(True, "explicit_file_write_overwrite_approval", "allow")
+                return PolicyDecision(False, "overwrite_requires_explicit_approval", "deny")
             return PolicyDecision(True, "explicit_file_write_approval", "allow")
         return PolicyDecision(False, "write_capable_requires_explicit_policy", "deny")
     if task_type in WRITE_CAPABLE_TASK_TYPES:
