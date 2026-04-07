@@ -160,36 +160,40 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
-### Phase: first explicitly approved write path
+### Phase: real safe file writing
 
 Current validated state:
 - allowed route live validation passed with `policy.mode = allow`
 - blocked write-capable route live validation passed with `error.code = POLICY_BLOCKED`
 - blocked route metadata correctly reports `policy.reason = write_capable_requires_explicit_policy`
-- a narrow approved `file_write` path is now defined in code and policy docs
+- approved `file_write` live validation passed with `policy.reason = explicit_file_write_approval`
+- `shell_command` remains blocked under deny-by-default policy
+- real workspace-scoped `file_write` behavior is now implemented in code
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
 - keep deny-by-default behavior for broader write-capable routes
-- validate approved `file_write` behavior live
+- validate real workspace-scoped writes and out-of-scope rejection live
 
 After that, choose between:
-1. keep `file_write` as the single approved write route and harden it further
+1. harden `file_write` further with diff/overwrite controls
 2. add richer approval-state / policy-mode handling beyond simple allow-or-deny
 
 ## Recommended next action for the next agent
 
 The immediate next task should be:
 
-**Validate the approved `file_write` path live, alongside one still-blocked write path.**
+**Validate real workspace-scoped `file_write` behavior live, plus one out-of-scope rejection.**
 
 ### Suggested concrete sequence
-1. submit a `file_write` task with explicit approval and `workspace_scoped` write permission
-2. confirm the result succeeds with `policy.reason = explicit_file_write_approval`
-3. submit a `shell_command` or unapproved `file_write` task
-4. confirm it still fails with `error.code = POLICY_BLOCKED`
-5. update this handoff doc again in the same PR with the live validation result
+1. submit an approved `file_write` task targeting a safe workspace-relative path
+2. confirm the file is actually written on disk
+3. confirm result metadata includes `file_write.path` and `file_write.bytes_written`
+4. confirm the result includes a `file_write` artifact
+5. submit an approved `file_write` task targeting an out-of-scope path
+6. confirm it fails with `error.code = WRITE_SCOPE_VIOLATION`
+7. update this handoff doc again in the same PR with the live validation result
 
 ## Working rule from here on
 
