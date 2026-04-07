@@ -174,12 +174,13 @@ Current validated state:
 - constrained `repo_write` support is implemented and live-validated
 - `repo_write` preview mode and per-change overwrite approval controls are implemented and live-validated
 - an operator-facing write-action summary script is now added
+- write-action summary normalization for legacy result shapes and compact operator states is now implemented
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
 - make recent write actions and approval outcomes easier to inspect
-- validate the write-action summary output against recent persisted runs
+- validate the normalized write-action summary output against recent persisted runs
 
 After that, choose between:
 1. integrate these review surfaces more directly with Paperclip approvals
@@ -189,13 +190,13 @@ After that, choose between:
 
 The immediate next task should be:
 
-**Validate the write-action summary against recent persisted write runs and blocked approvals.**
+**Validate the normalized write-action summary against recent persisted write runs.**
 
 ### Suggested concrete sequence
 1. run `python3 scripts/list_write_actions.py`
 2. confirm recent `file_write` and `repo_write` runs appear
-3. confirm preview, allow, and deny states are visible through `policy_mode` and `policy_reason`
-4. confirm write metadata is readable enough for operator review
+3. confirm `operator_status` distinguishes preview, approved writes, policy blocks, and scope blocks
+4. confirm `legacy_result_shape` helps explain older thinner metadata
 5. update this handoff doc again in the same PR if the summary output needs refinement
 
 ## Working rule from here on

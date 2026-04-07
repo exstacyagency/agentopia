@@ -18,10 +18,21 @@ For recent persisted write-capable runs (`file_write`, `repo_write`), it shows:
 - task type
 - policy mode
 - policy reason
+- compact `operator_status`
 - summary
 - trace id
-- write metadata
+- normalized write metadata
+- `legacy_result_shape` when older persisted runs lack newer metadata fields
 - error metadata when present
+
+## Operator status values
+
+Common `operator_status` values include:
+- `preview`
+- `approved_write`
+- `blocked_policy`
+- `blocked_scope`
+- `failed`
 
 ## Why this exists
 
