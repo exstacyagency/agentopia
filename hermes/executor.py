@@ -175,8 +175,7 @@ class HermesExecutor:
         repo = context.get("repo") or "unknown-repo"
         goal = context.get("goal") or task["description"]
         impacted_files = context.get("impacted_files") or ["TBD"]
-        return "
-".join(
+        return "\n".join(
             [
                 "# Repo Change Plan",
                 f"- Repo: {repo}",
