@@ -39,6 +39,18 @@ TEXT_GENERATION_HINTS = (
     "post",
 )
 
+STRUCTURED_EXTRACT_HINTS = (
+    "extract",
+    "pull out",
+    "list",
+    "identify",
+    "requirements",
+    "steps",
+    "config keys",
+    "checklist",
+    "into json",
+)
+
 REPO_SUMMARY_HINTS = (
     "repo",
     "repository",
@@ -72,6 +84,16 @@ def map_paperclip_issue_to_task(title: str | None, description: str | None, *, f
             context={
                 "file_path": extracted_path or "unknown-file",
                 "objective": description or title or "Analyze the referenced file",
+            },
+        )
+
+    if any(hint in text for hint in STRUCTURED_EXTRACT_HINTS):
+        return MappedTask(
+            task_type="structured_extract",
+            context={
+                "source": extracted_path or fallback_repo,
+                "extraction_goal": description or title or "Extract structured information",
+                "output_schema": ["items", "notes"],
             },
         )
 
