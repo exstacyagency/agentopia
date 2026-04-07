@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from hermes.file_ops import FileWriteError, write_workspace_file
 from hermes.policy import evaluate_task_policy
 from scripts.contracts import validate_payload
 
@@ -59,6 +60,7 @@ class HermesExecutor:
                 },
             )
 
+        file_write = None
         if task["type"] == "repo_summary":
             summary = self.build_repo_summary(task)
             result_summary = f"Repository summary completed for {task['title']}"
@@ -100,11 +102,29 @@ class HermesExecutor:
                 "Generated v1 result envelope",
             ]
         elif task["type"] == "file_write":
-            summary = self.build_file_write(task)
+            try:
+                file_write = self.build_file_write(task)
+            except FileWriteError as exc:
+                return self.failure_result(
+                    task_id=task["id"],
+                    trace_id=payload["trace"]["trace_id"],
+                    code="WRITE_SCOPE_VIOLATION",
+                    message=str(exc),
+                    retryable=False,
+                    metadata={
+                        "task_type": task["type"],
+                        "policy": {
+                            "mode": policy.mode,
+                            "reason": policy.reason,
+                        },
+                    },
+                )
+            summary = file_write["summary"]
             result_summary = f"File write completed for {task['title']}"
             notes = [
                 "Validated request payload",
                 "Policy-approved Hermes file_write task",
+                "Performed workspace-scoped file write",
                 "Generated v1 result envelope",
             ]
         else:
@@ -117,6 +137,48 @@ class HermesExecutor:
             ]
 
         context = task.get("context", {})
+        artifacts = [
+            {
+                "type": "structured_output",
+                "path": "artifacts/output.json",
+                "content_type": "application/json",
+                "metadata": {
+                    "task_type": task["type"],
+                    "task_id": task["id"],
+                },
+            }
+        ]
+        if file_write:
+            artifacts.append(
+                {
+                    "type": "file_write",
+                    "path": file_write["relative_path"],
+                    "content_type": "text/plain",
+                    "metadata": {
+                        "task_type": task["type"],
+                        "task_id": task["id"],
+                        "bytes_written": file_write["bytes_written"],
+                    },
+                }
+            )
+
+        metadata = {
+            "task_type": task["type"],
+            "paperclip_issue_id": context.get("issue_id"),
+            "paperclip_run_id": context.get("paperclip_run_id"),
+            "agent_id": context.get("agent_id"),
+            "context": context,
+            "policy": {
+                "mode": policy.mode,
+                "reason": policy.reason,
+            },
+        }
+        if file_write:
+            metadata["file_write"] = {
+                "path": file_write["relative_path"],
+                "bytes_written": file_write["bytes_written"],
+            }
+
         return {
             "schema_version": "v1",
             "task_id": task["id"],
@@ -132,30 +194,10 @@ class HermesExecutor:
                 "output_format": "markdown",
                 "output": summary,
                 "notes": notes,
-                "metadata": {
-                    "task_type": task["type"],
-                    "paperclip_issue_id": context.get("issue_id"),
-                    "paperclip_run_id": context.get("paperclip_run_id"),
-                    "agent_id": context.get("agent_id"),
-                    "context": context,
-                    "policy": {
-                        "mode": policy.mode,
-                        "reason": policy.reason,
-                    },
-                },
+                "metadata": metadata,
                 "error": None,
             },
-            "artifacts": [
-                {
-                    "type": "structured_output",
-                    "path": "artifacts/output.json",
-                    "content_type": "application/json",
-                    "metadata": {
-                        "task_type": task["type"],
-                        "task_id": task["id"],
-                    },
-                }
-            ],
+            "artifacts": artifacts,
             "usage": {
                 "estimated_cost_usd": 0.0,
                 "actual_cost_usd": 0.0,
@@ -260,21 +302,27 @@ class HermesExecutor:
             ]
         )
 
-    def build_file_write(self, task: dict) -> str:
+    def build_file_write(self, task: dict) -> dict:
         context = task.get("context", {})
-        file_path = context.get("file_path") or "unknown-file"
+        file_path = context.get("file_path") or ""
         content = context.get("content") or ""
-        return "\n".join(
-            [
-                "# File Write",
-                f"- File: {file_path}",
-                f"- Bytes: {len(content.encode())}",
-                "- Status: write scaffold approved and recorded",
-                "",
-                "Proposed content:",
-                content,
-            ]
-        )
+        target, bytes_written = write_workspace_file(self.root, file_path, content)
+        relative_path = str(target.relative_to(self.root))
+        return {
+            "relative_path": relative_path,
+            "bytes_written": bytes_written,
+            "summary": "\n".join(
+                [
+                    "# File Write",
+                    f"- File: {relative_path}",
+                    f"- Bytes: {bytes_written}",
+                    "- Status: workspace-scoped write completed",
+                    "",
+                    "Written content:",
+                    content,
+                ]
+            ),
+        }
 
     def build_text_generation(self, task: dict) -> str:
         context = task.get("context", {})

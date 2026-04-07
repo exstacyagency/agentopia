@@ -25,9 +25,15 @@ Default behavior:
 - `execution_policy.permissions.write_scope = workspace_scoped`
 - `task.context.file_path` is present
 
-When allowed, result metadata includes:
+When allowed, Hermes performs a real workspace-scoped file write.
+
+Result metadata includes:
 - `policy.mode = allow`
 - `policy.reason = explicit_file_write_approval`
+- `file_write.path`
+- `file_write.bytes_written`
+
+Result artifacts include a `file_write` artifact pointing at the written workspace-relative path.
 
 ## Still blocked task types
 - `repo_write`
@@ -38,6 +44,17 @@ Blocked write-capable routes return a failed result with:
 - `error.code = POLICY_BLOCKED`
 - `result.metadata.policy.mode = deny`
 - `result.metadata.policy.reason = write_capable_requires_explicit_policy`
+
+## Scope guardrails
+
+`file_write` is restricted to workspace-scoped paths only.
+
+It rejects:
+- empty target paths
+- paths that resolve outside the Agentopia workspace
+- path traversal attempts
+
+These failures return `error.code = WRITE_SCOPE_VIOLATION`.
 
 ## Why this exists
 
