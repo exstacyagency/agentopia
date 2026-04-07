@@ -60,12 +60,20 @@ class HermesHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
-        if parsed.path != "/internal/execute":
-            self._send(404, {"error": "not found"})
-            return
         length = int(self.headers.get("Content-Length", "0"))
         raw = self.rfile.read(length) if length else b"{}"
         body = json.loads(raw.decode())
+
+        if parsed.path.startswith("/internal/tasks/") and parsed.path.endswith("/result"):
+            task_id = parsed.path.split("/")[3]
+            stored = CALLBACK_STORE.store(task_id, body)
+            self._send(200, {"ok": True, "task_id": task_id, "stored_path": str(stored)})
+            return
+
+        if parsed.path != "/internal/execute":
+            self._send(404, {"error": "not found"})
+            return
+
         result = EXECUTOR.execute(body)
         persisted_path = PERSISTENCE.persist_result(result)
         result.setdefault("persistence", {})["result_path"] = str(persisted_path)
