@@ -160,7 +160,7 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
-### Phase: second constrained write route
+### Phase: repo write preview and overwrite-aware control
 
 Current validated state:
 - allowed route live validation passed with `policy.mode = allow`
@@ -171,31 +171,33 @@ Current validated state:
 - real workspace-scoped `file_write` behavior is implemented and live-validated
 - overwrite and change-tracking controls are implemented and live-validated
 - overwrite-specific approval escalation and diff-preview metadata are implemented and live-validated
-- constrained `repo_write` support is now implemented in code and docs
+- constrained `repo_write` support is implemented and live-validated
+- `repo_write` preview mode and per-change overwrite approval controls are now implemented in code and docs
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
 - keep deny-by-default behavior for broader write-capable routes
-- validate approved `repo_write` behavior live
+- validate `repo_write` preview mode and overwrite-specific approval behavior live
 
 After that, choose between:
-1. harden `repo_write` with per-file overwrite approval semantics
+1. add a third narrow write-capable route
 2. add richer policy tiers or approval classes beyond boolean approval state
 
 ## Recommended next action for the next agent
 
 The immediate next task should be:
 
-**Validate approved `repo_write` behavior live, plus one blocked or out-of-scope failure path.**
+**Validate `repo_write` preview mode and overwrite-specific approval behavior live.**
 
 ### Suggested concrete sequence
-1. submit an approved `repo_write` task with `apply = true` and at least one in-scope change
-2. confirm files are written and metadata/artifacts list per-file changes
-3. submit a blocked `repo_write` task without `apply = true` or without approval
+1. submit a preview `repo_write` task with `apply = false`
+2. confirm it returns `policy.mode = preview` and does not write files
+3. submit an apply `repo_write` task with an overwrite change but without `overwrite_approved = true`
 4. confirm it fails with `error.code = POLICY_BLOCKED`
-5. optionally submit an out-of-scope repo change and confirm `WRITE_SCOPE_VIOLATION`
-6. update this handoff doc again in the same PR with the live validation result
+5. submit an apply `repo_write` task with `overwrite = true` and `overwrite_approved = true`
+6. confirm it succeeds and reports per-file hash/preview metadata
+7. update this handoff doc again in the same PR with the live validation result
 
 ## Working rule from here on
 
