@@ -160,7 +160,7 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
-### Phase: Paperclip approval linkage
+### Phase: formal approval contract linkage
 
 Current validated state:
 - allowed route live validation passed with `policy.mode = allow`
@@ -174,29 +174,31 @@ Current validated state:
 - constrained `repo_write` support is implemented and live-validated
 - `repo_write` preview mode and per-change overwrite approval controls are implemented and live-validated
 - an operator-facing write-action summary script is added and normalized
-- Paperclip approval id/status linkage is now added to write-result metadata and operator summaries
+- Paperclip approval id/status linkage is validated in write-result metadata and operator summaries
+- approval linkage is now formalized in the mapping/bridge/result-contract docs and code
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
-- surface Paperclip approval context clearly in write-review tooling
-- validate approval linkage in persisted write runs
+- ensure approval linkage is consistently carried by the bridge contract, not just opportunistically through context
+- validate mapped bridge-generated envelopes preserve approval linkage end to end
 
 After that, choose between:
-1. link approval data more deeply into Agentopia service/mapping layers
+1. add deeper Paperclip approval object reconciliation/status sync
 2. add a third narrow write-capable route
 
 ## Recommended next action for the next agent
 
 The immediate next task should be:
 
-**Validate Paperclip approval linkage in write-result metadata and the write-action summary.**
+**Validate a bridge-generated task envelope preserves approval linkage end to end.**
 
 ### Suggested concrete sequence
-1. trigger or inspect a write-capable run carrying `paperclip_approval_id` and `paperclip_approval_status`
-2. confirm those fields appear in persisted result metadata
-3. confirm `python3 scripts/list_write_actions.py` surfaces them clearly
-4. update this handoff doc again in the same PR if the operator output needs refinement
+1. construct a task request through `hermes/paperclip_bridge.py` using `PaperclipTaskContext`
+2. include `paperclip_approval_id` and `paperclip_approval_status`
+3. execute it through Hermes
+4. confirm those fields survive into persisted result metadata and `scripts/list_write_actions.py`
+5. update this handoff doc again in the same PR with the validation result
 
 ## Working rule from here on
 

@@ -44,6 +44,8 @@ Agentopia convention for structured execution metadata, including:
 - `task_type`
 - `paperclip_issue_id`
 - `paperclip_run_id`
+- `paperclip_approval_id`
+- `paperclip_approval_status`
 - `agent_id`
 - task-specific context fields
 

@@ -3,66 +3,51 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from hermes.paperclip_mapping import map_paperclip_issue_to_task
+from hermes.paperclip_mapping import PaperclipTaskContext
 
 
-def build_paperclip_task_request(
+def build_task_request(
     *,
-    issue_id: str,
-    issue_title: str,
-    issue_description: str,
-    paperclip_run_id: str,
-    agent_id: str,
-    fallback_repo: str = "paperclip-runtime-workspace",
-    result_url: str | None = None,
+    task_id: str,
+    task_type: str,
+    title: str,
+    description: str,
+    requester_id: str,
+    requester_name: str,
+    priority: str,
+    risk_level: str,
+    context: PaperclipTaskContext,
+    execution_policy: dict[str, Any],
+    callback_url: str,
 ) -> dict[str, Any]:
-    mapped = map_paperclip_issue_to_task(issue_title, issue_description, fallback_repo=fallback_repo)
     submitted_at = datetime.now(timezone.utc).isoformat()
-
-    context = dict(mapped.context)
-    context.update(
-        {
-            "issue_id": issue_id,
-            "paperclip_run_id": paperclip_run_id,
-            "agent_id": agent_id,
-        }
-    )
-
     return {
         "schema_version": "v1",
         "task": {
-            "id": issue_id,
-            "type": mapped.task_type,
-            "title": issue_title,
-            "description": issue_description,
-            "priority": "medium",
-            "risk_level": "low",
-            "requester": {"id": "paperclip", "display_name": "Paperclip"},
-            "context": context,
+            "id": task_id,
+            "type": task_type,
+            "title": title,
+            "description": description,
+            "priority": priority,
+            "risk_level": risk_level,
+            "requester": {
+                "id": requester_id,
+                "display_name": requester_name,
+            },
+            "context": context.to_dict(),
             "created_at": submitted_at,
         },
-        "execution_policy": {
-            "budget": {"max_cost_usd": 5.0, "max_runtime_minutes": 10},
-            "approval": {"required": False, "status": "not_required"},
-            "permissions": {
-                "allow_network": False,
-                "allow_memory": False,
-                "allow_tools": False,
-                "allowed_tool_classes": [],
-                "write_scope": "none",
-            },
-            "output_requirements": {"format": "markdown", "length": "short", "include_artifacts": True},
-        },
+        "execution_policy": execution_policy,
         "routing": {
             "source": "paperclip",
             "destination": "hermes",
             "callback": {
-                "result_url": result_url or f"http://127.0.0.1:3100/internal/tasks/{issue_id}/result",
+                "result_url": callback_url,
                 "auth_mode": "shared_token",
             },
         },
         "trace": {
-            "trace_id": f"paperclip-{paperclip_run_id}",
+            "trace_id": f"paperclip-{task_id}",
             "submitted_at": submitted_at,
         },
     }
