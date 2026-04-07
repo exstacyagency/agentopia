@@ -45,6 +45,8 @@ class HermesPersistence:
             "success": success,
             "status_code": status_code,
             "error": error,
+            "attempt_count": 1,
+            "retryable": not success,
         }
         path.write_text(json.dumps(payload, indent=2) + "\n")
         return path
