@@ -20,6 +20,20 @@ Examples:
 - phrases like `analyze file`, `inspect file`, `read file`
 - common source/doc file extensions
 
+### structured_extract
+Route to `structured_extract` when issue text is asking to pull out structured facts, steps, requirements, or checklist-style data.
+
+Examples:
+- `extract`
+- `pull out`
+- `list`
+- `identify`
+- `requirements`
+- `steps`
+- `config keys`
+- `checklist`
+- `into json`
+
 ### text_generation
 Route to `text_generation` when issue text is drafting-oriented.
 

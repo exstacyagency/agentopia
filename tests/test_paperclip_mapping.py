@@ -27,3 +27,13 @@ def test_maps_repo_summary_from_repo_hint() -> None:
     )
     assert mapped.task_type == "repo_summary"
     assert mapped.context["repo"] == "repo-agentopia"
+
+
+def test_maps_structured_extract_from_extract_hint() -> None:
+    mapped = map_paperclip_issue_to_task(
+        "Extract setup steps",
+        "Extract the setup steps from docs/README.md into a checklist.",
+        fallback_repo="repo-agentopia",
+    )
+    assert mapped.task_type == "structured_extract"
+    assert mapped.context["source"] == "docs/README.md"

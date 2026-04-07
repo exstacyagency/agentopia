@@ -75,3 +75,11 @@ def test_result_metadata_contains_bridge_fields() -> None:
     assert metadata["paperclip_issue_id"] == "ISS-9"
     assert metadata["paperclip_run_id"] == "run-999"
     assert metadata["agent_id"] == "agent-9"
+
+
+def test_structured_extract_supported() -> None:
+    executor = HermesExecutor(Path.cwd())
+    result = executor.execute(build_payload("structured_extract", {"source": "docs/README.md", "extraction_goal": "Extract setup steps"}))
+    assert result["run"]["status"] == "succeeded"
+    assert "# Structured Extract" in result["result"]["output"]
+    assert result["result"]["metadata"]["task_type"] == "structured_extract"

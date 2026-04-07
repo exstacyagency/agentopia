@@ -4,7 +4,7 @@ from pathlib import Path
 
 from scripts.contracts import validate_payload
 
-SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation"}
+SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation", "structured_extract"}
 
 
 class HermesExecutor:
@@ -48,6 +48,14 @@ class HermesExecutor:
             notes = [
                 "Validated request payload",
                 "Executed Hermes file_analysis task",
+                "Generated v1 result envelope",
+            ]
+        elif task["type"] == "structured_extract":
+            summary = self.build_structured_extract(task)
+            result_summary = f"Structured extraction completed for {task['title']}"
+            notes = [
+                "Validated request payload",
+                "Executed Hermes structured_extract task",
                 "Generated v1 result envelope",
             ]
         else:
