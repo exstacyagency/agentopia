@@ -8,9 +8,11 @@ from urllib import request
 from urllib.parse import urlparse
 
 from hermes.executor import HermesExecutor
+from hermes.persistence import HermesPersistence
 
 ROOT = Path(__file__).resolve().parent.parent
 EXECUTOR = HermesExecutor(ROOT)
+PERSISTENCE = HermesPersistence(ROOT)
 PAPERCLIP_RESULT_URL = os.environ.get("PAPERCLIP_RESULT_URL", "http://127.0.0.1:3100/internal/tasks/{task_id}/result")
 
 
@@ -63,6 +65,8 @@ class HermesHandler(BaseHTTPRequestHandler):
         raw = self.rfile.read(length) if length else b"{}"
         body = json.loads(raw.decode())
         result = EXECUTOR.execute(body)
+        persisted_path = PERSISTENCE.persist_result(result)
+        result.setdefault("persistence", {})["result_path"] = str(persisted_path)
         result_url = PAPERCLIP_RESULT_URL.format(task_id=result["task_id"])
         req = request.Request(
             result_url,
@@ -70,10 +74,30 @@ class HermesHandler(BaseHTTPRequestHandler):
             headers={"Content-Type": "application/json"},
             method="POST",
         )
+        callback_success = False
+        callback_status = None
+        callback_error = None
         try:
-            request.urlopen(req).read()
-        except Exception:
-            pass
+            with request.urlopen(req) as response:
+                callback_status = getattr(response, "status", None)
+                response.read()
+                callback_success = True
+        except Exception as exc:
+            callback_error = str(exc)
+        callback_path = PERSISTENCE.record_callback_attempt(
+            task_id=result["task_id"],
+            run_id=result["run"]["run_id"],
+            result_url=result_url,
+            success=callback_success,
+            status_code=callback_status,
+            error=callback_error,
+        )
+        result["persistence"]["callback_path"] = str(callback_path)
+        result["persistence"]["callback"] = {
+            "success": callback_success,
+            "status_code": callback_status,
+            "error": callback_error,
+        }
         status = 200 if result["run"]["status"] == "succeeded" else 400
         self._send(status, result)
 
