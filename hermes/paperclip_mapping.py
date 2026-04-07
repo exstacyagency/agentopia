@@ -72,6 +72,15 @@ CHANGE_PLAN_HINTS = (
     "acceptance checks",
 )
 
+IMPLEMENTATION_DRAFT_HINTS = (
+    "draft the implementation",
+    "implementation draft",
+    "proposed edits",
+    "patch outline",
+    "pseudo diff",
+    "edit sketch",
+)
+
 
 def _combined_text(title: str | None, description: str | None) -> str:
     return f"{title or ''}\n{description or ''}".strip().lower()
@@ -105,6 +114,16 @@ def map_paperclip_issue_to_task(title: str | None, description: str | None, *, f
                 "source": extracted_path or fallback_repo,
                 "extraction_goal": description or title or "Extract structured information",
                 "output_schema": ["items", "notes"],
+            },
+        )
+
+    if any(hint in text for hint in IMPLEMENTATION_DRAFT_HINTS):
+        return MappedTask(
+            task_type="implementation_draft",
+            context={
+                "goal": description or title or "Draft the implementation",
+                "impacted_files": ["TBD"],
+                "validation_checks": ["Run targeted tests", "Review edge cases"],
             },
         )
 
