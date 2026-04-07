@@ -61,6 +61,17 @@ REPO_SUMMARY_HINTS = (
     "overview",
 )
 
+CHANGE_PLAN_HINTS = (
+    "plan the changes",
+    "change plan",
+    "implementation plan",
+    "plan the implementation",
+    "what needs to change",
+    "impacted files",
+    "rollback",
+    "acceptance checks",
+)
+
 
 def _combined_text(title: str | None, description: str | None) -> str:
     return f"{title or ''}\n{description or ''}".strip().lower()
@@ -94,6 +105,16 @@ def map_paperclip_issue_to_task(title: str | None, description: str | None, *, f
                 "source": extracted_path or fallback_repo,
                 "extraction_goal": description or title or "Extract structured information",
                 "output_schema": ["items", "notes"],
+            },
+        )
+
+    if any(hint in text for hint in CHANGE_PLAN_HINTS):
+        return MappedTask(
+            task_type="repo_change_plan",
+            context={
+                "repo": fallback_repo,
+                "goal": description or title or "Plan the repo change",
+                "impacted_files": ["TBD"],
             },
         )
 
