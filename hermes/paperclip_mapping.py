@@ -78,15 +78,6 @@ def map_paperclip_issue_to_task(title: str | None, description: str | None, *, f
     text = _combined_text(title, description)
     extracted_path = _extract_path(text)
 
-    if extracted_path or any(hint in text for hint in FILE_ANALYSIS_HINTS):
-        return MappedTask(
-            task_type="file_analysis",
-            context={
-                "file_path": extracted_path or "unknown-file",
-                "objective": description or title or "Analyze the referenced file",
-            },
-        )
-
     if any(hint in text for hint in STRUCTURED_EXTRACT_HINTS):
         return MappedTask(
             task_type="structured_extract",
@@ -94,6 +85,15 @@ def map_paperclip_issue_to_task(title: str | None, description: str | None, *, f
                 "source": extracted_path or fallback_repo,
                 "extraction_goal": description or title or "Extract structured information",
                 "output_schema": ["items", "notes"],
+            },
+        )
+
+    if extracted_path or any(hint in text for hint in FILE_ANALYSIS_HINTS):
+        return MappedTask(
+            task_type="file_analysis",
+            context={
+                "file_path": extracted_path or "unknown-file",
+                "objective": description or title or "Analyze the referenced file",
             },
         )
 
