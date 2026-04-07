@@ -46,3 +46,7 @@ Fallback callback-attempt view includes:
 ## Why this exists
 
 The bridge now produces durable state. These scripts provide a simple operator view without manually opening raw JSON files under `var/hermes/`.
+
+## Current callback caveat
+
+If callback-result files are absent but callback-attempt records show `result_url` values pointing at `http://127.0.0.1:3100/internal/tasks/{task_id}/result`, the runtime is still posting back to Paperclip instead of the local Hermes callback sink on `3200`. In that state, the sink code may be healthy while accepted callback-result files remain empty.

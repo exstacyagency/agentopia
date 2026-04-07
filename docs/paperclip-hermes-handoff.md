@@ -145,14 +145,15 @@ The local Paperclip ↔ Hermes path is now validated for:
 - durable persisted results
 - durable callback attempt records
 - callback retry against persisted results
-- callback sink acceptance of result payloads
+- direct callback sink acceptance when posting to `http://127.0.0.1:3200/internal/tasks/<task_id>/result`
 - lightweight local inspection of recent runs and callback results
 
 ## Current operational gap
 
 No fundamental architecture blocker remains for the safe-route bridge.
 
-The main remaining gap is not connectivity but productization/hardening:
+The main remaining gaps are now:
+- align runtime callback target configuration with the working local sink, because Hermes is still posting to `http://127.0.0.1:3100/internal/tasks/{task_id}/result`
 - clearer operator visibility over recent runs/callback state
 - policy controls before riskier write-capable routes
 - documentation discipline so the handoff doc stays current in every relevant PR
@@ -165,7 +166,7 @@ Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - validate and refine the local inspector workflow
 - improve the operator/debugging path around recent runs, callback outcomes, and persisted artifacts
-- reconcile any mismatch between live callback-sink validation claims and the callback records currently persisted under `var/hermes/`
+- switch Hermes runtime callback target configuration from Paperclip `3100` to the working local sink on `3200`
 
 After that, choose between:
 1. add policy gating for higher-risk task types
@@ -175,15 +176,16 @@ After that, choose between:
 
 The immediate next task should be:
 
-**Validate the new run/callback inspector flow against recent live data and tighten the operator-facing output if needed.**
+**Switch the Hermes runtime callback target to the working local sink and then re-run the live callback acceptance validation.**
 
 ### Suggested concrete sequence
-1. run `python3 scripts/list_recent_runs.py`
-2. run `python3 scripts/list_callback_results.py`
-3. confirm the latest live callback-sink validation is visible in the output
-4. improve output shape if key fields are missing or awkward for operators
-5. if callback-results are empty, fall back to callback-attempt inspection and note the mismatch explicitly
-6. update this handoff doc again in the same PR if the operator workflow changes
+1. inspect how `PAPERCLIP_RESULT_URL` is being set for the live Hermes executor process
+2. change it so callbacks target `http://127.0.0.1:3200/internal/tasks/{task_id}/result`
+3. restart the Hermes executor with that updated environment
+4. trigger a fresh live run
+5. confirm a new file appears under `var/hermes/callback-results/`
+6. confirm `python3 scripts/list_callback_results.py` shows an `accepted_callback` record
+7. update this handoff doc again in the same PR with the validation result
 
 ## Working rule from here on
 
