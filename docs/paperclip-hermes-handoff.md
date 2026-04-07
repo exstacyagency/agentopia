@@ -160,32 +160,31 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
-### Phase: operator visibility and hardening
+### Phase: policy gating before write-capable execution
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
-- validate and refine the local inspector workflow
-- improve the operator/debugging path around recent runs, callback outcomes, and persisted artifacts
-- switch Hermes runtime callback target configuration from Paperclip `3100` to the working local sink on `3200`
+- preserve the now-working durable callback and inspection path
+- allow current safe read-only/planning routes by default
+- block write-capable routes until explicit policy support is added
 
 After that, choose between:
-1. add policy gating for higher-risk task types
-2. define and implement the first write-oriented execution route
+1. validate blocked-path and allowed-path behavior live
+2. define and implement the first explicitly approved write-oriented execution route
 
 ## Recommended next action for the next agent
 
 The immediate next task should be:
 
-**Switch the Hermes runtime callback target to the working local sink and then re-run the live callback acceptance validation.**
+**Validate the new policy gate with one allowed path and one blocked write-capable path.**
 
 ### Suggested concrete sequence
-1. inspect how `PAPERCLIP_RESULT_URL` is being set for the live Hermes executor process
-2. change it so callbacks target `http://127.0.0.1:3200/internal/tasks/{task_id}/result`
-3. restart the Hermes executor with that updated environment
-4. trigger a fresh live run
-5. confirm a new file appears under `var/hermes/callback-results/`
-6. confirm `python3 scripts/list_callback_results.py` shows an `accepted_callback` record
-7. update this handoff doc again in the same PR with the validation result
+1. trigger a known allowed route such as `file_analysis`
+2. confirm the result metadata includes `policy.mode = allow`
+3. submit a blocked write-capable route such as `file_write` or `shell_command`
+4. confirm the result fails with `error.code = POLICY_BLOCKED`
+5. confirm the result metadata includes `policy.reason = write_capable_requires_explicit_policy`
+6. update this handoff doc again in the same PR with the live validation result
 
 ## Working rule from here on
 

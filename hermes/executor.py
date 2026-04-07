@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from hermes.policy import evaluate_task_policy
 from scripts.contracts import validate_payload
 
-SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation", "structured_extract", "repo_change_plan", "implementation_draft"}
+SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation", "structured_extract", "repo_change_plan", "implementation_draft", "repo_write", "file_write", "shell_command"}
 
 
 class HermesExecutor:
@@ -25,6 +26,7 @@ class HermesExecutor:
             )
 
         task = payload["task"]
+        policy = evaluate_task_policy(task["type"])
         if task["type"] not in SUPPORTED_TASK_TYPES:
             return self.failure_result(
                 task_id=task["id"],
@@ -32,6 +34,29 @@ class HermesExecutor:
                 code="EXECUTION_FAILED",
                 message=f"unsupported task type: {task['type']}",
                 retryable=False,
+                metadata={
+                    "task_type": task["type"],
+                    "policy": {
+                        "mode": "deny",
+                        "reason": "unsupported_task_type",
+                    },
+                },
+            )
+
+        if not policy.allowed:
+            return self.failure_result(
+                task_id=task["id"],
+                trace_id=payload["trace"]["trace_id"],
+                code="POLICY_BLOCKED",
+                message=f"task type blocked by policy: {task['type']}",
+                retryable=False,
+                metadata={
+                    "task_type": task["type"],
+                    "policy": {
+                        "mode": policy.mode,
+                        "reason": policy.reason,
+                    },
+                },
             )
 
         if task["type"] == "repo_summary":
@@ -105,6 +130,10 @@ class HermesExecutor:
                     "paperclip_run_id": context.get("paperclip_run_id"),
                     "agent_id": context.get("agent_id"),
                     "context": context,
+                    "policy": {
+                        "mode": policy.mode,
+                        "reason": policy.reason,
+                    },
                 },
                 "error": None,
             },
@@ -240,7 +269,7 @@ class HermesExecutor:
             ]
         )
 
-    def failure_result(self, task_id: str, trace_id: str, code: str, message: str, retryable: bool) -> dict:
+    def failure_result(self, task_id: str, trace_id: str, code: str, message: str, retryable: bool, metadata: dict | None = None) -> dict:
         return {
             "schema_version": "v1",
             "task_id": task_id,
@@ -256,6 +285,7 @@ class HermesExecutor:
                 "output_format": "text",
                 "output": "",
                 "notes": [],
+                "metadata": metadata or {},
                 "error": {
                     "code": code,
                     "message": message,
