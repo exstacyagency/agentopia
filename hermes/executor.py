@@ -4,6 +4,7 @@ from pathlib import Path
 
 from hermes.file_ops import FileWriteError, write_workspace_file
 from hermes.policy import evaluate_task_policy
+from hermes.repo_ops import apply_repo_write
 from scripts.contracts import validate_payload
 
 SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation", "structured_extract", "repo_change_plan", "implementation_draft", "repo_write", "file_write", "shell_command"}
@@ -61,6 +62,7 @@ class HermesExecutor:
             )
 
         file_write = None
+        repo_write = None
         if task["type"] == "repo_summary":
             summary = self.build_repo_summary(task)
             result_summary = f"Repository summary completed for {task['title']}"
@@ -127,6 +129,32 @@ class HermesExecutor:
                 "Performed workspace-scoped file write",
                 "Generated v1 result envelope",
             ]
+        elif task["type"] == "repo_write":
+            try:
+                repo_write = self.build_repo_write(task)
+            except FileWriteError as exc:
+                return self.failure_result(
+                    task_id=task["id"],
+                    trace_id=payload["trace"]["trace_id"],
+                    code="WRITE_SCOPE_VIOLATION",
+                    message=str(exc),
+                    retryable=False,
+                    metadata={
+                        "task_type": task["type"],
+                        "policy": {
+                            "mode": policy.mode,
+                            "reason": policy.reason,
+                        },
+                    },
+                )
+            summary = repo_write["summary"]
+            result_summary = f"Repo write completed for {task['title']}"
+            notes = [
+                "Validated request payload",
+                "Policy-approved Hermes repo_write task",
+                "Applied constrained workspace-scoped repo changes",
+                "Generated v1 result envelope",
+            ]
         else:
             summary = self.build_text_generation(task)
             result_summary = f"Text generation completed for {task['title']}"
@@ -154,20 +182,19 @@ class HermesExecutor:
                     "type": "file_write",
                     "path": file_write["relative_path"],
                     "content_type": "text/plain",
-                    "metadata": {
-                        "task_type": task["type"],
-                        "task_id": task["id"],
-                        "bytes_written": file_write["bytes_written"],
-                        "existed_before": file_write["existed_before"],
-                        "changed": file_write["changed"],
-                        "previous_bytes": file_write["previous_bytes"],
-                        "previous_sha256": file_write["previous_sha256"],
-                        "new_sha256": file_write["new_sha256"],
-                        "change_preview": file_write["change_preview"],
-                        "overwrite": file_write["overwrite"],
-                    },
+                    "metadata": file_write["artifact_metadata"],
                 }
             )
+        if repo_write:
+            for file_change in repo_write["files"]:
+                artifacts.append(
+                    {
+                        "type": "repo_write",
+                        "path": file_change["path"],
+                        "content_type": "text/plain",
+                        "metadata": file_change,
+                    }
+                )
 
         metadata = {
             "task_type": task["type"],
@@ -181,16 +208,11 @@ class HermesExecutor:
             },
         }
         if file_write:
-            metadata["file_write"] = {
-                "path": file_write["relative_path"],
-                "bytes_written": file_write["bytes_written"],
-                "existed_before": file_write["existed_before"],
-                "changed": file_write["changed"],
-                "previous_bytes": file_write["previous_bytes"],
-                "previous_sha256": file_write["previous_sha256"],
-                "new_sha256": file_write["new_sha256"],
-                "change_preview": file_write["change_preview"],
-                "overwrite": file_write["overwrite"],
+            metadata["file_write"] = file_write["metadata"]
+        if repo_write:
+            metadata["repo_write"] = {
+                "files": repo_write["files"],
+                "file_count": len(repo_write["files"]),
             }
 
         return {
@@ -326,8 +348,8 @@ class HermesExecutor:
         status = "updated" if write_result.existed_before and write_result.changed else "created"
         if write_result.existed_before and not write_result.changed:
             status = "unchanged"
-        return {
-            "relative_path": relative_path,
+        metadata = {
+            "path": relative_path,
             "bytes_written": write_result.bytes_written,
             "existed_before": write_result.existed_before,
             "changed": write_result.changed,
@@ -336,6 +358,9 @@ class HermesExecutor:
             "new_sha256": write_result.new_sha256,
             "change_preview": write_result.change_preview,
             "overwrite": overwrite,
+        }
+        return {
+            "relative_path": relative_path,
             "summary": "\n".join(
                 [
                     "# File Write",
@@ -350,6 +375,45 @@ class HermesExecutor:
                     "",
                     "Written content:",
                     content,
+                ]
+            ),
+            "metadata": metadata,
+            "artifact_metadata": {
+                "task_type": task["type"],
+                "task_id": task["id"],
+                **metadata,
+            },
+        }
+
+    def build_repo_write(self, task: dict) -> dict:
+        context = task.get("context", {})
+        changes = context.get("changes") or []
+        result = apply_repo_write(self.root, changes)
+        file_summaries = []
+        file_metadata = []
+        for item in result.files:
+            entry = {
+                "path": item.path,
+                "bytes_written": item.bytes_written,
+                "existed_before": item.existed_before,
+                "changed": item.changed,
+                "previous_bytes": item.previous_bytes,
+                "previous_sha256": item.previous_sha256,
+                "new_sha256": item.new_sha256,
+                "change_preview": item.change_preview,
+                "overwrite": item.overwrite,
+            }
+            file_metadata.append(entry)
+            file_summaries.append(f"- {item.path}: changed={item.changed}, overwrite={item.overwrite}")
+        return {
+            "files": file_metadata,
+            "summary": "\n".join(
+                [
+                    "# Repo Write",
+                    f"- File count: {len(file_metadata)}",
+                    "",
+                    "Changed files:",
+                    *file_summaries,
                 ]
             ),
         }
