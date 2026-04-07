@@ -47,3 +47,12 @@ def test_maps_repo_change_plan_from_plan_hint() -> None:
     )
     assert mapped.task_type == "repo_change_plan"
     assert mapped.context["repo"] == "repo-agentopia"
+
+
+def test_maps_implementation_draft_from_draft_hint() -> None:
+    mapped = map_paperclip_issue_to_task(
+        "Draft the implementation for approval routing",
+        "Create an implementation draft with proposed edits and validation checks for Hermes approval routing.",
+        fallback_repo="repo-agentopia",
+    )
+    assert mapped.task_type == "implementation_draft"

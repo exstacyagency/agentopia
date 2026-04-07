@@ -4,7 +4,7 @@ from pathlib import Path
 
 from scripts.contracts import validate_payload
 
-SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation", "structured_extract", "repo_change_plan"}
+SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation", "structured_extract", "repo_change_plan", "implementation_draft"}
 
 
 class HermesExecutor:
@@ -64,6 +64,14 @@ class HermesExecutor:
             notes = [
                 "Validated request payload",
                 "Executed Hermes repo_change_plan task",
+                "Generated v1 result envelope",
+            ]
+        elif task["type"] == "implementation_draft":
+            summary = self.build_implementation_draft(task)
+            result_summary = f"Implementation draft completed for {task['title']}"
+            notes = [
+                "Validated request payload",
+                "Executed Hermes implementation_draft task",
                 "Generated v1 result envelope",
             ]
         else:
@@ -190,6 +198,29 @@ class HermesExecutor:
                 "Risks:",
                 "- hidden coupling in adjacent modules",
                 "- stale assumptions in local-only Paperclip patches",
+            ]
+        )
+
+    def build_implementation_draft(self, task: dict) -> str:
+        context = task.get("context", {})
+        goal = context.get("goal") or task["description"]
+        impacted_files = context.get("impacted_files") or ["TBD"]
+        validation_checks = context.get("validation_checks") or ["Run targeted tests", "Review edge cases"]
+        return "
+".join(
+            [
+                "# Implementation Draft",
+                f"- Goal: {goal}",
+                f"- Impacted files: {impacted_files}",
+                f"- Validation checks: {validation_checks}",
+                "",
+                "Draft plan:",
+                "1. Inspect current behavior and constraints.",
+                "2. Draft the minimal code changes required.",
+                "3. Identify follow-up validation and rollback checks.",
+                "",
+                "Proposed edit sketch:",
+                "- TODO: add implementation outline here",
             ]
         )
 
