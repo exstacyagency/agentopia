@@ -61,6 +61,26 @@ REPO_SUMMARY_HINTS = (
     "overview",
 )
 
+CHANGE_PLAN_HINTS = (
+    "plan the changes",
+    "change plan",
+    "implementation plan",
+    "plan the implementation",
+    "what needs to change",
+    "impacted files",
+    "rollback",
+    "acceptance checks",
+)
+
+IMPLEMENTATION_DRAFT_HINTS = (
+    "draft the implementation",
+    "implementation draft",
+    "proposed edits",
+    "patch outline",
+    "pseudo diff",
+    "edit sketch",
+)
+
 
 def _combined_text(title: str | None, description: str | None) -> str:
     return f"{title or ''}\n{description or ''}".strip().lower()
@@ -88,12 +108,33 @@ def map_paperclip_issue_to_task(title: str | None, description: str | None, *, f
             },
         )
 
-    if extracted_path or any(hint in text for hint in FILE_ANALYSIS_HINTS):
+    if any(hint in text for hint in IMPLEMENTATION_DRAFT_HINTS):
         return MappedTask(
-            task_type="file_analysis",
+            task_type="implementation_draft",
             context={
-                "file_path": extracted_path or "unknown-file",
-                "objective": description or title or "Analyze the referenced file",
+                "goal": description or title or "Draft the implementation",
+                "impacted_files": ["TBD"],
+                "validation_checks": ["Run targeted tests", "Review edge cases"],
+            },
+        )
+
+    if any(hint in text for hint in IMPLEMENTATION_DRAFT_HINTS):
+        return MappedTask(
+            task_type="implementation_draft",
+            context={
+                "goal": description or title or "Draft the implementation",
+                "impacted_files": ["TBD"],
+                "validation_checks": ["Run targeted tests", "Review edge cases"],
+            },
+        )
+
+    if any(hint in text for hint in CHANGE_PLAN_HINTS):
+        return MappedTask(
+            task_type="repo_change_plan",
+            context={
+                "repo": fallback_repo,
+                "goal": description or title or "Plan the repo change",
+                "impacted_files": ["TBD"],
             },
         )
 

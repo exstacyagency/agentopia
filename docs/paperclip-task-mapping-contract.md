@@ -47,6 +47,30 @@ Examples:
 - `message`
 - `post`
 
+### implementation_draft
+Route to `implementation_draft` when issue text is asking for a draft implementation artifact without actually applying code changes.
+
+Examples:
+- `draft the implementation`
+- `implementation draft`
+- `proposed edits`
+- `patch outline`
+- `pseudo diff`
+- `edit sketch`
+
+### repo_change_plan
+Route to `repo_change_plan` when issue text is asking for a change plan, implementation plan, impacted files, risks, or acceptance criteria.
+
+Examples:
+- `plan the changes`
+- `change plan`
+- `implementation plan`
+- `plan the implementation`
+- `what needs to change`
+- `impacted files`
+- `rollback`
+- `acceptance checks`
+
 ### repo_summary
 Route to `repo_summary` when issue text is repo/codebase overview oriented, or when no stronger rule matches.
 
