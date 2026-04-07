@@ -24,13 +24,24 @@ cd /Users/work/.openclaw/workspace/repo-agentopia
 python3 scripts/list_callback_results.py
 ```
 
-Shows up to 20 accepted callback payloads with:
+Shows up to 20 callback records. It prefers accepted callback payloads when present, and falls back to callback-attempt records when accepted callback files are not available yet.
+
+Accepted callback payload view includes:
 - task id
 - run id
 - status
 - summary
 - task type
 - stored timestamp
+
+Fallback callback-attempt view includes:
+- task id
+- run id
+- success/failure
+- status code
+- error
+- attempt count
+- recorded timestamp
 
 ## Why this exists
 
