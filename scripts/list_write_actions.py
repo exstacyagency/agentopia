@@ -101,6 +101,10 @@ for path in sorted(base.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse
         "operator_status": operator_status(run.get("status"), policy.get("mode"), error),
         "summary": result.get("summary"),
         "trace_id": (envelope.get("trace") or {}).get("trace_id"),
+        "paperclip_approval": {
+            "id": metadata.get("paperclip_approval_id"),
+            "status": metadata.get("paperclip_approval_status"),
+        },
     }
     if task_type == "file_write":
         row["write"], legacy = normalize_file_write(metadata.get("file_write"))
