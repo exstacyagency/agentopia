@@ -160,31 +160,36 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
-### Phase: policy gating before write-capable execution
+### Phase: first explicitly approved write path
+
+Current validated state:
+- allowed route live validation passed with `policy.mode = allow`
+- blocked write-capable route live validation passed with `error.code = POLICY_BLOCKED`
+- blocked route metadata correctly reports `policy.reason = write_capable_requires_explicit_policy`
+- a narrow approved `file_write` path is now defined in code and policy docs
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
-- allow current safe read-only/planning routes by default
-- block write-capable routes until explicit policy support is added
+- keep deny-by-default behavior for broader write-capable routes
+- validate approved `file_write` behavior live
 
 After that, choose between:
-1. validate blocked-path and allowed-path behavior live
-2. define and implement the first explicitly approved write-oriented execution route
+1. keep `file_write` as the single approved write route and harden it further
+2. add richer approval-state / policy-mode handling beyond simple allow-or-deny
 
 ## Recommended next action for the next agent
 
 The immediate next task should be:
 
-**Validate the new policy gate with one allowed path and one blocked write-capable path.**
+**Validate the approved `file_write` path live, alongside one still-blocked write path.**
 
 ### Suggested concrete sequence
-1. trigger a known allowed route such as `file_analysis`
-2. confirm the result metadata includes `policy.mode = allow`
-3. submit a blocked write-capable route such as `file_write` or `shell_command`
-4. confirm the result fails with `error.code = POLICY_BLOCKED`
-5. confirm the result metadata includes `policy.reason = write_capable_requires_explicit_policy`
-6. update this handoff doc again in the same PR with the live validation result
+1. submit a `file_write` task with explicit approval and `workspace_scoped` write permission
+2. confirm the result succeeds with `policy.reason = explicit_file_write_approval`
+3. submit a `shell_command` or unapproved `file_write` task
+4. confirm it still fails with `error.code = POLICY_BLOCKED`
+5. update this handoff doc again in the same PR with the live validation result
 
 ## Working rule from here on
 
