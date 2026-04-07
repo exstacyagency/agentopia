@@ -1,6 +1,6 @@
 # Paperclip ↔ Hermes Integration Handoff
 
-This document is the GitHub handoff/source-of-truth for ongoing Agentopia work integrating Paperclip and Hermes. Update this file as progress happens so another agent can resume work without reconstructing context from chat.
+This document is the GitHub handoff/source-of-truth for ongoing Agentopia work integrating Paperclip and Hermes. Update this file in every relevant PR so another agent can resume without reconstructing context from chat.
 
 ## Goal
 
@@ -9,9 +9,10 @@ Connect Agentopia to a real locally running Paperclip control plane and isolated
 1. Agentopia task/request
 2. Paperclip issue creation
 3. Paperclip approval creation when required
-4. Paperclip-native execution trigger (agent wakeup / heartbeat run path)
+4. Paperclip-native execution trigger through agent wakeup / heartbeat run
 5. Hermes execution in the isolated Agentopia runtime
-6. Result / artifact / run linkage back into Agentopia
+6. Result, artifact, and run linkage back into Agentopia
+7. Durable callback delivery and operator inspection
 
 ## Repo boundary rule
 
@@ -33,22 +34,51 @@ Connect Agentopia to a real locally running Paperclip control plane and isolated
 
 ### Agentopia repo
 
-Implemented already:
+Implemented and validated already:
 - Step 1 findings/docs for Paperclip API surface
 - Step 2 adapter skeleton
 - Step 3 HTTP client layer
 - isolation helpers and docs for isolated Hermes + Open WebUI
-- docs/bootstrap guidance making Agentopia the operational source of truth for local stack bring-up
+- Paperclip issue creation aligned to real live issue shapes
+- approval route alignment in the Agentopia client/service layer
+- Paperclip-native execution trigger via `POST /api/agents/{agentId}/wakeup`
+- Paperclip ↔ Hermes bridge envelope and task mapping contract
+- expanded Hermes executor task support
+- live-validated routes:
+  - `file_analysis`
+  - `text_generation`
+  - `structured_extract`
+  - `repo_change_plan`
+  - `implementation_draft`
+- result persistence under `var/hermes/runs/`
+- callback attempt recording under `var/hermes/callbacks/`
+- callback retry tooling
+- callback sink acceptance under `var/hermes/callback-results/`
+- lightweight operator inspection scripts for recent runs and callback results
 
-Important files already added in Agentopia:
-- `docs/paperclip-api-surface.md`
-- `docs/paperclip-hermes-step1-findings.md`
-- `docs/paperclip-step2-adapter.md`
-- `docs/paperclip-step3-http-client.md`
+Important current files in Agentopia:
+- `hermes/app.py`
+- `hermes/executor.py`
+- `hermes/paperclip_mapping.py`
+- `hermes/paperclip_bridge.py`
+- `hermes/persistence.py`
+- `hermes/callback_store.py`
+- `schemas/task_request_v1.json`
+- `docs/paperclip-hermes-result-contract.md`
+- `docs/paperclip-task-mapping-contract.md`
+- `docs/paperclip-step4-live-integration.md`
+- `docs/paperclip-hermes-runbook.md`
+- `docs/paperclip-hermes-inspector.md`
 - `docs/paperclip-upstream-dependency.md`
 - `docs/agentopia-local-stack.md`
 - `scripts/bootstrap-paperclip-dev.sh`
 - `scripts/start-agentopia-stack.sh`
+- `scripts/check-paperclip-live-ready.sh`
+- `scripts/test_paperclip_live_probe.py`
+- `scripts/list_failed_callbacks.py`
+- `scripts/retry_failed_callbacks.py`
+- `scripts/list_recent_runs.py`
+- `scripts/list_callback_results.py`
 - `scripts/hermes-agentopia-env.sh`
 - `scripts/hermes-agentopia-guard.sh`
 - `scripts/hermes-agentopia-start.sh`
@@ -64,16 +94,16 @@ Important files already added in Agentopia:
 Local repo path:
 - `~/.openclaw/workspace/upstream-paperclip`
 
-Local boot/unblock work already done there:
+Local-only Paperclip work already done there:
 - added local workspace Hermes adapter package under `packages/adapters/hermes-local/`
 - rewired server/ui dependency resolution from missing external adapter package to workspace package
 - fixed frontend/runtime issues that blocked local UI boot
-- fixed visible Paperclip user-facing branding in the frontend so the app/tab no longer shows Seiko locally
+- patched visible user-facing Paperclip branding locally
+- patched wakeup context propagation so the Hermes adapter receives the correct issue/task context
+- patched local Hermes adapter routing/mirroring needed for live validation
 
 Important note:
-- local commit exists on branch `feature/paperclip-hermes-local-adapter-and-ui-fixes`
-- push to upstream `paperclipai/paperclip` failed with HTTP 403 due to missing permission
-- do **not** assume an upstream PR exists unless one is actually created by an account with access
+- Paperclip remains a local-only patched dependency/runtime for this integration work unless the user explicitly requests upstream PR work
 
 ## Verified environment
 
@@ -85,13 +115,15 @@ Important note:
 - launchd label: `ai.hermes.gateway.agentopia`
 
 ### Paperclip dev
-- local UI/API currently boots from upstream checkout
-- backend health verified previously at `http://127.0.0.1:3100/api/health`
-- adapter-related endpoints verified previously:
+- local UI/API boots from upstream checkout
+- backend health: `http://127.0.0.1:3100/api/health`
+- adapter-related endpoints verified:
   - `GET /api/companies/dev/adapters/hermes_local/models`
   - `GET /api/companies/dev/adapters/hermes_local/detect-model`
+- issue creation works live
+- execution trigger works live through agent wakeup / heartbeat run
 
-## Key architectural conclusion
+## Key architectural conclusions
 
 Paperclip’s real orchestration model is not a generic `/tasks` flow. The key native objects are:
 - issues
@@ -101,71 +133,56 @@ Paperclip’s real orchestration model is not a generic `/tasks` flow. The key n
 
 Agentopia integration should map onto that model directly.
 
-## What is blocked right now
+A second important conclusion is that the bridge proof threshold has already been reached. The current phase is no longer “does it work?” but “is it durable, inspectable, and safe to extend?”
 
-Authenticated live Paperclip object creation is still blocked on obtaining/using a valid local board-auth + company context in the running dev environment.
+## Current validated bridge behavior
 
-Anonymous probing is insufficient because relevant routes depend on board/company access.
+The local Paperclip ↔ Hermes path is now validated for:
+- live Paperclip issue creation
+- live Paperclip agent creation for isolated Hermes-backed agents
+- live execution trigger through `POST /api/agents/{agentId}/wakeup`
+- heartbeat run linkage captured back into Agentopia result metadata
+- durable persisted results
+- durable callback attempt records
+- callback retry against persisted results
+- callback sink acceptance of result payloads
+- lightweight local inspection of recent runs and callback results
 
-## Remaining implementation plan
+## Current operational gap
 
-### 1. Finish authenticated live Paperclip validation
-- establish valid board/company session in Paperclip local dev UI/API
-- list or create target company context
-- create a real issue
-- create a real approval
-- identify exact execution trigger path and returned object shapes
+No fundamental architecture blocker remains for the safe-route bridge.
 
-### 2. Implement real issue creation in Agentopia
-- replace shape assumptions with live request/response shapes
-- return/persist Paperclip issue IDs
-- add tests around real object parsing
+The main remaining gap is not connectivity but productization/hardening:
+- clearer operator visibility over recent runs/callback state
+- policy controls before riskier write-capable routes
+- documentation discipline so the handoff doc stays current in every relevant PR
 
-### 3. Implement approval flow in Agentopia
-- create approval when required
-- link approval to issue
-- return/persist approval IDs
+## Recommended next phase
 
-### 4. Implement Paperclip-native execution trigger
-- determine whether trigger path is agent wakeup, issue transition, heartbeat run start, or a combination
-- wire Agentopia to the actual Paperclip execution entrypoint
-- return/persist run linkage fields
+### Phase: operator visibility and hardening
 
-### 5. Bind execution to isolated Hermes only
-- ensure all execution targets `~/.hermes-agentopia`
-- ensure no leakage into shared `~/.hermes`
-- verify runtime path/port/profile explicitly
+Immediate focus:
+- keep this handoff doc updated in every relevant PR
+- validate and refine the local inspector workflow
+- improve the operator/debugging path around recent runs, callback outcomes, and persisted artifacts
 
-### 6. Add run/result/artifact tracking
-- status polling or event capture
-- run IDs / heartbeat run IDs / timestamps / outputs / artifacts
-- tie everything back to Agentopia task envelope
-
-### 7. Harden policy and observability
-- approval/policy matrix by task risk
-- end-to-end tracing fields
-- debugging docs for failures
-
-### 8. Add one canonical end-to-end acceptance flow
-- Agentopia request → Paperclip issue → optional approval → execution trigger → isolated Hermes run → result tracking
+After that, choose between:
+1. add policy gating for higher-risk task types
+2. define and implement the first write-oriented execution route
 
 ## Recommended next action for the next agent
 
 The immediate next task should be:
 
-**Get authenticated local Paperclip issue creation working and capture the exact request/response shape.**
-
-That is the shortest path to unblocking the rest of the integration.
+**Validate the new run/callback inspector flow against recent live data and tighten the operator-facing output if needed.**
 
 ### Suggested concrete sequence
-1. boot local Paperclip from `~/.openclaw/workspace/upstream-paperclip`
-2. establish board-auth in the browser/dev session
-3. inspect existing company context or create a local dev company
-4. create a real issue through the authenticated API/UI
-5. capture the returned JSON shape
-6. update Agentopia `paperclip_adapter/http_client.py` and `paperclip_adapter/service.py` to match reality
-7. update this handoff doc with findings
+1. run `python3 scripts/list_recent_runs.py`
+2. run `python3 scripts/list_callback_results.py`
+3. confirm the latest live callback-sink validation is visible in the output
+4. improve output shape if key fields are missing or awkward for operators
+5. update this handoff doc again in the same PR if the operator workflow changes
 
-## Update policy for this file
+## Working rule from here on
 
-From this point forward, whenever progress is made on Paperclip ↔ Hermes integration in Agentopia, update this document as part of the change so future agents can resume cleanly.
+From this point forward, whenever progress is made on Paperclip ↔ Hermes integration in Agentopia, update this document in the same PR. Do not let the handoff doc lag behind the real current state.
