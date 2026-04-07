@@ -4,7 +4,7 @@ from pathlib import Path
 
 from scripts.contracts import validate_payload
 
-SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation", "structured_extract"}
+SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation", "structured_extract", "repo_change_plan"}
 
 
 class HermesExecutor:
@@ -56,6 +56,14 @@ class HermesExecutor:
             notes = [
                 "Validated request payload",
                 "Executed Hermes structured_extract task",
+                "Generated v1 result envelope",
+            ]
+        elif task["type"] == "repo_change_plan":
+            summary = self.build_repo_change_plan(task)
+            result_summary = f"Repo change plan completed for {task['title']}"
+            notes = [
+                "Validated request payload",
+                "Executed Hermes repo_change_plan task",
                 "Generated v1 result envelope",
             ]
         else:
@@ -159,6 +167,30 @@ class HermesExecutor:
                 "Extracted structure:",
                 "- items: []",
                 "- notes: ['structured extraction scaffold completed']",
+            ]
+        )
+
+    def build_repo_change_plan(self, task: dict) -> str:
+        context = task.get("context", {})
+        repo = context.get("repo") or "unknown-repo"
+        goal = context.get("goal") or task["description"]
+        impacted_files = context.get("impacted_files") or ["TBD"]
+        return "
+".join(
+            [
+                "# Repo Change Plan",
+                f"- Repo: {repo}",
+                f"- Goal: {goal}",
+                f"- Impacted files: {impacted_files}",
+                "",
+                "Plan:",
+                "1. Inspect the relevant files and existing behavior.",
+                "2. Identify the smallest safe set of changes.",
+                "3. Define validation and rollback checks.",
+                "",
+                "Risks:",
+                "- hidden coupling in adjacent modules",
+                "- stale assumptions in local-only Paperclip patches",
             ]
         )
 

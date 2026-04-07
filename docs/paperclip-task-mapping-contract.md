@@ -47,6 +47,19 @@ Examples:
 - `message`
 - `post`
 
+### repo_change_plan
+Route to `repo_change_plan` when issue text is asking for a change plan, implementation plan, impacted files, risks, or acceptance criteria.
+
+Examples:
+- `plan the changes`
+- `change plan`
+- `implementation plan`
+- `plan the implementation`
+- `what needs to change`
+- `impacted files`
+- `rollback`
+- `acceptance checks`
+
 ### repo_summary
 Route to `repo_summary` when issue text is repo/codebase overview oriented, or when no stronger rule matches.
 

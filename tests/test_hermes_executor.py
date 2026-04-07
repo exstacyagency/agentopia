@@ -83,3 +83,11 @@ def test_structured_extract_supported() -> None:
     assert result["run"]["status"] == "succeeded"
     assert "# Structured Extract" in result["result"]["output"]
     assert result["result"]["metadata"]["task_type"] == "structured_extract"
+
+
+def test_repo_change_plan_supported() -> None:
+    executor = HermesExecutor(Path.cwd())
+    result = executor.execute(build_payload("repo_change_plan", {"repo": "repo-agentopia", "goal": "Plan approval routing"}))
+    assert result["run"]["status"] == "succeeded"
+    assert "# Repo Change Plan" in result["result"]["output"]
+    assert result["result"]["metadata"]["task_type"] == "repo_change_plan"
