@@ -144,6 +144,24 @@ class HermesExecutor:
             ]
         )
 
+    def build_structured_extract(self, task: dict) -> str:
+        context = task.get("context", {})
+        source = context.get("source") or context.get("file_path") or "unknown-source"
+        extraction_goal = context.get("extraction_goal") or task["description"]
+        output_schema = context.get("output_schema") or ["items", "notes"]
+        return "\n".join(
+            [
+                "# Structured Extract",
+                f"- Source: {source}",
+                f"- Extraction goal: {extraction_goal}",
+                f"- Output schema: {output_schema}",
+                "",
+                "Extracted structure:",
+                "- items: []",
+                "- notes: ['structured extraction scaffold completed']",
+            ]
+        )
+
     def build_text_generation(self, task: dict) -> str:
         context = task.get("context", {})
         prompt = context.get("prompt") or task["description"]
