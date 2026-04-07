@@ -30,10 +30,12 @@ def evaluate_task_policy(payload: dict) -> PolicyDecision:
     task_type = task["type"]
     if task_type in SAFE_TASK_TYPES:
         return PolicyDecision(True, "allowed_read_only", "allow")
+
+    approval = payload.get("execution_policy", {}).get("approval", {})
+    permissions = payload.get("execution_policy", {}).get("permissions", {})
+    context = task.get("context", {})
+
     if task_type == "file_write":
-        approval = payload.get("execution_policy", {}).get("approval", {})
-        permissions = payload.get("execution_policy", {}).get("permissions", {})
-        context = task.get("context", {})
         target_path = context.get("file_path", "")
         overwrite = bool(context.get("overwrite", False))
         overwrite_approved = bool(context.get("overwrite_approved", False))
@@ -44,6 +46,14 @@ def evaluate_task_policy(payload: dict) -> PolicyDecision:
                 return PolicyDecision(False, "overwrite_requires_explicit_approval", "deny")
             return PolicyDecision(True, "explicit_file_write_approval", "allow")
         return PolicyDecision(False, "write_capable_requires_explicit_policy", "deny")
+
+    if task_type == "repo_write":
+        changes = context.get("changes") or []
+        apply_changes = bool(context.get("apply", False))
+        if approval.get("required") and approval.get("status") == "approved" and permissions.get("write_scope") == "workspace_scoped" and apply_changes and changes:
+            return PolicyDecision(True, "explicit_repo_write_approval", "allow")
+        return PolicyDecision(False, "repo_write_requires_explicit_approval", "deny")
+
     if task_type in WRITE_CAPABLE_TASK_TYPES:
         return PolicyDecision(False, "write_capable_requires_explicit_policy", "deny")
     return PolicyDecision(False, "unsupported_task_type", "deny")

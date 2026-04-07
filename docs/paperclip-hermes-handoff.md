@@ -160,7 +160,7 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
-### Phase: diff preview and overwrite-risk escalation
+### Phase: second constrained write route
 
 Current validated state:
 - allowed route live validation passed with `policy.mode = allow`
@@ -170,30 +170,31 @@ Current validated state:
 - `shell_command` remains blocked under deny-by-default policy
 - real workspace-scoped `file_write` behavior is implemented and live-validated
 - overwrite and change-tracking controls are implemented and live-validated
-- overwrite-specific approval escalation and diff-preview metadata are now implemented in code
+- overwrite-specific approval escalation and diff-preview metadata are implemented and live-validated
+- constrained `repo_write` support is now implemented in code and docs
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
 - keep deny-by-default behavior for broader write-capable routes
-- validate overwrite-specific approval rejection and success live
+- validate approved `repo_write` behavior live
 
 After that, choose between:
-1. add a second narrowly approved write-capable route
+1. harden `repo_write` with per-file overwrite approval semantics
 2. add richer policy tiers or approval classes beyond boolean approval state
 
 ## Recommended next action for the next agent
 
 The immediate next task should be:
 
-**Validate overwrite-specific approval rejection and success for `file_write`.**
+**Validate approved `repo_write` behavior live, plus one blocked or out-of-scope failure path.**
 
 ### Suggested concrete sequence
-1. create a baseline file with approved `file_write`
-2. submit an overwrite request with `overwrite = true` but without `overwrite_approved = true`
-3. confirm it fails with `error.code = POLICY_BLOCKED`
-4. submit a second overwrite request with `overwrite = true` and `overwrite_approved = true`
-5. confirm it succeeds and reports hash/preview metadata
+1. submit an approved `repo_write` task with `apply = true` and at least one in-scope change
+2. confirm files are written and metadata/artifacts list per-file changes
+3. submit a blocked `repo_write` task without `apply = true` or without approval
+4. confirm it fails with `error.code = POLICY_BLOCKED`
+5. optionally submit an out-of-scope repo change and confirm `WRITE_SCOPE_VIOLATION`
 6. update this handoff doc again in the same PR with the live validation result
 
 ## Working rule from here on
