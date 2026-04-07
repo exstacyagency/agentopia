@@ -4,7 +4,7 @@ from pathlib import Path
 
 from hermes.file_ops import FileWriteError, write_workspace_file
 from hermes.policy import evaluate_task_policy
-from hermes.repo_ops import apply_repo_write
+from hermes.repo_ops import apply_repo_write, preview_repo_write
 from scripts.contracts import validate_payload
 
 SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation", "structured_extract", "repo_change_plan", "implementation_draft", "repo_write", "file_write", "shell_command"}
@@ -131,7 +131,7 @@ class HermesExecutor:
             ]
         elif task["type"] == "repo_write":
             try:
-                repo_write = self.build_repo_write(task)
+                repo_write = self.build_repo_write(task, preview_only=(policy.mode == "preview"))
             except FileWriteError as exc:
                 return self.failure_result(
                     task_id=task["id"],
@@ -148,11 +148,11 @@ class HermesExecutor:
                     },
                 )
             summary = repo_write["summary"]
-            result_summary = f"Repo write completed for {task['title']}"
+            result_summary = "Repo write preview completed" if policy.mode == "preview" else f"Repo write completed for {task['title']}"
             notes = [
                 "Validated request payload",
-                "Policy-approved Hermes repo_write task",
-                "Applied constrained workspace-scoped repo changes",
+                ("Generated constrained repo write preview" if policy.mode == "preview" else "Policy-approved Hermes repo_write task"),
+                ("Did not apply repo changes" if policy.mode == "preview" else "Applied constrained workspace-scoped repo changes"),
                 "Generated v1 result envelope",
             ]
         else:
@@ -186,10 +186,11 @@ class HermesExecutor:
                 }
             )
         if repo_write:
+            artifact_type = "repo_write_preview" if repo_write["preview_only"] else "repo_write"
             for file_change in repo_write["files"]:
                 artifacts.append(
                     {
-                        "type": "repo_write",
+                        "type": artifact_type,
                         "path": file_change["path"],
                         "content_type": "text/plain",
                         "metadata": file_change,
@@ -211,6 +212,7 @@ class HermesExecutor:
             metadata["file_write"] = file_write["metadata"]
         if repo_write:
             metadata["repo_write"] = {
+                "preview_only": repo_write["preview_only"],
                 "files": repo_write["files"],
                 "file_count": len(repo_write["files"]),
             }
@@ -385,10 +387,10 @@ class HermesExecutor:
             },
         }
 
-    def build_repo_write(self, task: dict) -> dict:
+    def build_repo_write(self, task: dict, preview_only: bool = False) -> dict:
         context = task.get("context", {})
         changes = context.get("changes") or []
-        result = apply_repo_write(self.root, changes)
+        result = preview_repo_write(self.root, changes) if preview_only else apply_repo_write(self.root, changes)
         file_summaries = []
         file_metadata = []
         for item in result.files:
@@ -402,14 +404,16 @@ class HermesExecutor:
                 "new_sha256": item.new_sha256,
                 "change_preview": item.change_preview,
                 "overwrite": item.overwrite,
+                "overwrite_approved": item.overwrite_approved,
             }
             file_metadata.append(entry)
-            file_summaries.append(f"- {item.path}: changed={item.changed}, overwrite={item.overwrite}")
+            file_summaries.append(f"- {item.path}: changed={item.changed}, overwrite={item.overwrite}, overwrite_approved={item.overwrite_approved}")
         return {
+            "preview_only": preview_only,
             "files": file_metadata,
             "summary": "\n".join(
                 [
-                    "# Repo Write",
+                    "# Repo Write Preview" if preview_only else "# Repo Write",
                     f"- File count: {len(file_metadata)}",
                     "",
                     "Changed files:",

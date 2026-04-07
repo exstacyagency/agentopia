@@ -50,9 +50,15 @@ def evaluate_task_policy(payload: dict) -> PolicyDecision:
     if task_type == "repo_write":
         changes = context.get("changes") or []
         apply_changes = bool(context.get("apply", False))
-        if approval.get("required") and approval.get("status") == "approved" and permissions.get("write_scope") == "workspace_scoped" and apply_changes and changes:
-            return PolicyDecision(True, "explicit_repo_write_approval", "allow")
-        return PolicyDecision(False, "repo_write_requires_explicit_approval", "deny")
+        if not approval.get("required") or approval.get("status") != "approved" or permissions.get("write_scope") != "workspace_scoped" or not changes:
+            return PolicyDecision(False, "repo_write_requires_explicit_approval", "deny")
+        if not apply_changes:
+            return PolicyDecision(True, "repo_write_preview", "preview")
+        overwrite_needed = any(bool(change.get("overwrite", False)) for change in changes)
+        overwrite_approved = all(bool(change.get("overwrite_approved", False)) for change in changes if bool(change.get("overwrite", False)))
+        if overwrite_needed and not overwrite_approved:
+            return PolicyDecision(False, "repo_write_overwrite_requires_explicit_approval", "deny")
+        return PolicyDecision(True, "explicit_repo_write_approval", "allow")
 
     if task_type in WRITE_CAPABLE_TASK_TYPES:
         return PolicyDecision(False, "write_capable_requires_explicit_policy", "deny")
