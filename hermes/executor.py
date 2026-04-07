@@ -158,6 +158,10 @@ class HermesExecutor:
                         "task_type": task["type"],
                         "task_id": task["id"],
                         "bytes_written": file_write["bytes_written"],
+                        "existed_before": file_write["existed_before"],
+                        "changed": file_write["changed"],
+                        "previous_bytes": file_write["previous_bytes"],
+                        "overwrite": file_write["overwrite"],
                     },
                 }
             )
@@ -177,6 +181,10 @@ class HermesExecutor:
             metadata["file_write"] = {
                 "path": file_write["relative_path"],
                 "bytes_written": file_write["bytes_written"],
+                "existed_before": file_write["existed_before"],
+                "changed": file_write["changed"],
+                "previous_bytes": file_write["previous_bytes"],
+                "overwrite": file_write["overwrite"],
             }
 
         return {
@@ -306,17 +314,27 @@ class HermesExecutor:
         context = task.get("context", {})
         file_path = context.get("file_path") or ""
         content = context.get("content") or ""
-        target, bytes_written = write_workspace_file(self.root, file_path, content)
-        relative_path = str(target.relative_to(self.root))
+        overwrite = bool(context.get("overwrite", False))
+        write_result = write_workspace_file(self.root, file_path, content, overwrite=overwrite)
+        relative_path = str(write_result.path.relative_to(self.root))
+        status = "updated" if write_result.existed_before and write_result.changed else "created"
+        if write_result.existed_before and not write_result.changed:
+            status = "unchanged"
         return {
             "relative_path": relative_path,
-            "bytes_written": bytes_written,
+            "bytes_written": write_result.bytes_written,
+            "existed_before": write_result.existed_before,
+            "changed": write_result.changed,
+            "previous_bytes": write_result.previous_bytes,
+            "overwrite": overwrite,
             "summary": "\n".join(
                 [
                     "# File Write",
                     f"- File: {relative_path}",
-                    f"- Bytes: {bytes_written}",
-                    "- Status: workspace-scoped write completed",
+                    f"- Bytes: {write_result.bytes_written}",
+                    f"- Previous bytes: {write_result.previous_bytes}",
+                    f"- Overwrite: {overwrite}",
+                    f"- Status: {status}",
                     "",
                     "Written content:",
                     content,

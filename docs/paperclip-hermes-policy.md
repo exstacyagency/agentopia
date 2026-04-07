@@ -32,8 +32,25 @@ Result metadata includes:
 - `policy.reason = explicit_file_write_approval`
 - `file_write.path`
 - `file_write.bytes_written`
+- `file_write.existed_before`
+- `file_write.changed`
+- `file_write.previous_bytes`
+- `file_write.overwrite`
 
 Result artifacts include a `file_write` artifact pointing at the written workspace-relative path.
+
+## Overwrite behavior
+
+`file_write` defaults to `overwrite = false`.
+
+That means:
+- creating a new file is allowed
+- rewriting the same content is allowed and reports `changed = false`
+- changing an existing file without `overwrite = true` is rejected
+
+Overwrite rejections return:
+- `error.code = WRITE_SCOPE_VIOLATION`
+- `error.message = target file exists and overwrite is false`
 
 ## Still blocked task types
 - `repo_write`
