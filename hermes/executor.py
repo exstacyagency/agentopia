@@ -26,7 +26,7 @@ class HermesExecutor:
             )
 
         task = payload["task"]
-        policy = evaluate_task_policy(task["type"])
+        policy = evaluate_task_policy(payload)
         if task["type"] not in SUPPORTED_TASK_TYPES:
             return self.failure_result(
                 task_id=task["id"],
@@ -97,6 +97,14 @@ class HermesExecutor:
             notes = [
                 "Validated request payload",
                 "Executed Hermes implementation_draft task",
+                "Generated v1 result envelope",
+            ]
+        elif task["type"] == "file_write":
+            summary = self.build_file_write(task)
+            result_summary = f"File write completed for {task['title']}"
+            notes = [
+                "Validated request payload",
+                "Policy-approved Hermes file_write task",
                 "Generated v1 result envelope",
             ]
         else:
@@ -249,6 +257,22 @@ class HermesExecutor:
                 "",
                 "Proposed edit sketch:",
                 "- TODO: add implementation outline here",
+            ]
+        )
+
+    def build_file_write(self, task: dict) -> str:
+        context = task.get("context", {})
+        file_path = context.get("file_path") or "unknown-file"
+        content = context.get("content") or ""
+        return "\n".join(
+            [
+                "# File Write",
+                f"- File: {file_path}",
+                f"- Bytes: {len(content.encode())}",
+                "- Status: write scaffold approved and recorded",
+                "",
+                "Proposed content:",
+                content,
             ]
         )
 
