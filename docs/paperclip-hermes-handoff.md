@@ -230,14 +230,13 @@ After that, choose between:
 
 The immediate next task should be:
 
-**Validate rollback ergonomics and Paperclip-visible revert summaries.**
+**Validate and inspect the new decision-trace metadata on fresh actions.**
 
 ### Suggested concrete sequence
-1. run `python3 scripts/list_revert_candidates.py`
-2. run `python3 scripts/review_write_actions.py` and confirm `completed_reverts` appears
-3. trigger a real `file_revert` with `paperclip_issue_id`
-4. confirm Paperclip issue history shows `Hermes Revert Summary`
-5. update this handoff doc again in the same PR with the validation result
+1. trigger a fresh write-capable action and a fresh blocked or preview action
+2. run `python3 scripts/list_decision_traces.py`
+3. confirm decision trace includes requested intent, mapped task type, policy evaluation, approval context, and target paths
+4. update this handoff doc again in the same PR with the validation result
 
 ## Working rule from here on
 
