@@ -54,6 +54,12 @@ class HermesHandler(BaseHTTPRequestHandler):
         if parsed.path == "/internal/dashboard-state":
             self._send(200, build_operator_queue_state(os.path.abspath(ROOT)))
             return
+        if parsed.path == "/internal/memory/config":
+            self._send(200, {"config": MEMPALACE.get_config()})
+            return
+        if parsed.path == "/internal/memory/status":
+            self._send(200, MEMPALACE.status())
+            return
         self._send(404, {"error": "not found"})
 
     def do_POST(self) -> None:
@@ -82,6 +88,14 @@ class HermesHandler(BaseHTTPRequestHandler):
             issue_title = body.get("issue_title", "")
             issue_description = body.get("issue_description", "")
             self._send(200, MEMPALACE.wakeup(issue_title, issue_description))
+            return
+
+        if parsed.path == "/internal/memory/config":
+            self._send(200, {"config": MEMPALACE.set_config(body)})
+            return
+
+        if parsed.path == "/internal/memory/status":
+            self._send(200, MEMPALACE.status())
             return
 
         if parsed.path != "/internal/execute":
