@@ -33,6 +33,8 @@ def operator_status(status: str | None, policy_mode: str | None, error: dict | N
         return "failed"
     if status == "succeeded" and policy_mode == "allow":
         return "approved_write"
+    if status == "succeeded":
+        return "completed"
     return status or "unknown"
 
 
@@ -47,7 +49,7 @@ for path in sorted(runs_base.glob("*.json"), key=lambda p: p.stat().st_mtime, re
     result = envelope.get("result") or {}
     metadata = result.get("metadata") or {}
     task_type = metadata.get("task_type")
-    if task_type not in {"file_write", "repo_write"}:
+    if task_type not in {"file_write", "repo_write", "file_revert"}:
         continue
     policy = metadata.get("policy") or {}
     error = result.get("error")
@@ -85,7 +87,8 @@ for path in sorted(runs_base.glob("*.json"), key=lambda p: p.stat().st_mtime, re
 output = {
     "pending_previews": [x for x in items if x["operator_status"] == "preview"],
     "blocked_actions": [x for x in items if x["operator_status"] in {"blocked_policy", "blocked_scope"}],
-    "applied_writes": [x for x in items if x["operator_status"] == "approved_write"],
+    "applied_writes": [x for x in items if x["task_type"] in {"file_write", "repo_write"} and x["operator_status"] == "approved_write"],
+    "completed_reverts": [x for x in items if x["task_type"] == "file_revert" and x["operator_status"] == "approved_write"],
     "approval_mismatches": [x for x in items if x["approval_status_match"] is False],
 }
 

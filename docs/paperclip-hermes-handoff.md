@@ -230,13 +230,13 @@ After that, choose between:
 
 The immediate next task should be:
 
-**Restart Hermes and live-validate the new `file_revert` rollback route.**
+**Validate rollback ergonomics and Paperclip-visible revert summaries.**
 
 ### Suggested concrete sequence
-1. restart the local Hermes executor so it loads the new rollback route
-2. run a real approved `file_write` against a workspace-scoped file
-3. run a real approved `file_revert` with explicit `previous_content` and `source_run_id`
-4. confirm the file content is restored and revert metadata is persisted
+1. run `python3 scripts/list_revert_candidates.py`
+2. run `python3 scripts/review_write_actions.py` and confirm `completed_reverts` appears
+3. trigger a real `file_revert` with `paperclip_issue_id`
+4. confirm Paperclip issue history shows `Hermes Revert Summary`
 5. update this handoff doc again in the same PR with the validation result
 
 ## Working rule from here on
