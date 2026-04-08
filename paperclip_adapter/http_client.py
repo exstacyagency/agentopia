@@ -110,6 +110,9 @@ class PaperclipHttpClient:
     def get_approval(self, company_id: str, approval_id: str) -> dict[str, Any]:
         return self._request("GET", f"/api/companies/{company_id}/approvals/{approval_id}")
 
+    def create_issue_comment(self, company_id: str, issue_id: str, body: dict[str, Any]) -> dict[str, Any]:
+        return self._request("POST", f"/api/companies/{company_id}/issues/{issue_id}/comments", body)
+
     def wake_agent(self, trigger: PaperclipExecutionTrigger) -> dict[str, Any]:
         payload = {
             "source": trigger.source,
