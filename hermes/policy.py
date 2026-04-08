@@ -14,6 +14,7 @@ SAFE_TASK_TYPES = {
 WRITE_CAPABLE_TASK_TYPES = {
     "repo_write",
     "file_write",
+    "file_revert",
     "shell_command",
 }
 
@@ -59,6 +60,13 @@ def evaluate_task_policy(payload: dict) -> PolicyDecision:
         if overwrite_needed and not overwrite_approved:
             return PolicyDecision(False, "repo_write_overwrite_requires_explicit_approval", "deny")
         return PolicyDecision(True, "explicit_repo_write_approval", "allow")
+
+    if task_type == "file_revert":
+        target_path = context.get("file_path", "")
+        previous_content = context.get("previous_content")
+        if approval.get("required") and approval.get("status") == "approved" and permissions.get("write_scope") == "workspace_scoped" and target_path and previous_content is not None:
+            return PolicyDecision(True, "explicit_file_revert_approval", "allow")
+        return PolicyDecision(False, "file_revert_requires_explicit_approval", "deny")
 
     if task_type in WRITE_CAPABLE_TASK_TYPES:
         return PolicyDecision(False, "write_capable_requires_explicit_policy", "deny")

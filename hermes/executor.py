@@ -3,12 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 
 from hermes.action_labels import derive_action_labels
-from hermes.file_ops import FileWriteError, write_workspace_file
+from hermes.file_ops import FileWriteError, revert_workspace_file, write_workspace_file
 from hermes.policy import evaluate_task_policy
 from hermes.repo_ops import apply_repo_write, preview_repo_write
 from scripts.contracts import validate_payload
 
-SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation", "structured_extract", "repo_change_plan", "implementation_draft", "repo_write", "file_write", "shell_command"}
+SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation", "structured_extract", "repo_change_plan", "implementation_draft", "repo_write", "file_write", "file_revert", "shell_command"}
 
 
 class HermesExecutor:
@@ -71,6 +71,7 @@ class HermesExecutor:
             )
 
         file_write = None
+        file_revert = None
         repo_write = None
         if task["type"] == "repo_summary":
             summary = self.build_repo_summary(task)
@@ -180,6 +181,40 @@ class HermesExecutor:
                 ("Did not apply repo changes" if policy.mode == "preview" else "Applied constrained workspace-scoped repo changes"),
                 "Generated v1 result envelope",
             ]
+        elif task["type"] == "file_revert":
+            try:
+                file_revert = self.build_file_revert(task)
+            except FileWriteError as exc:
+                context = task.get("context", {})
+                return self.failure_result(
+                    task_id=task["id"],
+                    trace_id=payload["trace"]["trace_id"],
+                    code="WRITE_SCOPE_VIOLATION",
+                    message=str(exc),
+                    retryable=False,
+                    metadata={
+                        "task_type": task["type"],
+                        "paperclip_issue_id": context.get("issue_id"),
+                        "paperclip_run_id": context.get("paperclip_run_id"),
+                        "paperclip_approval_id": context.get("paperclip_approval_id"),
+                        "paperclip_approval_status": context.get("paperclip_approval_status"),
+                        "agent_id": context.get("agent_id"),
+                        "context": context,
+                        "policy": {
+                            "mode": policy.mode,
+                            "reason": policy.reason,
+                        },
+                        **derive_action_labels(task["type"], policy.mode, policy.reason, context),
+                    },
+                )
+            summary = file_revert["summary"]
+            result_summary = f"File revert completed for {task['title']}"
+            notes = [
+                "Validated request payload",
+                "Policy-approved Hermes file_revert task",
+                "Restored prior workspace-scoped file content",
+                "Generated v1 result envelope",
+            ]
         else:
             summary = self.build_text_generation(task)
             result_summary = f"Text generation completed for {task['title']}"
@@ -210,6 +245,15 @@ class HermesExecutor:
                     "metadata": file_write["artifact_metadata"],
                 }
             )
+        if file_revert:
+            artifacts.append(
+                {
+                    "type": "file_revert",
+                    "path": file_revert["relative_path"],
+                    "content_type": "text/plain",
+                    "metadata": file_revert["artifact_metadata"],
+                }
+            )
         if repo_write:
             artifact_type = "repo_write_preview" if repo_write["preview_only"] else "repo_write"
             for file_change in repo_write["files"]:
@@ -238,6 +282,8 @@ class HermesExecutor:
         }
         if file_write:
             metadata["file_write"] = file_write["metadata"]
+        if file_revert:
+            metadata["file_revert"] = file_revert["metadata"]
         if repo_write:
             metadata["repo_write"] = {
                 "preview_only": repo_write["preview_only"],
@@ -448,6 +494,46 @@ class HermesExecutor:
                     *file_summaries,
                 ]
             ),
+        }
+
+    def build_file_revert(self, task: dict) -> dict:
+        context = task.get("context", {})
+        file_path = context.get("file_path") or ""
+        previous_content = context.get("previous_content")
+        if previous_content is None:
+            raise FileWriteError("previous_content is required")
+        revert_result = revert_workspace_file(self.root, file_path, previous_content)
+        relative_path = str(revert_result.path.relative_to(self.root))
+        metadata = {
+            "path": relative_path,
+            "reverted": revert_result.reverted,
+            "target_existed_before": revert_result.target_existed_before,
+            "restored_bytes": revert_result.restored_bytes,
+            "restored_sha256": revert_result.restored_sha256,
+            "previous_sha256": revert_result.previous_sha256,
+            "change_preview": revert_result.change_preview,
+            "source_run_id": context.get("source_run_id"),
+        }
+        return {
+            "relative_path": relative_path,
+            "summary": "\n".join(
+                [
+                    "# File Revert",
+                    f"- File: {relative_path}",
+                    f"- Restored bytes: {revert_result.restored_bytes}",
+                    f"- Previous hash: {revert_result.previous_sha256}",
+                    f"- Restored hash: {revert_result.restored_sha256}",
+                    f"- Change preview: {revert_result.change_preview}",
+                    f"- Reverted: {revert_result.reverted}",
+                    f"- Source run id: {context.get('source_run_id')}",
+                ]
+            ),
+            "metadata": metadata,
+            "artifact_metadata": {
+                "task_type": task["type"],
+                "task_id": task["id"],
+                **metadata,
+            },
         }
 
     def build_text_generation(self, task: dict) -> str:

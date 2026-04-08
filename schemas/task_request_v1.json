@@ -15,7 +15,7 @@
       "required": ["id", "type", "title", "description", "priority", "risk_level", "requester", "created_at"],
       "properties": {
         "id": { "type": "string", "minLength": 1 },
-        "type": { "type": "string", "enum": ["repo_summary", "file_analysis", "text_generation", "structured_extract", "repo_change_plan", "implementation_draft", "repo_write", "file_write", "shell_command"] },
+        "type": { "type": "string", "enum": ["repo_summary", "file_analysis", "text_generation", "structured_extract", "repo_change_plan", "implementation_draft", "repo_write", "file_write", "file_revert", "shell_command"] },
         "title": { "type": "string", "minLength": 1 },
         "description": { "type": "string", "minLength": 1 },
         "priority": { "type": "string", "enum": ["low", "medium", "high", "urgent"] },
