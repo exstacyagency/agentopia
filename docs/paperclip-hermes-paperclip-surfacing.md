@@ -18,7 +18,15 @@ Structured issue comments can summarize:
 - action reason
 - operator summary
 - policy mode / reason
+- run status
 - approval id / status when present
+- error code / message for blocked actions
+
+The comment heading now varies by review state:
+- `## Hermes Execution Summary`
+- `## Hermes Preview Summary`
+- `## Hermes Blocked Action Summary`
+- fallback `## Hermes Review Summary`
 
 ## Why comments first
 
@@ -26,4 +34,7 @@ Comments are the lightest first surfacing path that makes the semantic labels vi
 
 ## Next validation step
 
-Trigger a real labeled run with `paperclip_issue_id` present and confirm the structured execution summary comment appears automatically in the Paperclip issue timeline.
+Trigger real labeled runs with `paperclip_issue_id` present and confirm these comments appear automatically in the Paperclip issue timeline:
+- allowed write summary
+- preview summary
+- blocked action summary
