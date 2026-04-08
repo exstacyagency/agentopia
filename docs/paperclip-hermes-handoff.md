@@ -266,6 +266,18 @@ The agreed sequencing from here is:
 
 MemPalace is therefore a phase-two enhancement, not part of the core Paperclip ↔ Hermes integration finish line.
 
+### Hardening pass status
+Current hardening work added:
+- more explicit Paperclip HTTP error surfacing in the adapter client
+- runtime guard visibility on `/health`
+- richer persistence metadata when Paperclip comment or dashboard publish fails
+- a lightweight platform hardening check script
+
+Immediate hardening focus after this pass should remain:
+- reload/restart discipline
+- postback failure diagnosis
+- local patch verification and reduction of runtime staleness surprises
+
 ## Working rule from here on
 
 From this point forward, whenever progress is made on Paperclip ↔ Hermes integration in Agentopia, update this document in the same PR. Do not let the handoff doc lag behind the real current state.

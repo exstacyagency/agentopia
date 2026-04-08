@@ -11,6 +11,7 @@ from paperclip_adapter.http_client import PaperclipClientConfig, PaperclipHttpCl
 class PaperclipCommentPoster:
     def __init__(self) -> None:
         base_url = os.environ.get("PAPERCLIP_BASE_URL", "http://127.0.0.1:3100")
+        self.base_url = base_url
         self.client = PaperclipHttpClient(PaperclipClientConfig(base_url=base_url))
 
     def post_execution_summary(self, issue_id: str, result: dict[str, Any]) -> dict[str, Any]:
