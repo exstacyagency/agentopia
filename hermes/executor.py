@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from hermes.action_labels import derive_action_labels
+from hermes.decision_trace import build_decision_trace
 from hermes.file_ops import FileWriteError, revert_workspace_file, write_workspace_file
 from hermes.policy import evaluate_task_policy
 from hermes.repo_ops import apply_repo_write, preview_repo_write
@@ -66,6 +67,7 @@ class HermesExecutor:
                         "mode": policy.mode,
                         "reason": policy.reason,
                     },
+                    "decision_trace": build_decision_trace(task, policy.mode, policy.reason, context),
                     **derive_action_labels(task["type"], policy.mode, policy.reason, context),
                 },
             )
@@ -136,6 +138,7 @@ class HermesExecutor:
                             "mode": policy.mode,
                             "reason": policy.reason,
                         },
+                        "decision_trace": build_decision_trace(task, policy.mode, policy.reason, context),
                         **derive_action_labels(task["type"], policy.mode, policy.reason, context),
                     },
                 )
@@ -278,6 +281,7 @@ class HermesExecutor:
                 "mode": policy.mode,
                 "reason": policy.reason,
             },
+            "decision_trace": build_decision_trace(task, policy.mode, policy.reason, context),
             **derive_action_labels(task["type"], policy.mode, policy.reason, context),
         }
         if file_write:
