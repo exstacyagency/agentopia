@@ -40,11 +40,13 @@ class MemPalaceService:
             "config": self.get_config(),
             "command_found": command_found,
             "error": command_error,
+            "memory_mode": self.config.memory_mode,
         }
 
     def search(self, query: str) -> dict[str, Any]:
         return {
             "config": self.get_config(),
+            "memory_mode": self.config.memory_mode,
             **self.client.search(query),
         }
 
@@ -56,9 +58,11 @@ class MemPalaceService:
             "ok": search_result.get("ok", False),
             "reason": search_result.get("reason"),
             "query": query,
+            "memory_mode": self.config.memory_mode,
             "wakeup_context": {
                 "issue_title": issue_title,
                 "issue_description": issue_description,
                 "memory_hits": search_result.get("results") or [],
+                "memory_source": ("mempalace" if self.config.memory_mode in {"augment", "prefer_mempalace"} else "native_only"),
             },
         }

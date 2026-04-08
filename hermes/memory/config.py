@@ -15,6 +15,7 @@ class MemPalaceConfig:
     enabled: bool
     command: str
     palace_path: str | None
+    memory_mode: str
 
 
 def _env_config() -> MemPalaceConfig:
@@ -22,6 +23,7 @@ def _env_config() -> MemPalaceConfig:
         enabled=os.environ.get("MEMPALACE_ENABLED", "0") == "1",
         command=os.environ.get("MEMPALACE_COMMAND", "mempalace"),
         palace_path=os.environ.get("MEMPALACE_PATH"),
+        memory_mode=os.environ.get("MEMPALACE_MEMORY_MODE", "augment"),
     )
 
 
@@ -33,6 +35,7 @@ def load_mempalace_config() -> MemPalaceConfig:
                 enabled=bool(data.get("enabled", False)),
                 command=str(data.get("command") or "mempalace"),
                 palace_path=data.get("palace_path"),
+                memory_mode=str(data.get("memory_mode") or "augment"),
             )
         except Exception:
             pass
@@ -44,6 +47,7 @@ def save_mempalace_config(payload: dict[str, Any]) -> MemPalaceConfig:
         enabled=bool(payload.get("enabled", False)),
         command=str(payload.get("command") or "mempalace"),
         palace_path=payload.get("palace_path"),
+        memory_mode=str(payload.get("memory_mode") or "augment"),
     )
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
     CONFIG_PATH.write_text(json.dumps(asdict(config), indent=2) + "\n")
