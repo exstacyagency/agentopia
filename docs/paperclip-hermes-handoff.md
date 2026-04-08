@@ -240,6 +240,23 @@ The immediate next task should be:
 5. inspect the document body for policy and decision-trace content
 6. update this handoff doc again in the same PR with the validation result
 
+### Product note
+The user explicitly said functionality matters more than polish right now.
+
+Current priority:
+- keep the review/approval/rollback/dashboard flow functional end to end
+- defer UI look-and-feel polish until later
+
+That means future work should prefer:
+- correctness
+- stable surfacing
+- usable control flow
+
+over:
+- visual refinement
+- styling polish
+- presentation cleanup
+
 ## Working rule from here on
 
 From this point forward, whenever progress is made on Paperclip ↔ Hermes integration in Agentopia, update this document in the same PR. Do not let the handoff doc lag behind the real current state.
