@@ -166,10 +166,14 @@ Before further live validation, keep the ownership boundary explicit:
 - Agentopia owns core execution, policy, safety, labeling, reconciliation, and operator tooling
 - Paperclip remains the orchestration/control-plane surface
 - local Paperclip patches should stay thin, documented, and disposable
+- Hermes runtime compatibility should remain distinct from Agentopia-owned execution semantics
 
 Supporting docs added for this:
 - `docs/paperclip-local-patch-inventory.md`
 - `docs/paperclip-boundary-rules.md`
+- `docs/hermes-boundary-rules.md`
+- `docs/hermes-local-runtime-inventory.md`
+- `docs/hermes-upgrade-validation-checklist.md`
 
 ### Phase: structured Paperclip issue comments
 
