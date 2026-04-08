@@ -177,6 +177,7 @@ Immediate focus:
 After that, choose between:
 1. add rollback/revert actions
 2. enrich dashboard states and alerts further
+3. surface review states back into Paperclip issue history more completely
 
 ### Boundary cleanup note
 
@@ -229,14 +230,14 @@ After that, choose between:
 
 The immediate next task should be:
 
-**Validate the grouped review dashboard output against recent persisted runs.**
+**Validate Paperclip-visible review-state comments for preview and blocked write cases.**
 
 ### Suggested concrete sequence
-1. run `python3 scripts/review_write_actions.py`
-2. confirm pending previews, blocked actions, applied writes, and approval mismatches are grouped separately
-3. confirm entries retain label/reason/policy/approval context
-4. confirm older runs are explicitly marked as legacy and newer labeled runs are explicitly marked as labeled
-5. update this handoff doc again in the same PR if the grouped review output needs refinement
+1. restart the local Hermes executor so it loads the new review-state comment builder
+2. trigger a preview `repo_write` with a real `paperclip_issue_id`
+3. trigger a blocked write-capable run with a real `paperclip_issue_id`
+4. confirm Paperclip issue comments show `Hermes Preview Summary` and `Hermes Blocked Action Summary`
+5. update this handoff doc again in the same PR with the validation result
 
 ## Working rule from here on
 

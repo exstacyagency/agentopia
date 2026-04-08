@@ -47,6 +47,7 @@ class HermesExecutor:
             )
 
         if not policy.allowed:
+            context = task.get("context", {})
             return self.failure_result(
                 task_id=task["id"],
                 trace_id=payload["trace"]["trace_id"],
@@ -55,10 +56,17 @@ class HermesExecutor:
                 retryable=False,
                 metadata={
                     "task_type": task["type"],
+                    "paperclip_issue_id": context.get("issue_id"),
+                    "paperclip_run_id": context.get("paperclip_run_id"),
+                    "paperclip_approval_id": context.get("paperclip_approval_id"),
+                    "paperclip_approval_status": context.get("paperclip_approval_status"),
+                    "agent_id": context.get("agent_id"),
+                    "context": context,
                     "policy": {
                         "mode": policy.mode,
                         "reason": policy.reason,
                     },
+                    **derive_action_labels(task["type"], policy.mode, policy.reason, context),
                 },
             )
 
@@ -108,6 +116,7 @@ class HermesExecutor:
             try:
                 file_write = self.build_file_write(task)
             except FileWriteError as exc:
+                context = task.get("context", {})
                 return self.failure_result(
                     task_id=task["id"],
                     trace_id=payload["trace"]["trace_id"],
@@ -116,10 +125,17 @@ class HermesExecutor:
                     retryable=False,
                     metadata={
                         "task_type": task["type"],
+                        "paperclip_issue_id": context.get("issue_id"),
+                        "paperclip_run_id": context.get("paperclip_run_id"),
+                        "paperclip_approval_id": context.get("paperclip_approval_id"),
+                        "paperclip_approval_status": context.get("paperclip_approval_status"),
+                        "agent_id": context.get("agent_id"),
+                        "context": context,
                         "policy": {
                             "mode": policy.mode,
                             "reason": policy.reason,
                         },
+                        **derive_action_labels(task["type"], policy.mode, policy.reason, context),
                     },
                 )
             summary = file_write["summary"]
@@ -134,6 +150,7 @@ class HermesExecutor:
             try:
                 repo_write = self.build_repo_write(task, preview_only=(policy.mode == "preview"))
             except FileWriteError as exc:
+                context = task.get("context", {})
                 return self.failure_result(
                     task_id=task["id"],
                     trace_id=payload["trace"]["trace_id"],
@@ -142,10 +159,17 @@ class HermesExecutor:
                     retryable=False,
                     metadata={
                         "task_type": task["type"],
+                        "paperclip_issue_id": context.get("issue_id"),
+                        "paperclip_run_id": context.get("paperclip_run_id"),
+                        "paperclip_approval_id": context.get("paperclip_approval_id"),
+                        "paperclip_approval_status": context.get("paperclip_approval_status"),
+                        "agent_id": context.get("agent_id"),
+                        "context": context,
                         "policy": {
                             "mode": policy.mode,
                             "reason": policy.reason,
                         },
+                        **derive_action_labels(task["type"], policy.mode, policy.reason, context),
                     },
                 )
             summary = repo_write["summary"]
