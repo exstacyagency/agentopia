@@ -275,13 +275,18 @@ Current hardening work added:
 
 Immediate hardening focus after this pass should remain:
 - reload/restart discipline
-- postback failure diagnosis
+- postback failure diagnosis and recovery
 - local patch verification and reduction of runtime staleness surprises
 
 Restart/reload discipline now includes:
 - runtime build stamp surfaced on `/health`
 - explicit runtime feature fingerprint surfaced on `/health`
 - `scripts/check_runtime_reload.py` to confirm the running Hermes process actually loaded the expected feature set
+
+Postback recovery now includes:
+- durable postback records for comment and dashboard publishing under `var/hermes/postbacks/`
+- `scripts/list_failed_postbacks.py`
+- `scripts/retry_postbacks.py` scaffold for the next concrete replay step
 
 ## Working rule from here on
 

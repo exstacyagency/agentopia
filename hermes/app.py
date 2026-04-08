@@ -14,12 +14,14 @@ from hermes.persistence import HermesPersistence
 from hermes.callback_store import HermesCallbackStore
 from hermes.issue_actions import handle_issue_action
 from hermes.paperclip_comments import PaperclipCommentPoster
+from hermes.postback_store import HermesPostbackStore
 from hermes.runtime_checks import summarize_runtime_guards
 
 ROOT = Path(__file__).resolve().parent.parent
 EXECUTOR = HermesExecutor(ROOT)
 PERSISTENCE = HermesPersistence(ROOT)
 CALLBACK_STORE = HermesCallbackStore(ROOT)
+POSTBACK_STORE = HermesPostbackStore(ROOT)
 COMMENT_POSTER = PaperclipCommentPoster()
 PAPERCLIP_RESULT_URL = os.environ.get("PAPERCLIP_RESULT_URL", "http://127.0.0.1:3200/internal/tasks/{task_id}/result")
 
@@ -142,11 +144,29 @@ class HermesHandler(BaseHTTPRequestHandler):
                     "success": True,
                     "comment_id": comment_result.get("id"),
                 }
+                postback_path = POSTBACK_STORE.record(
+                    issue_id=issue_id,
+                    run_id=result["run"]["run_id"],
+                    postback_type="comment",
+                    success=True,
+                    error=None,
+                    payload=result["persistence"]["paperclip_comment"],
+                )
+                result["persistence"]["paperclip_comment"]["postback_path"] = str(postback_path)
             except Exception as exc:
+                postback_path = POSTBACK_STORE.record(
+                    issue_id=issue_id,
+                    run_id=result["run"]["run_id"],
+                    postback_type="comment",
+                    success=False,
+                    error=str(exc),
+                    payload={"issue_id": issue_id},
+                )
                 result["persistence"]["paperclip_comment"] = {
                     "success": False,
                     "error": str(exc),
                     "issue_id": issue_id,
+                    "postback_path": str(postback_path),
                 }
             try:
                 dashboard_result = COMMENT_POSTER.publish_issue_dashboard(issue_id, result)
@@ -155,11 +175,29 @@ class HermesHandler(BaseHTTPRequestHandler):
                     "document_id": dashboard_result.get("id"),
                     "key": dashboard_result.get("key"),
                 }
+                postback_path = POSTBACK_STORE.record(
+                    issue_id=issue_id,
+                    run_id=result["run"]["run_id"],
+                    postback_type="dashboard",
+                    success=True,
+                    error=None,
+                    payload=result["persistence"]["paperclip_dashboard"],
+                )
+                result["persistence"]["paperclip_dashboard"]["postback_path"] = str(postback_path)
             except Exception as exc:
+                postback_path = POSTBACK_STORE.record(
+                    issue_id=issue_id,
+                    run_id=result["run"]["run_id"],
+                    postback_type="dashboard",
+                    success=False,
+                    error=str(exc),
+                    payload={"issue_id": issue_id},
+                )
                 result["persistence"]["paperclip_dashboard"] = {
                     "success": False,
                     "error": str(exc),
                     "issue_id": issue_id,
+                    "postback_path": str(postback_path),
                 }
 
         status = 200 if result["run"]["status"] == "succeeded" else 400
