@@ -13,7 +13,9 @@ def build_execution_summary_comment(result: dict[str, Any]) -> dict[str, Any]:
     run = result.get("run") or {}
 
     heading = "## Hermes Review Summary"
-    if run.get("status") == "succeeded" and policy.get("mode") == "allow":
+    if metadata.get("task_type") == "file_revert" and run.get("status") == "succeeded":
+        heading = "## Hermes Revert Summary"
+    elif run.get("status") == "succeeded" and policy.get("mode") == "allow":
         heading = "## Hermes Execution Summary"
     elif policy.get("mode") == "preview":
         heading = "## Hermes Preview Summary"
