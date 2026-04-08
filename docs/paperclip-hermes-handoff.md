@@ -160,6 +160,17 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
+### Boundary cleanup note
+
+Before further live validation, keep the ownership boundary explicit:
+- Agentopia owns core execution, policy, safety, labeling, reconciliation, and operator tooling
+- Paperclip remains the orchestration/control-plane surface
+- local Paperclip patches should stay thin, documented, and disposable
+
+Supporting docs added for this:
+- `docs/paperclip-local-patch-inventory.md`
+- `docs/paperclip-boundary-rules.md`
+
 ### Phase: structured Paperclip issue comments
 
 Current validated state:
@@ -179,6 +190,7 @@ Current validated state:
 - approval reconciliation is implemented with local fallback and supports live Paperclip lookup
 - semantic action labels and human-readable production reasons are implemented in result metadata and write summaries
 - Paperclip issue-comment posting helpers are now implemented in the client/service layer
+- boundary cleanup docs now explicitly describe Paperclip local patch inventory and ownership rules
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
