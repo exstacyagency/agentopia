@@ -3,74 +3,64 @@ from __future__ import annotations
 import json
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
-from urllib import request
 from urllib.parse import urlparse
 
+from hermes.build_info import BUILD_STAMP, RUNTIME_FEATURES
 from hermes.dashboard_state import build_operator_queue_state
 from hermes.executor import HermesExecutor
 from hermes.persistence import HermesPersistence
 from hermes.callback_store import HermesCallbackStore
 from hermes.issue_actions import handle_issue_action
+from hermes.memory.service import MemPalaceService
 from hermes.paperclip_comments import PaperclipCommentPoster
+from hermes.postback_store import HermesPostbackStore
 from hermes.runtime_checks import summarize_runtime_guards
 
-ROOT = Path(__file__).resolve().parent.parent
-EXECUTOR = HermesExecutor(ROOT)
-PERSISTENCE = HermesPersistence(ROOT)
-CALLBACK_STORE = HermesCallbackStore(ROOT)
+ROOT = os.path.dirname(os.path.dirname(__file__))
+EXECUTOR = HermesExecutor(os.path.abspath(ROOT))
+PERSISTENCE = HermesPersistence(os.path.abspath(ROOT))
+CALLBACK_STORE = HermesCallbackStore(os.path.abspath(ROOT))
+POSTBACK_STORE = HermesPostbackStore(os.path.abspath(ROOT))
 COMMENT_POSTER = PaperclipCommentPoster()
+MEMPALACE = MemPalaceService()
 PAPERCLIP_RESULT_URL = os.environ.get("PAPERCLIP_RESULT_URL", "http://127.0.0.1:3200/internal/tasks/{task_id}/result")
 
 
 class HermesHandler(BaseHTTPRequestHandler):
     def _send(self, status: int, payload: dict) -> None:
-        body = json.dumps(payload, indent=2).encode()
+        data = json.dumps(payload).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Content-Length", str(len(data)))
         self.end_headers()
-        self.wfile.write(body)
+        self.wfile.write(data)
 
-    def _send_html(self, status: int, html: str) -> None:
-        body = html.encode()
-        self.send_response(status)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
-
-    def do_GET(self) -> None:  # noqa: N802
+    def do_GET(self) -> None:
         parsed = urlparse(self.path)
-        if parsed.path == "/":
-            self._send_html(200, """<!doctype html>
-<html>
-  <head><meta charset=\"utf-8\"><title>Hermes</title></head>
-  <body>
-    <h1>Hermes</h1>
-    <p>Status: healthy</p>
-    <p>Role: execution plane</p>
-    <h2>Available endpoints</h2>
-    <ul>
-      <li><code>GET /health</code></li>
-      <li><code>POST /internal/execute</code></li>
-    </ul>
-  </body>
-</html>""")
-            return
         if parsed.path == "/health":
-            self._send(200, {"ok": True, "service": "hermes", "runtime": summarize_runtime_guards(getattr(COMMENT_POSTER, 'base_url', None))})
+            self._send(
+                200,
+                {
+                    "ok": True,
+                    "service": "hermes",
+                    "runtime": summarize_runtime_guards(getattr(COMMENT_POSTER, "base_url", None)),
+                    "build": {
+                        "stamp": BUILD_STAMP,
+                        "features": RUNTIME_FEATURES,
+                    },
+                },
+            )
             return
         if parsed.path == "/internal/dashboard-state":
-            self._send(200, build_operator_queue_state(ROOT))
+            self._send(200, build_operator_queue_state(os.path.abspath(ROOT)))
             return
         self._send(404, {"error": "not found"})
 
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:
         parsed = urlparse(self.path)
         length = int(self.headers.get("Content-Length", "0"))
         raw = self.rfile.read(length) if length else b"{}"
-        body = json.loads(raw.decode())
+        body = json.loads(raw.decode() or "{}")
 
         if parsed.path.startswith("/internal/tasks/") and parsed.path.endswith("/result"):
             task_id = parsed.path.split("/")[3]
@@ -83,46 +73,21 @@ class HermesHandler(BaseHTTPRequestHandler):
             self._send(200 if response.get("ok") else 400, response)
             return
 
+        if parsed.path == "/internal/memory/search":
+            query = body.get("query", "")
+            self._send(200, MEMPALACE.search(query))
+            return
+
         if parsed.path != "/internal/execute":
             self._send(404, {"error": "not found"})
             return
 
         result = EXECUTOR.execute(body)
         persisted_path = PERSISTENCE.persist_result(result)
-        result.setdefault("persistence", {})["result_path"] = str(persisted_path)
-        result_url = PAPERCLIP_RESULT_URL.format(task_id=result["task_id"])
-        req = request.Request(
-            result_url,
-            data=json.dumps(result).encode(),
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-        callback_success = False
-        callback_status = None
-        callback_error = None
-        try:
-            with request.urlopen(req) as response:
-                callback_status = getattr(response, "status", None)
-                response.read()
-                callback_success = True
-        except Exception as exc:
-            callback_error = str(exc)
-        callback_path = PERSISTENCE.record_callback_attempt(
-            task_id=result["task_id"],
-            run_id=result["run"]["run_id"],
-            result_url=result_url,
-            success=callback_success,
-            status_code=callback_status,
-            error=callback_error,
-        )
-        result["persistence"]["callback_path"] = str(callback_path)
-        result["persistence"]["callback"] = {
-            "success": callback_success,
-            "status_code": callback_status,
-            "error": callback_error,
-        }
+        result["persistence"] = {"result_path": str(persisted_path)}
 
-        issue_id = ((result.get("result") or {}).get("metadata") or {}).get("paperclip_issue_id")
+        metadata = (result.get("result") or {}).get("metadata") or {}
+        issue_id = metadata.get("paperclip_issue_id")
         if issue_id:
             try:
                 comment_result = COMMENT_POSTER.post_execution_summary(issue_id, result)
@@ -130,11 +95,35 @@ class HermesHandler(BaseHTTPRequestHandler):
                     "success": True,
                     "comment_id": comment_result.get("id"),
                 }
+                postback_path = POSTBACK_STORE.record(
+                    issue_id=issue_id,
+                    run_id=result["run"]["run_id"],
+                    postback_type="comment",
+                    success=True,
+                    error=None,
+                    payload={
+                        **result["persistence"]["paperclip_comment"],
+                        "body": COMMENT_POSTER.build_execution_comment_body(result),
+                    },
+                )
+                result["persistence"]["paperclip_comment"]["postback_path"] = str(postback_path)
             except Exception as exc:
+                postback_path = POSTBACK_STORE.record(
+                    issue_id=issue_id,
+                    run_id=result["run"]["run_id"],
+                    postback_type="comment",
+                    success=False,
+                    error=str(exc),
+                    payload={
+                        "issue_id": issue_id,
+                        "body": COMMENT_POSTER.build_execution_comment_body(result),
+                    },
+                )
                 result["persistence"]["paperclip_comment"] = {
                     "success": False,
                     "error": str(exc),
                     "issue_id": issue_id,
+                    "postback_path": str(postback_path),
                 }
             try:
                 dashboard_result = COMMENT_POSTER.publish_issue_dashboard(issue_id, result)
@@ -143,11 +132,37 @@ class HermesHandler(BaseHTTPRequestHandler):
                     "document_id": dashboard_result.get("id"),
                     "key": dashboard_result.get("key"),
                 }
+                dashboard_doc = COMMENT_POSTER.build_issue_dashboard_document(result)
+                postback_path = POSTBACK_STORE.record(
+                    issue_id=issue_id,
+                    run_id=result["run"]["run_id"],
+                    postback_type="dashboard",
+                    success=True,
+                    error=None,
+                    payload={
+                        **result["persistence"]["paperclip_dashboard"],
+                        **dashboard_doc,
+                    },
+                )
+                result["persistence"]["paperclip_dashboard"]["postback_path"] = str(postback_path)
             except Exception as exc:
+                dashboard_doc = COMMENT_POSTER.build_issue_dashboard_document(result)
+                postback_path = POSTBACK_STORE.record(
+                    issue_id=issue_id,
+                    run_id=result["run"]["run_id"],
+                    postback_type="dashboard",
+                    success=False,
+                    error=str(exc),
+                    payload={
+                        "issue_id": issue_id,
+                        **dashboard_doc,
+                    },
+                )
                 result["persistence"]["paperclip_dashboard"] = {
                     "success": False,
                     "error": str(exc),
                     "issue_id": issue_id,
+                    "postback_path": str(postback_path),
                 }
 
         status = 200 if result["run"]["status"] == "succeeded" else 400
