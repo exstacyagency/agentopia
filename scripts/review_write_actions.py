@@ -55,6 +55,10 @@ for path in sorted(runs_base.glob("*.json"), key=lambda p: p.stat().st_mtime, re
     stored_status = metadata.get("paperclip_approval_status")
     current_status = current_state.get(approval_id) if approval_id else None
     status_match = stored_status == current_status if approval_id and current_status is not None else None
+    labeling_present = any(
+        metadata.get(field) is not None
+        for field in ["action_label", "action_category", "operator_summary", "action_reason"]
+    )
     items.append(
         {
             "task_id": envelope.get("task_id"),
@@ -65,6 +69,8 @@ for path in sorted(runs_base.glob("*.json"), key=lambda p: p.stat().st_mtime, re
             "action_category": metadata.get("action_category"),
             "operator_summary": metadata.get("operator_summary"),
             "action_reason": metadata.get("action_reason"),
+            "labeling_present": labeling_present,
+            "legacy_result_shape": not labeling_present,
             "policy_mode": policy.get("mode"),
             "policy_reason": policy.get("reason"),
             "paperclip_issue_id": metadata.get("paperclip_issue_id"),
