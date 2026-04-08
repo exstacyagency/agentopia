@@ -21,6 +21,17 @@ class FileWriteResult:
     change_preview: str
 
 
+@dataclass(frozen=True)
+class FileRevertResult:
+    path: Path
+    reverted: bool
+    target_existed_before: bool
+    restored_bytes: int
+    restored_sha256: str
+    previous_sha256: str | None
+    change_preview: str
+
+
 def resolve_workspace_path(root: Path, relative_path: str) -> Path:
     if not relative_path:
         raise FileWriteError("file_path is required")
@@ -64,4 +75,22 @@ def write_workspace_file(root: Path, relative_path: str, content: str, overwrite
         previous_sha256=(short_hash(previous) if existed_before else None),
         new_sha256=short_hash(data),
         change_preview=preview_change(previous, data),
+    )
+
+
+def revert_workspace_file(root: Path, relative_path: str, previous_content: str) -> FileRevertResult:
+    target = resolve_workspace_path(root, relative_path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    restored = previous_content or ""
+    existed_before = target.exists()
+    current = target.read_text() if existed_before else ""
+    target.write_text(restored)
+    return FileRevertResult(
+        path=target,
+        reverted=(current != restored),
+        target_existed_before=existed_before,
+        restored_bytes=len(restored.encode()),
+        restored_sha256=short_hash(restored),
+        previous_sha256=(short_hash(current) if existed_before else None),
+        change_preview=preview_change(current, restored),
     )

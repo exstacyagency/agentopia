@@ -73,6 +73,23 @@ def derive_action_labels(task_type: str, policy_mode: str, policy_reason: str, c
             "issue_origin": "approval_linked_repo_write_request",
         }
 
+    if task_type == "file_revert":
+        if policy_mode == "deny":
+            return {
+                "action_label": "blocked_file_revert",
+                "action_category": "blocked_revert",
+                "action_reason": f"file revert was blocked because policy reason was {policy_reason}",
+                "operator_summary": "Blocked workspace-scoped file revert",
+                "issue_origin": "rollback_request",
+            }
+        return {
+            "action_label": "approved_file_revert",
+            "action_category": "approved_revert",
+            "action_reason": f"file revert was performed because an approval-linked rollback request satisfied policy reason {policy_reason}",
+            "operator_summary": "Restore a workspace-scoped file to prior content",
+            "issue_origin": "rollback_request",
+        }
+
     return {
         "action_label": task_type,
         "action_category": "general",

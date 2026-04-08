@@ -175,9 +175,9 @@ Immediate focus:
 - explicitly mark legacy versus labeled result generations in the review output so operators can distinguish historical metadata gaps from real regressions
 
 After that, choose between:
-1. add rollback/revert actions
+1. expand rollback/revert actions beyond file-level restore
 2. enrich dashboard states and alerts further
-3. surface review states back into Paperclip issue history more completely
+3. surface revert summaries back into Paperclip issue history
 
 ### Boundary cleanup note
 
@@ -230,13 +230,13 @@ After that, choose between:
 
 The immediate next task should be:
 
-**Validate Paperclip-visible review-state comments for preview and blocked write cases.**
+**Restart Hermes and live-validate the new `file_revert` rollback route.**
 
 ### Suggested concrete sequence
-1. restart the local Hermes executor so it loads the new review-state comment builder
-2. trigger a preview `repo_write` with a real `paperclip_issue_id`
-3. trigger a blocked write-capable run with a real `paperclip_issue_id`
-4. confirm Paperclip issue comments show `Hermes Preview Summary` and `Hermes Blocked Action Summary`
+1. restart the local Hermes executor so it loads the new rollback route
+2. run a real approved `file_write` against a workspace-scoped file
+3. run a real approved `file_revert` with explicit `previous_content` and `source_run_id`
+4. confirm the file content is restored and revert metadata is persisted
 5. update this handoff doc again in the same PR with the validation result
 
 ## Working rule from here on
