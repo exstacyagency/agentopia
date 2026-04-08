@@ -78,6 +78,12 @@ class HermesHandler(BaseHTTPRequestHandler):
             self._send(200, MEMPALACE.search(query))
             return
 
+        if parsed.path == "/internal/memory/wakeup":
+            issue_title = body.get("issue_title", "")
+            issue_description = body.get("issue_description", "")
+            self._send(200, MEMPALACE.wakeup(issue_title, issue_description))
+            return
+
         if parsed.path != "/internal/execute":
             self._send(404, {"error": "not found"})
             return
