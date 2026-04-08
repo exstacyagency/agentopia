@@ -286,7 +286,7 @@ Restart/reload discipline now includes:
 Postback recovery now includes:
 - durable postback records for comment and dashboard publishing under `var/hermes/postbacks/`
 - `scripts/list_failed_postbacks.py`
-- `scripts/retry_postbacks.py` scaffold for the next concrete replay step
+- `scripts/retry_postbacks.py` with real replay logic for comment and dashboard postbacks
 
 ## Working rule from here on
 

@@ -34,8 +34,8 @@ python3 scripts/retry_postbacks.py
 Current status:
 - records are durable
 - failed postbacks are inspectable
-- retry script scaffolding exists
-- concrete replay logic is the next step
+- retry script now performs real replay for comment and dashboard postbacks
+- replay updates the stored record in place with success/failure status
 
 ## Why this matters
 

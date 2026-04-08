@@ -14,10 +14,16 @@ class PaperclipCommentPoster:
         self.base_url = base_url
         self.client = PaperclipHttpClient(PaperclipClientConfig(base_url=base_url))
 
-    def post_execution_summary(self, issue_id: str, result: dict[str, Any]) -> dict[str, Any]:
+    def build_execution_comment_body(self, result: dict[str, Any]) -> str:
         comment = build_execution_summary_comment(result)
-        return self.client.create_issue_comment(issue_id, comment["body"])
+        return comment["body"]
+
+    def build_issue_dashboard_document(self, result: dict[str, Any]) -> dict[str, Any]:
+        return build_issue_dashboard_document(result)
+
+    def post_execution_summary(self, issue_id: str, result: dict[str, Any]) -> dict[str, Any]:
+        return self.client.create_issue_comment(issue_id, self.build_execution_comment_body(result))
 
     def publish_issue_dashboard(self, issue_id: str, result: dict[str, Any]) -> dict[str, Any]:
-        document = build_issue_dashboard_document(result)
+        document = self.build_issue_dashboard_document(result)
         return self.client.upsert_issue_document(issue_id, document["key"], document["title"], document["body"])

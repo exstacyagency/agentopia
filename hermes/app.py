@@ -150,7 +150,10 @@ class HermesHandler(BaseHTTPRequestHandler):
                     postback_type="comment",
                     success=True,
                     error=None,
-                    payload=result["persistence"]["paperclip_comment"],
+                    payload={
+                        **result["persistence"]["paperclip_comment"],
+                        "body": COMMENT_POSTER.build_execution_comment_body(result),
+                    },
                 )
                 result["persistence"]["paperclip_comment"]["postback_path"] = str(postback_path)
             except Exception as exc:
@@ -160,7 +163,10 @@ class HermesHandler(BaseHTTPRequestHandler):
                     postback_type="comment",
                     success=False,
                     error=str(exc),
-                    payload={"issue_id": issue_id},
+                    payload={
+                        "issue_id": issue_id,
+                        "body": COMMENT_POSTER.build_execution_comment_body(result),
+                    },
                 )
                 result["persistence"]["paperclip_comment"] = {
                     "success": False,
@@ -175,23 +181,31 @@ class HermesHandler(BaseHTTPRequestHandler):
                     "document_id": dashboard_result.get("id"),
                     "key": dashboard_result.get("key"),
                 }
+                dashboard_doc = COMMENT_POSTER.build_issue_dashboard_document(result)
                 postback_path = POSTBACK_STORE.record(
                     issue_id=issue_id,
                     run_id=result["run"]["run_id"],
                     postback_type="dashboard",
                     success=True,
                     error=None,
-                    payload=result["persistence"]["paperclip_dashboard"],
+                    payload={
+                        **result["persistence"]["paperclip_dashboard"],
+                        **dashboard_doc,
+                    },
                 )
                 result["persistence"]["paperclip_dashboard"]["postback_path"] = str(postback_path)
             except Exception as exc:
+                dashboard_doc = COMMENT_POSTER.build_issue_dashboard_document(result)
                 postback_path = POSTBACK_STORE.record(
                     issue_id=issue_id,
                     run_id=result["run"]["run_id"],
                     postback_type="dashboard",
                     success=False,
                     error=str(exc),
-                    payload={"issue_id": issue_id},
+                    payload={
+                        "issue_id": issue_id,
+                        **dashboard_doc,
+                    },
                 )
                 result["persistence"]["paperclip_dashboard"] = {
                     "success": False,
