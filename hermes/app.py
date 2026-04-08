@@ -124,6 +124,18 @@ class HermesHandler(BaseHTTPRequestHandler):
                     "success": False,
                     "error": str(exc),
                 }
+            try:
+                dashboard_result = COMMENT_POSTER.publish_issue_dashboard(issue_id, result)
+                result["persistence"]["paperclip_dashboard"] = {
+                    "success": True,
+                    "document_id": dashboard_result.get("id"),
+                    "key": dashboard_result.get("key"),
+                }
+            except Exception as exc:
+                result["persistence"]["paperclip_dashboard"] = {
+                    "success": False,
+                    "error": str(exc),
+                }
 
         status = 200 if result["run"]["status"] == "succeeded" else 400
         self._send(status, result)
