@@ -1,20 +1,17 @@
 # Paperclip ↔ Hermes Paperclip Surfacing Plan
 
-This document describes the next layer after Hermes-side semantic labeling: surfacing those labels back into Paperclip-visible issue history.
+This document describes the Paperclip-visible surfacing path for Hermes execution summaries.
 
-## Problem
+## Implemented step
 
-The semantic fields now exist in Hermes result metadata and Agentopia operator summaries, but they are not yet visible in the Paperclip UI.
+Agentopia now has:
+- a comment-body builder in `paperclip_adapter/comments.py`
+- a service helper in `paperclip_adapter/service.py` for posting execution summaries back to Paperclip issues
+- a client helper in `paperclip_adapter/http_client.py` for issue comments
 
-## Proposed first step
+## Comment content
 
-Post a structured issue comment back into Paperclip after execution for runs that have:
-- `paperclip_issue_id`
-- semantic action label metadata
-
-## Suggested comment content
-
-A Paperclip issue comment can summarize:
+Structured issue comments can summarize:
 - action label
 - action category
 - action reason
@@ -24,14 +21,8 @@ A Paperclip issue comment can summarize:
 
 ## Why comments first
 
-Comments are a lightweight, user-visible surfacing path that does not require immediate Paperclip schema/UI changes.
+Comments are the lightest first surfacing path that makes the semantic labels visible in the Paperclip UI without requiring immediate Paperclip schema or UI changes.
 
-## Initial implementation surface
+## Next validation step
 
-Agentopia now has a client helper for:
-- `create_issue_comment(company_id, issue_id, body)`
-
-The next implementation step would be:
-1. build a structured execution summary comment body
-2. post it to the relevant Paperclip issue after successful execution or meaningful policy block
-3. validate that the comment is visible in the Paperclip issue timeline
+Post a structured summary comment to a real Paperclip issue and confirm it appears in the issue timeline.
