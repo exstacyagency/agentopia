@@ -16,6 +16,7 @@ class FileWriteResult:
     existed_before: bool
     changed: bool
     previous_bytes: int
+    previous_content: str
     previous_sha256: str | None
     new_sha256: str
     change_preview: str
@@ -72,6 +73,7 @@ def write_workspace_file(root: Path, relative_path: str, content: str, overwrite
         existed_before=existed_before,
         changed=(previous != data),
         previous_bytes=previous_bytes,
+        previous_content=previous,
         previous_sha256=(short_hash(previous) if existed_before else None),
         new_sha256=short_hash(data),
         change_preview=preview_change(previous, data),
