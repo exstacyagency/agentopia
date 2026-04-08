@@ -12,9 +12,9 @@ class PaperclipAdapterService:
         self.http_client = http_client
         self.adapter = PaperclipAdapter()
 
-    def post_execution_summary_comment(self, company_id: str, issue_id: str, result: dict[str, Any]) -> dict[str, Any]:
+    def post_execution_summary_comment(self, issue_id: str, result: dict[str, Any]) -> dict[str, Any]:
         comment = build_execution_summary_comment(result)
-        return self.http_client.create_issue_comment(company_id, issue_id, comment)
+        return self.http_client.create_issue_comment(issue_id, comment["body"])
 
     def submit_task(
         self,

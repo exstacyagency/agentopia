@@ -8,6 +8,7 @@ Agentopia now has:
 - a comment-body builder in `paperclip_adapter/comments.py`
 - a service helper in `paperclip_adapter/service.py` for posting execution summaries back to Paperclip issues
 - a client helper in `paperclip_adapter/http_client.py` for issue comments
+- an automatic comment-posting hook in `hermes/app.py` that posts execution summaries when `paperclip_issue_id` is present
 
 ## Comment content
 
@@ -25,4 +26,4 @@ Comments are the lightest first surfacing path that makes the semantic labels vi
 
 ## Next validation step
 
-Post a structured summary comment to a real Paperclip issue and confirm it appears in the issue timeline.
+Trigger a real labeled run with `paperclip_issue_id` present and confirm the structured execution summary comment appears automatically in the Paperclip issue timeline.

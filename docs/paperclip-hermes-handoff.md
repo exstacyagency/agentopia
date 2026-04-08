@@ -175,7 +175,7 @@ Supporting docs added for this:
 - `docs/hermes-local-runtime-inventory.md`
 - `docs/hermes-upgrade-validation-checklist.md`
 
-### Phase: structured Paperclip issue comments
+### Phase: automatic Paperclip comment feedback loop
 
 Current validated state:
 - allowed route live validation passed with `policy.mode = allow`
@@ -194,13 +194,14 @@ Current validated state:
 - approval reconciliation is implemented with local fallback and supports live Paperclip lookup
 - semantic action labels and human-readable production reasons are implemented in result metadata and write summaries
 - Paperclip issue-comment posting helpers are now implemented in the client/service layer
+- automatic Paperclip execution-summary comment posting is now implemented in the Hermes app path
 - boundary cleanup docs now explicitly describe Paperclip local patch inventory and ownership rules
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
-- post semantic execution summaries back into Paperclip-visible issue history
-- validate that a structured execution summary comment appears in the Paperclip issue timeline
+- automatically post semantic execution summaries back into Paperclip-visible issue history
+- validate that a structured execution summary comment appears automatically in the Paperclip issue timeline
 
 After that, choose between:
 1. enrich mismatch handling and approval drift alerting
@@ -210,12 +211,12 @@ After that, choose between:
 
 The immediate next task should be:
 
-**Validate structured issue-comment posting back into Paperclip for a labeled run.**
+**Validate automatic structured issue-comment posting back into Paperclip for a labeled run.**
 
 ### Suggested concrete sequence
-1. execute a labeled run with a real `paperclip_issue_id`
-2. build a structured summary comment from the result metadata
-3. post it to the related Paperclip issue using the service helper
+1. restart the Hermes executor so it loads the automatic comment-posting hook
+2. execute a labeled run with a real `paperclip_issue_id`
+3. confirm the comment is posted automatically without a separate manual API call
 4. confirm the comment is visible in the Paperclip issue timeline
 5. update this handoff doc again in the same PR with the validation result
 
