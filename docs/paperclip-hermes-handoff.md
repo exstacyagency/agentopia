@@ -230,15 +230,14 @@ After that, choose between:
 
 The immediate next task should be:
 
-**Validate the first UI-facing Paperclip dashboard snapshot.**
+**Validate the new issue-level action contract for future Paperclip review-panel controls.**
 
 ### Suggested concrete sequence
-1. restart Hermes so it loads the issue-document publishing hook
-2. trigger a Paperclip-linked action
-3. confirm Paperclip issue history still shows the summary comment
-4. confirm the issue documents section contains `Agentopia Review Dashboard`
-5. inspect the document body for policy and decision-trace content
-6. update this handoff doc again in the same PR with the validation result
+1. restart Hermes so it loads the issue-action endpoint
+2. POST a sample `apply_preview` issue action to `/internal/issue-action`
+3. POST a sample `file_revert` issue action to `/internal/issue-action`
+4. confirm both return stable contract responses
+5. update this handoff doc again in the same PR with the validation result
 
 ### Product note
 The user explicitly said functionality matters more than polish right now.
@@ -256,6 +255,16 @@ over:
 - visual refinement
 - styling polish
 - presentation cleanup
+
+### Practical next-phase order
+The agreed sequencing from here is:
+1. hardening / reliability pass
+2. patch-discipline cleanup
+3. operator UX cleanup until the system is stable to use
+4. then evaluate MemPalace integration
+5. after that, expand broader capabilities
+
+MemPalace is therefore a phase-two enhancement, not part of the core Paperclip ↔ Hermes integration finish line.
 
 ## Working rule from here on
 

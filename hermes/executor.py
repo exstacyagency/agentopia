@@ -434,6 +434,7 @@ class HermesExecutor:
             "existed_before": write_result.existed_before,
             "changed": write_result.changed,
             "previous_bytes": write_result.previous_bytes,
+            "previous_content": write_result.previous_content,
             "previous_sha256": write_result.previous_sha256,
             "new_sha256": write_result.new_sha256,
             "change_preview": write_result.change_preview,
@@ -474,6 +475,7 @@ class HermesExecutor:
         for item in result.files:
             entry = {
                 "path": item.path,
+                "content": item.content,
                 "bytes_written": item.bytes_written,
                 "existed_before": item.existed_before,
                 "changed": item.changed,

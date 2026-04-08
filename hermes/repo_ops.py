@@ -9,6 +9,7 @@ from hermes.file_ops import FileWriteError, resolve_workspace_path, short_hash, 
 @dataclass(frozen=True)
 class RepoWriteFileResult:
     path: str
+    content: str
     bytes_written: int
     existed_before: bool
     changed: bool
@@ -37,6 +38,7 @@ def inspect_repo_change(root: Path, change: dict) -> RepoWriteFileResult:
     previous_bytes = len(previous.encode())
     return RepoWriteFileResult(
         path=str(target.relative_to(root)),
+        content=content,
         bytes_written=len(content.encode()),
         existed_before=existed_before,
         changed=(previous != content),
@@ -60,6 +62,7 @@ def apply_repo_write(root: Path, changes: list[dict]) -> RepoWriteResult:
         results.append(
             RepoWriteFileResult(
                 path=str(written.path.relative_to(root)),
+                content=change.get("content") or "",
                 bytes_written=written.bytes_written,
                 existed_before=written.existed_before,
                 changed=written.changed,

@@ -7,9 +7,11 @@ from pathlib import Path
 from urllib import request
 from urllib.parse import urlparse
 
+from hermes.dashboard_state import build_operator_queue_state
 from hermes.executor import HermesExecutor
 from hermes.persistence import HermesPersistence
 from hermes.callback_store import HermesCallbackStore
+from hermes.issue_actions import handle_issue_action
 from hermes.paperclip_comments import PaperclipCommentPoster
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -58,6 +60,9 @@ class HermesHandler(BaseHTTPRequestHandler):
         if parsed.path == "/health":
             self._send(200, {"ok": True, "service": "hermes"})
             return
+        if parsed.path == "/internal/dashboard-state":
+            self._send(200, build_operator_queue_state(ROOT))
+            return
         self._send(404, {"error": "not found"})
 
     def do_POST(self) -> None:  # noqa: N802
@@ -70,6 +75,11 @@ class HermesHandler(BaseHTTPRequestHandler):
             task_id = parsed.path.split("/")[3]
             stored = CALLBACK_STORE.store(task_id, body)
             self._send(200, {"ok": True, "task_id": task_id, "stored_path": str(stored)})
+            return
+
+        if parsed.path == "/internal/issue-action":
+            response = handle_issue_action(body)
+            self._send(200 if response.get("ok") else 400, response)
             return
 
         if parsed.path != "/internal/execute":
