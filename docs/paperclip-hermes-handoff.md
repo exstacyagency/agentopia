@@ -172,6 +172,7 @@ Immediate focus:
 - preserve the now-working durable callback and Paperclip feedback loop
 - make approval/deny review easier before building rollback
 - validate the grouped review output against recent persisted runs
+- explicitly mark legacy versus labeled result generations in the review output so operators can distinguish historical metadata gaps from real regressions
 
 After that, choose between:
 1. add rollback/revert actions
@@ -234,7 +235,8 @@ The immediate next task should be:
 1. run `python3 scripts/review_write_actions.py`
 2. confirm pending previews, blocked actions, applied writes, and approval mismatches are grouped separately
 3. confirm entries retain label/reason/policy/approval context
-4. update this handoff doc again in the same PR if the grouped review output needs refinement
+4. confirm older runs are explicitly marked as legacy and newer labeled runs are explicitly marked as labeled
+5. update this handoff doc again in the same PR if the grouped review output needs refinement
 
 ## Working rule from here on
 

@@ -27,6 +27,8 @@ Entries include:
 - action label/category
 - operator summary
 - action reason
+- `labeling_present`
+- `legacy_result_shape`
 - policy mode / reason
 - Paperclip issue id
 - Paperclip approval id / stored status
@@ -37,3 +39,5 @@ Entries include:
 ## Why this exists
 
 This is the first review/dashboard layer for approving, understanding, and auditing risky write-capable actions before a future rollback workflow is added.
+
+It also explicitly distinguishes newer labeled runs from older legacy result shapes so operators do not mistake historical metadata gaps for a broken dashboard.
