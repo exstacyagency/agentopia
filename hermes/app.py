@@ -7,6 +7,7 @@ from pathlib import Path
 from urllib import request
 from urllib.parse import urlparse
 
+from hermes.build_info import BUILD_STAMP, RUNTIME_FEATURES
 from hermes.dashboard_state import build_operator_queue_state
 from hermes.executor import HermesExecutor
 from hermes.persistence import HermesPersistence
@@ -59,7 +60,18 @@ class HermesHandler(BaseHTTPRequestHandler):
 </html>""")
             return
         if parsed.path == "/health":
-            self._send(200, {"ok": True, "service": "hermes", "runtime": summarize_runtime_guards(getattr(COMMENT_POSTER, 'base_url', None))})
+            self._send(
+                200,
+                {
+                    "ok": True,
+                    "service": "hermes",
+                    "runtime": summarize_runtime_guards(getattr(COMMENT_POSTER, 'base_url', None)),
+                    "build": {
+                        "stamp": BUILD_STAMP,
+                        "features": RUNTIME_FEATURES,
+                    },
+                },
+            )
             return
         if parsed.path == "/internal/dashboard-state":
             self._send(200, build_operator_queue_state(ROOT))

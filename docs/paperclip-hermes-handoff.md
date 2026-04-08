@@ -278,6 +278,11 @@ Immediate hardening focus after this pass should remain:
 - postback failure diagnosis
 - local patch verification and reduction of runtime staleness surprises
 
+Restart/reload discipline now includes:
+- runtime build stamp surfaced on `/health`
+- explicit runtime feature fingerprint surfaced on `/health`
+- `scripts/check_runtime_reload.py` to confirm the running Hermes process actually loaded the expected feature set
+
 ## Working rule from here on
 
 From this point forward, whenever progress is made on Paperclip ↔ Hermes integration in Agentopia, update this document in the same PR. Do not let the handoff doc lag behind the real current state.
