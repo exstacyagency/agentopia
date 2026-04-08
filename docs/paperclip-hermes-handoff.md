@@ -167,6 +167,10 @@ Before further live validation, keep the ownership boundary explicit:
 - Paperclip remains the orchestration/control-plane surface
 - local Paperclip patches should stay thin, documented, and disposable
 
+Enforcement rule:
+- if a change affects behavior or business logic, it must land in Agentopia first
+- Paperclip patches should only translate, expose, display, or bridge that logic
+
 Supporting docs added for this:
 - `docs/paperclip-local-patch-inventory.md`
 - `docs/paperclip-boundary-rules.md`
