@@ -160,7 +160,7 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
-### Phase: semantic action labeling and explanations
+### Phase: Paperclip-visible surfacing
 
 Current validated state:
 - allowed route live validation passed with `policy.mode = allow`
@@ -177,29 +177,30 @@ Current validated state:
 - Paperclip approval id/status linkage is validated in write-result metadata and operator summaries
 - approval linkage is formalized in the mapping/bridge/result-contract docs and code
 - approval reconciliation is implemented with local fallback and supports live Paperclip lookup
-- semantic action labels and human-readable production reasons are now implemented in result metadata and write summaries
+- semantic action labels and human-readable production reasons are implemented in result metadata and write summaries
+- a Paperclip-facing issue-comment surfacing path is now documented and the client helper is added
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
-- make actions legible by labeling what they are and why they were produced
-- validate the new labeling fields in persisted results and operator summaries
+- push key semantic labels and execution reasons into Paperclip-visible issue history
+- validate that a structured execution summary comment can be posted back to a Paperclip issue
 
 After that, choose between:
-1. enrich mismatch handling and approval drift alerting
-2. add a third narrow write-capable route
+1. implement structured issue-comment posting back into Paperclip
+2. enrich mismatch handling and approval drift alerting
 
 ## Recommended next action for the next agent
 
 The immediate next task should be:
 
-**Validate semantic action labels and production reasons in persisted write runs and the write-action summary.**
+**Implement and validate structured issue-comment posting back into Paperclip for labeled runs.**
 
 ### Suggested concrete sequence
-1. execute or inspect recent `file_write` and `repo_write` runs
-2. confirm metadata includes `action_label`, `action_category`, `action_reason`, `operator_summary`, and `issue_origin`
-3. confirm `python3 scripts/list_write_actions.py` surfaces those fields clearly
-4. update this handoff doc again in the same PR if the labels or explanations need refinement
+1. build a summary comment body from result metadata fields like `action_label`, `action_reason`, `policy`, and approval linkage
+2. post it to the relevant Paperclip issue using the new client helper
+3. confirm the comment is visible in the Paperclip issue timeline
+4. update this handoff doc again in the same PR with the validation result
 
 ## Working rule from here on
 
