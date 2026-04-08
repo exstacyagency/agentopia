@@ -160,6 +160,23 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
+### Phase: approval and review dashboard
+
+Current validated state:
+- write-capable actions already carry policy, approval, and semantic labeling metadata
+- write-action summary and approval reconciliation exist as separate operator views
+- a unified review dashboard script is now added to group pending previews, blocked actions, applied writes, and approval mismatches
+
+Immediate focus:
+- keep this handoff doc updated in every relevant PR
+- preserve the now-working durable callback and Paperclip feedback loop
+- make approval/deny review easier before building rollback
+- validate the grouped review output against recent persisted runs
+
+After that, choose between:
+1. add rollback/revert actions
+2. enrich dashboard states and alerts further
+
 ### Boundary cleanup note
 
 Before further live validation, keep the ownership boundary explicit:
@@ -211,14 +228,13 @@ After that, choose between:
 
 The immediate next task should be:
 
-**Validate automatic structured issue-comment posting back into Paperclip for a labeled run.**
+**Validate the grouped review dashboard output against recent persisted runs.**
 
 ### Suggested concrete sequence
-1. restart the Hermes executor so it loads the automatic comment-posting hook
-2. execute a labeled run with a real `paperclip_issue_id`
-3. confirm the comment is posted automatically without a separate manual API call
-4. confirm the comment is visible in the Paperclip issue timeline
-5. update this handoff doc again in the same PR with the validation result
+1. run `python3 scripts/review_write_actions.py`
+2. confirm pending previews, blocked actions, applied writes, and approval mismatches are grouped separately
+3. confirm entries retain label/reason/policy/approval context
+4. update this handoff doc again in the same PR if the grouped review output needs refinement
 
 ## Working rule from here on
 
