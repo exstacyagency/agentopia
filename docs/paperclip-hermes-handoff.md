@@ -160,7 +160,7 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
-### Phase: live Paperclip approval reconciliation
+### Phase: semantic action labeling and explanations
 
 Current validated state:
 - allowed route live validation passed with `policy.mode = allow`
@@ -176,13 +176,14 @@ Current validated state:
 - an operator-facing write-action summary script is added and normalized
 - Paperclip approval id/status linkage is validated in write-result metadata and operator summaries
 - approval linkage is formalized in the mapping/bridge/result-contract docs and code
-- approval reconciliation is implemented with local fallback and now supports live Paperclip lookup
+- approval reconciliation is implemented with local fallback and supports live Paperclip lookup
+- semantic action labels and human-readable production reasons are now implemented in result metadata and write summaries
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
-- prefer live Paperclip approval state when reconciling approval-linked runs
-- validate live Paperclip reconciliation when a real company/approval target is available
+- make actions legible by labeling what they are and why they were produced
+- validate the new labeling fields in persisted results and operator summaries
 
 After that, choose between:
 1. enrich mismatch handling and approval drift alerting
@@ -192,14 +193,13 @@ After that, choose between:
 
 The immediate next task should be:
 
-**Validate live Paperclip approval reconciliation when a real company/approval target is available, with local fallback preserved.**
+**Validate semantic action labels and production reasons in persisted write runs and the write-action summary.**
 
 ### Suggested concrete sequence
-1. set `PAPERCLIP_COMPANY_ID` for the active local Paperclip company
-2. run `python3 scripts/reconcile_approval_status.py`
-3. confirm `status_source = paperclip_live` appears when live approval lookup succeeds
-4. confirm fallback remains `local_fallback` when live lookup is unavailable
-5. update this handoff doc again in the same PR with the validation result
+1. execute or inspect recent `file_write` and `repo_write` runs
+2. confirm metadata includes `action_label`, `action_category`, `action_reason`, `operator_summary`, and `issue_origin`
+3. confirm `python3 scripts/list_write_actions.py` surfaces those fields clearly
+4. update this handoff doc again in the same PR if the labels or explanations need refinement
 
 ## Working rule from here on
 

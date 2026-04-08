@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from hermes.action_labels import derive_action_labels
 from hermes.file_ops import FileWriteError, write_workspace_file
 from hermes.policy import evaluate_task_policy
 from hermes.repo_ops import apply_repo_write, preview_repo_write
@@ -209,6 +210,7 @@ class HermesExecutor:
                 "mode": policy.mode,
                 "reason": policy.reason,
             },
+            **derive_action_labels(task["type"], policy.mode, policy.reason, context),
         }
         if file_write:
             metadata["file_write"] = file_write["metadata"]
