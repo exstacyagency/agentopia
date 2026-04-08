@@ -110,8 +110,13 @@ class PaperclipHttpClient:
     def get_approval(self, company_id: str, approval_id: str) -> dict[str, Any]:
         return self._request("GET", f"/api/companies/{company_id}/approvals/{approval_id}")
 
-    def create_issue_comment(self, company_id: str, issue_id: str, body: dict[str, Any]) -> dict[str, Any]:
-        return self._request("POST", f"/api/companies/{company_id}/issues/{issue_id}/comments", body)
+    def create_issue_comment(self, issue_id: str, body: str, reopen: bool | None = None, interrupt: bool | None = None) -> dict[str, Any]:
+        payload: dict[str, Any] = {"body": body}
+        if reopen is not None:
+            payload["reopen"] = reopen
+        if interrupt is not None:
+            payload["interrupt"] = interrupt
+        return self._request("POST", f"/api/issues/{issue_id}/comments", payload)
 
     def wake_agent(self, trigger: PaperclipExecutionTrigger) -> dict[str, Any]:
         payload = {

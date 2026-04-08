@@ -10,11 +10,13 @@ from urllib.parse import urlparse
 from hermes.executor import HermesExecutor
 from hermes.persistence import HermesPersistence
 from hermes.callback_store import HermesCallbackStore
+from hermes.paperclip_comments import PaperclipCommentPoster
 
 ROOT = Path(__file__).resolve().parent.parent
 EXECUTOR = HermesExecutor(ROOT)
 PERSISTENCE = HermesPersistence(ROOT)
 CALLBACK_STORE = HermesCallbackStore(ROOT)
+COMMENT_POSTER = PaperclipCommentPoster()
 PAPERCLIP_RESULT_URL = os.environ.get("PAPERCLIP_RESULT_URL", "http://127.0.0.1:3200/internal/tasks/{task_id}/result")
 
 
@@ -108,6 +110,21 @@ class HermesHandler(BaseHTTPRequestHandler):
             "status_code": callback_status,
             "error": callback_error,
         }
+
+        issue_id = ((result.get("result") or {}).get("metadata") or {}).get("paperclip_issue_id")
+        if issue_id:
+            try:
+                comment_result = COMMENT_POSTER.post_execution_summary(issue_id, result)
+                result["persistence"]["paperclip_comment"] = {
+                    "success": True,
+                    "comment_id": comment_result.get("id"),
+                }
+            except Exception as exc:
+                result["persistence"]["paperclip_comment"] = {
+                    "success": False,
+                    "error": str(exc),
+                }
+
         status = 200 if result["run"]["status"] == "succeeded" else 400
         self._send(status, result)
 
