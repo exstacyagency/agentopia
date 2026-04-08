@@ -160,7 +160,7 @@ The main remaining gaps are now:
 
 ## Recommended next phase
 
-### Phase: Paperclip-visible surfacing
+### Phase: structured Paperclip issue comments
 
 Current validated state:
 - allowed route live validation passed with `policy.mode = allow`
@@ -178,29 +178,30 @@ Current validated state:
 - approval linkage is formalized in the mapping/bridge/result-contract docs and code
 - approval reconciliation is implemented with local fallback and supports live Paperclip lookup
 - semantic action labels and human-readable production reasons are implemented in result metadata and write summaries
-- a Paperclip-facing issue-comment surfacing path is now documented and the client helper is added
+- Paperclip issue-comment posting helpers are now implemented in the client/service layer
 
 Immediate focus:
 - keep this handoff doc updated in every relevant PR
 - preserve the now-working durable callback and inspection path
-- push key semantic labels and execution reasons into Paperclip-visible issue history
-- validate that a structured execution summary comment can be posted back to a Paperclip issue
+- post semantic execution summaries back into Paperclip-visible issue history
+- validate that a structured execution summary comment appears in the Paperclip issue timeline
 
 After that, choose between:
-1. implement structured issue-comment posting back into Paperclip
-2. enrich mismatch handling and approval drift alerting
+1. enrich mismatch handling and approval drift alerting
+2. add richer Paperclip-native UI surfacing beyond comments
 
 ## Recommended next action for the next agent
 
 The immediate next task should be:
 
-**Implement and validate structured issue-comment posting back into Paperclip for labeled runs.**
+**Validate structured issue-comment posting back into Paperclip for a labeled run.**
 
 ### Suggested concrete sequence
-1. build a summary comment body from result metadata fields like `action_label`, `action_reason`, `policy`, and approval linkage
-2. post it to the relevant Paperclip issue using the new client helper
-3. confirm the comment is visible in the Paperclip issue timeline
-4. update this handoff doc again in the same PR with the validation result
+1. execute a labeled run with a real `paperclip_issue_id`
+2. build a structured summary comment from the result metadata
+3. post it to the related Paperclip issue using the service helper
+4. confirm the comment is visible in the Paperclip issue timeline
+5. update this handoff doc again in the same PR with the validation result
 
 ## Working rule from here on
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from paperclip_adapter.client import PaperclipAdapter
+from paperclip_adapter.comments import build_execution_summary_comment
 from paperclip_adapter.http_client import PaperclipClientConfig, PaperclipHttpClient
 
 
@@ -10,6 +11,10 @@ class PaperclipAdapterService:
     def __init__(self, http_client: PaperclipHttpClient):
         self.http_client = http_client
         self.adapter = PaperclipAdapter()
+
+    def post_execution_summary_comment(self, company_id: str, issue_id: str, result: dict[str, Any]) -> dict[str, Any]:
+        comment = build_execution_summary_comment(result)
+        return self.http_client.create_issue_comment(company_id, issue_id, comment)
 
     def submit_task(
         self,
