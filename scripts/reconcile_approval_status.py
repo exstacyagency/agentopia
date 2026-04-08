@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-from paperclip_adapter.http_client import PaperclipHttpClient
+from paperclip_adapter.http_client import PaperclipClientConfig, PaperclipHttpClient
 
 root = Path(__file__).resolve().parent.parent
 runs_base = root / "var" / "hermes" / "runs"
@@ -24,7 +24,7 @@ if state_file.exists():
 
 paperclip_base_url = os.environ.get("PAPERCLIP_BASE_URL", "http://127.0.0.1:3100")
 paperclip_company_id = os.environ.get("PAPERCLIP_COMPANY_ID")
-client = PaperclipHttpClient(base_url=paperclip_base_url)
+client = PaperclipHttpClient(PaperclipClientConfig(base_url=paperclip_base_url))
 
 
 def resolve_current_status(approval_id: str) -> tuple[str | None, str]:

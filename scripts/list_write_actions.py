@@ -99,6 +99,11 @@ for path in sorted(base.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse
         "policy_mode": policy.get("mode"),
         "policy_reason": policy.get("reason"),
         "operator_status": operator_status(run.get("status"), policy.get("mode"), error),
+        "action_label": metadata.get("action_label"),
+        "action_category": metadata.get("action_category"),
+        "action_reason": metadata.get("action_reason"),
+        "operator_summary": metadata.get("operator_summary"),
+        "issue_origin": metadata.get("issue_origin"),
         "summary": result.get("summary"),
         "trace_id": (envelope.get("trace") or {}).get("trace_id"),
         "paperclip_approval": {
