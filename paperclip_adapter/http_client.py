@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from typing import Any
-from urllib import request
+from urllib import error, request
 
 from paperclip_adapter.models import (
     PaperclipApprovalCreate,
@@ -37,9 +37,15 @@ class PaperclipHttpClient:
             headers=self._headers(),
             method=method,
         )
-        with request.urlopen(req) as response:
-            raw = response.read().decode()
-            return json.loads(raw) if raw else {}
+        try:
+            with request.urlopen(req) as response:
+                raw = response.read().decode()
+                return json.loads(raw) if raw else {}
+        except error.HTTPError as exc:
+            raw = exc.read().decode(errors="replace")
+            raise RuntimeError(f"paperclip_http_error status={exc.code} method={method} path={path} body={raw}") from exc
+        except error.URLError as exc:
+            raise RuntimeError(f"paperclip_connection_error method={method} path={path} reason={exc.reason}") from exc
 
     def create_issue(self, issue: PaperclipIssueCreate) -> dict[str, Any]:
         payload = {
@@ -121,7 +127,9 @@ class PaperclipHttpClient:
     def upsert_issue_document(self, issue_id: str, key: str, title: str, body: str) -> dict[str, Any]:
         payload = {
             "title": title,
-            "contentMarkdown": body,
+            "format": "markdown",
+            "body": body,
+            "baseRevisionId": None,
         }
         return self._request("PUT", f"/api/issues/{issue_id}/documents/{key}", payload)
 

@@ -13,6 +13,7 @@ from hermes.persistence import HermesPersistence
 from hermes.callback_store import HermesCallbackStore
 from hermes.issue_actions import handle_issue_action
 from hermes.paperclip_comments import PaperclipCommentPoster
+from hermes.runtime_checks import summarize_runtime_guards
 
 ROOT = Path(__file__).resolve().parent.parent
 EXECUTOR = HermesExecutor(ROOT)
@@ -58,7 +59,7 @@ class HermesHandler(BaseHTTPRequestHandler):
 </html>""")
             return
         if parsed.path == "/health":
-            self._send(200, {"ok": True, "service": "hermes"})
+            self._send(200, {"ok": True, "service": "hermes", "runtime": summarize_runtime_guards(getattr(COMMENT_POSTER, 'base_url', None))})
             return
         if parsed.path == "/internal/dashboard-state":
             self._send(200, build_operator_queue_state(ROOT))
@@ -133,6 +134,7 @@ class HermesHandler(BaseHTTPRequestHandler):
                 result["persistence"]["paperclip_comment"] = {
                     "success": False,
                     "error": str(exc),
+                    "issue_id": issue_id,
                 }
             try:
                 dashboard_result = COMMENT_POSTER.publish_issue_dashboard(issue_id, result)
@@ -145,6 +147,7 @@ class HermesHandler(BaseHTTPRequestHandler):
                 result["persistence"]["paperclip_dashboard"] = {
                     "success": False,
                     "error": str(exc),
+                    "issue_id": issue_id,
                 }
 
         status = 200 if result["run"]["status"] == "succeeded" else 400
