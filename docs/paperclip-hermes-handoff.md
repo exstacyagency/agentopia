@@ -272,11 +272,20 @@ Current hardening work added:
 - runtime guard visibility on `/health`
 - richer persistence metadata when Paperclip comment or dashboard publish fails
 - a lightweight platform hardening check script
+- runtime build stamp and feature fingerprint on `/health`
+- durable postback records and real replay support for failed comment/dashboard postbacks
 
 Immediate hardening focus after this pass should remain:
 - reload/restart discipline
-- postback failure diagnosis
+- postback failure diagnosis and recovery
 - local patch verification and reduction of runtime staleness surprises
+- continue reducing ambiguity in the local patch surface
+
+### Patch-discipline cleanup status
+Current patch-discipline cleanup added:
+- `docs/paperclip-local-patch-classification.md`
+- explicit separation between required runtime fixes, operator UI enhancements, and compatibility patches
+- a validation checklist for trusting the local patched Paperclip runtime
 
 ## Working rule from here on
 
