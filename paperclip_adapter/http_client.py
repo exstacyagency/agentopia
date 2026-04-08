@@ -118,6 +118,13 @@ class PaperclipHttpClient:
             payload["interrupt"] = interrupt
         return self._request("POST", f"/api/issues/{issue_id}/comments", payload)
 
+    def upsert_issue_document(self, issue_id: str, key: str, title: str, body: str) -> dict[str, Any]:
+        payload = {
+            "title": title,
+            "contentMarkdown": body,
+        }
+        return self._request("PUT", f"/api/issues/{issue_id}/documents/{key}", payload)
+
     def wake_agent(self, trigger: PaperclipExecutionTrigger) -> dict[str, Any]:
         payload = {
             "source": trigger.source,

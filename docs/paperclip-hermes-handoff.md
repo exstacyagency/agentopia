@@ -230,13 +230,15 @@ After that, choose between:
 
 The immediate next task should be:
 
-**Validate and inspect the new decision-trace metadata on fresh actions.**
+**Validate the first UI-facing Paperclip dashboard snapshot.**
 
 ### Suggested concrete sequence
-1. trigger a fresh write-capable action and a fresh blocked or preview action
-2. run `python3 scripts/list_decision_traces.py`
-3. confirm decision trace includes requested intent, mapped task type, policy evaluation, approval context, and target paths
-4. update this handoff doc again in the same PR with the validation result
+1. restart Hermes so it loads the issue-document publishing hook
+2. trigger a Paperclip-linked action
+3. confirm Paperclip issue history still shows the summary comment
+4. confirm the issue documents section contains `Agentopia Review Dashboard`
+5. inspect the document body for policy and decision-trace content
+6. update this handoff doc again in the same PR with the validation result
 
 ## Working rule from here on
 
