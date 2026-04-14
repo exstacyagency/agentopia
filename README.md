@@ -137,6 +137,10 @@ Production-like configs should use digest-pinned image refs, while development a
 
 Use `docs/staging-environment.md` for the minimum staging definition and `scripts/staging-checklist.sh` for the staging preflight checklist.
 
+## Production secret injection
+
+Use `docs/production-secret-injection.md` for the secret injection policy and `scripts/render-production-env.sh` to build a validated production runtime env from tracked templates plus untracked secrets.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.

@@ -33,6 +33,8 @@ Before deployment, have all of the following ready:
 
 For staging, use `config/environments/staging.env` as the tracked baseline and `scripts/staging-checklist.sh` as the preflight checklist.
 
+For production-like rollouts, inject secrets through the untracked secret file path described in `docs/production-secret-injection.md` and render a validated deployment env file before startup.
+
 ## Repeatable deployment flow
 
 ### 1. Prepare environment config
