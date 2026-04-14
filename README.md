@@ -165,6 +165,10 @@ Use `docs/request-size-limits.md` for the current request body limit policy. Pap
 
 Use `docs/input-validation-sanitization.md` for the current safer input validation baseline. Paperclip and Hermes both reject request payload strings containing unsafe control characters.
 
+## Rate limiting and abuse protection
+
+Use `docs/rate-limiting-abuse-protection.md` for the current abuse-control baseline. Paperclip and Hermes both enforce configurable per-IP request limits.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.

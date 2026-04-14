@@ -16,6 +16,7 @@ from hermes.persistence import HermesPersistence
 from hermes.postback_store import HermesPostbackStore
 from hermes.runtime_checks import summarize_runtime_guards
 from scripts.input_validation import InputValidationError, validate_strings
+from scripts.rate_limit import InMemoryRateLimiter
 
 ROOT = os.path.dirname(os.path.dirname(__file__))
 EXECUTOR = HermesExecutor(os.path.abspath(ROOT))
@@ -26,6 +27,9 @@ COMMENT_POSTER = PaperclipCommentPoster()
 MEMPALACE = MemPalaceService()
 PAPERCLIP_RESULT_URL = os.environ.get("PAPERCLIP_RESULT_URL", "http://127.0.0.1:3200/internal/tasks/{task_id}/result")
 MAX_REQUEST_BYTES = int(os.environ.get("HERMES_MAX_REQUEST_BYTES", str(1024 * 1024)))
+RATE_LIMIT_COUNT = int(os.environ.get("HERMES_RATE_LIMIT_COUNT", "30"))
+RATE_LIMIT_WINDOW_SECONDS = int(os.environ.get("HERMES_RATE_LIMIT_WINDOW_SECONDS", "60"))
+RATE_LIMITER = InMemoryRateLimiter(RATE_LIMIT_COUNT, RATE_LIMIT_WINDOW_SECONDS)
 
 
 class HermesHandler(BaseHTTPRequestHandler):
@@ -36,6 +40,15 @@ class HermesHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
+
+    def _client_ip(self) -> str:
+        return self.client_address[0] if self.client_address else "unknown"
+
+    def _enforce_rate_limit(self) -> bool:
+        if RATE_LIMITER.allow(self._client_ip()):
+            return True
+        self._send(429, {"error": "rate limit exceeded", "limit": RATE_LIMIT_COUNT, "window_seconds": RATE_LIMIT_WINDOW_SECONDS})
+        return False
 
     def _read_json_body(self) -> dict:
         length = int(self.headers.get("Content-Length", "0"))
@@ -76,6 +89,8 @@ class HermesHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
+        if not self._enforce_rate_limit():
+            return
         try:
             body = self._read_json_body()
         except InputValidationError as exc:
