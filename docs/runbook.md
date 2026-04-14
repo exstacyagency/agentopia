@@ -70,6 +70,10 @@ Use `docs/scoped-api-keys.md` for the scoped key baseline and run `./.venv/bin/p
 
 Use `docs/api-key-rotation-revocation.md` for the key lifecycle baseline and run `./.venv/bin/python scripts/test_api_key_rotation_revocation.py` to verify active-key rotation windows and revoked-key rejection.
 
+## Role-based permissions
+
+Use `docs/role-based-permissions.md` for the permission baseline and run `./.venv/bin/python scripts/test_role_permissions.py` to verify role-to-scope enforcement for client API keys.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval consistency baseline and run `./.venv/bin/python scripts/test_approval_reconciliation.py` to verify mismatch detection.
@@ -210,6 +214,7 @@ See `docs/container-image-versioning.md`.
 - If client API auth readiness is unclear, review `docs/client-api-authentication.md` and run `./.venv/bin/python scripts/test_client_api_auth.py`.
 - If scoped API key readiness is unclear, review `docs/scoped-api-keys.md` and run `./.venv/bin/python scripts/test_scoped_api_keys.py`.
 - If API key rotation or revocation readiness is unclear, review `docs/api-key-rotation-revocation.md` and run `./.venv/bin/python scripts/test_api_key_rotation_revocation.py`.
+- If role-based permission readiness is unclear, review `docs/role-based-permissions.md` and run `./.venv/bin/python scripts/test_role_permissions.py`.
 - If approval reconciliation readiness is unclear, review `docs/approval-reconciliation.md` and run `./.venv/bin/python scripts/test_approval_reconciliation.py`.
 - If approval expiration readiness is unclear, review `docs/approval-expiration.md` and run `./.venv/bin/python scripts/test_approval_expiration.py`.
 - If approval audit readiness is unclear, review `docs/approval-audit-trail.md` and run `./.venv/bin/python scripts/test_approval_audit_trail.py`.

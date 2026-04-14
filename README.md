@@ -173,6 +173,10 @@ Use `docs/scoped-api-keys.md` for the scoped key baseline. Paperclip now support
 
 Use `docs/api-key-rotation-revocation.md` for the current key lifecycle baseline. Paperclip now supports a file-based key registry via `PAPERCLIP_CLIENT_API_KEYS_FILE` so multiple active keys can coexist during rotation and revoked keys can be rejected explicitly.
 
+## Role-based permissions
+
+Use `docs/role-based-permissions.md` for the current permission baseline. File-based client API keys can now carry roles like `submitter` and `viewer`, and Paperclip maps those roles to allowed request scopes.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.

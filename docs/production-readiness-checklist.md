@@ -7,7 +7,7 @@ This checklist captures the minimum work required before Agentopia should be use
 ### Auth, tenants, and permissions
 - [ ] Add client/org/tenant isolation
 - [x] Add authentication for all client-facing APIs
-- [ ] Add role-based permissions
+- [x] Add role-based permissions
 - [x] Add scoped API keys
 - [x] Add API key rotation and revocation
 
