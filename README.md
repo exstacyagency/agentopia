@@ -141,6 +141,10 @@ Use `docs/staging-environment.md` for the minimum staging definition and `script
 
 Use `docs/production-secret-injection.md` for the secret injection policy and `scripts/render-production-env.sh` to build a validated production runtime env from tracked templates plus untracked secrets.
 
+## Secret storage and handling
+
+Use `docs/secret-storage-handling.md` for the current secret handling baseline and `python3 scripts/check-secret-handling.py` to verify obvious repo-level secret handling rules.
+
 ## Runtime and container hardening
 
 Use `docs/runtime-container-hardening.md` for the hardening baseline and `python3 scripts/check-compose-hardening.py` to verify the compose file still includes the expected safeguards.
