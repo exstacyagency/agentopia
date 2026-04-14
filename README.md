@@ -108,6 +108,10 @@ python -m pip install --upgrade pip
 python -m pip install -e .
 ```
 
+## Continuous integration
+
+GitHub Actions now validates the repo in a clean environment by creating a virtualenv, installing from `pyproject.toml`, and running the core test suite.
+
 ## How to start
 
 ```bash
