@@ -46,6 +46,16 @@ This checklist captures the minimum work required before Agentopia should be use
 - [ ] Add rate limiting and abuse protection
 - [ ] Add safer input validation and sanitization
 - [ ] Add dependency and vulnerability scanning
+- [ ] Add image and dependency provenance checks
+- [ ] Add artifact access controls and sensitive-output redaction rules
+
+### Build, release, and supply chain hygiene
+- [x] Add a proper Python project/dependency manifest
+- [ ] Add pinned dependency resolution or lockfile support
+- [x] Add reproducible build/install steps for local, CI, and production
+- [ ] Add CI validation in a clean environment
+- [ ] Add container/image versioning strategy
+- [ ] Add release and promotion criteria for staging to production
 
 ### Observability and operations
 - [ ] Add structured logging

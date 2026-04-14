@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentopia"
+version = "0.1.0"
+description = "Agentopia Paperclip and Hermes integration scaffold"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "jsonschema>=4.23.0,<5",
+]
+
+[project.optional-dependencies]
+dev = []
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["hermes*", "paperclip*", "paperclip_adapter*", "scripts*"]
+exclude = ["artifacts*", "config*", "data*", "docs*", "fixtures*", "memory*", "schemas*", "tests*"]
