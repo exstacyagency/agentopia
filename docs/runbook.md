@@ -6,7 +6,8 @@
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -e .
+python -m pip install -r requirements.lock
+python -m pip install -e . --no-deps
 cp .env.example .env
 scripts/agentopia setup
 ```
@@ -27,7 +28,7 @@ PYTHONPATH=. python3 scripts/test_integration_flow.py
 
 ## CI validation
 
-GitHub Actions runs the same clean-environment validation suite on pushes and pull requests using a fresh virtualenv and editable install from `pyproject.toml`.
+GitHub Actions runs the same clean-environment validation suite on pushes and pull requests using a fresh virtualenv, pinned installs from `requirements.lock`, and an editable install from `pyproject.toml`.
 
 ## Workflow commands
 

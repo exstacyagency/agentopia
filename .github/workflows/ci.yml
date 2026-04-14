@@ -26,11 +26,16 @@ jobs:
       - name: Create virtual environment
         run: python -m venv .venv
 
-      - name: Install project
+      - name: Install pinned dependencies
         run: |
           . .venv/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install -e .
+          python -m pip install -r requirements.lock
+
+      - name: Install project
+        run: |
+          . .venv/bin/activate
+          python -m pip install -e . --no-deps
 
       - name: Run clean-environment validation suite
         run: |
