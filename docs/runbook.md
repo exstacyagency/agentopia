@@ -30,6 +30,10 @@ PYTHONPATH=. python3 scripts/test_integration_flow.py
 
 GitHub Actions runs the same clean-environment validation suite on pushes and pull requests using a fresh virtualenv, pinned installs from `requirements.lock`, and an editable install from `pyproject.toml`.
 
+## Release and promotion
+
+Use `docs/release-promotion-criteria.md` as the minimum gate for moving changes from merged code to staging-like validation and then toward production-like rollout.
+
 ## Workflow commands
 
 - `scripts/agentopia boot` — full repo workflow
@@ -80,3 +84,4 @@ See `docs/container-image-versioning.md`.
 - If smoke fails, check the compose file for the expected service names and profiles.
 - If a config file is blank, rerun `scripts/agentopia setup`.
 - If runtime startup fails, confirm the real Paperclip and Hermes images or commands are correct.
+- If promotion readiness is unclear, review `docs/release-promotion-criteria.md` and verify the image refs, validation output, and rollback target are recorded.
