@@ -58,7 +58,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add release and promotion criteria for staging to production
 
 ### Observability and operations
-- [ ] Add structured logging
+- [x] Add structured logging
 - [ ] Add correlation IDs across requests and runs
 - [ ] Add metrics
 - [ ] Add alerts
