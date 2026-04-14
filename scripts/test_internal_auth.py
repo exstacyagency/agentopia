@@ -10,29 +10,58 @@ import types
 import unittest
 from http.client import HTTPConnection
 
+from paperclip.dispatch import HermesDispatchClient
 
-class RequestLimitTests(unittest.TestCase):
-    def test_paperclip_rejects_oversized_request(self) -> None:
-        os.environ["PAPERCLIP_MAX_REQUEST_BYTES"] = "32"
-        from paperclip.app import PaperclipHandler, ThreadingHTTPServer
 
-        server = ThreadingHTTPServer(("127.0.0.1", 0), PaperclipHandler)
+class InternalAuthTests(unittest.TestCase):
+    def test_dispatch_client_sends_bearer_token(self) -> None:
+        captured = {}
+
+        class DummyResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+            def read(self):
+                return b"{}"
+
+        def fake_urlopen(req):
+            captured["authorization"] = req.headers.get("Authorization")
+            return DummyResponse()
+
+        client = HermesDispatchClient("http://127.0.0.1:3200", auth_token="shared-token")
+        from unittest.mock import patch
+
+        with patch("paperclip.dispatch.request.urlopen", fake_urlopen):
+            client.submit({"task": {"id": "task_123"}})
+
+        self.assertEqual(captured["authorization"], "Bearer shared-token")
+
+    def test_paperclip_internal_result_requires_auth(self) -> None:
+        os.environ["AGENTOPIA_INTERNAL_AUTH_TOKEN"] = "shared-token"
+        from importlib import reload
+        import paperclip.app as paperclip_app
+
+        reload(paperclip_app)
+        server = paperclip_app.ThreadingHTTPServer(("127.0.0.1", 0), paperclip_app.PaperclipHandler)
         thread = threading.Thread(target=server.handle_request)
         thread.start()
         time.sleep(0.1)
 
         conn = HTTPConnection("127.0.0.1", server.server_address[1])
-        payload = json.dumps({"x": "y" * 100}).encode()
-        conn.request("POST", "/tasks", body=payload, headers={"Content-Type": "application/json", "Content-Length": str(len(payload))})
+        payload = json.dumps({"run": {"status": "succeeded"}}).encode()
+        conn.request("POST", "/internal/tasks/task_123/result", body=payload, headers={"Content-Type": "application/json", "Content-Length": str(len(payload))})
         response = conn.getresponse()
         body = response.read().decode()
-        self.assertEqual(response.status, 413)
-        self.assertIn("request body too large", body)
+        self.assertEqual(response.status, 401)
+        self.assertIn("unauthorized", body)
+        conn.close()
         server.server_close()
         thread.join(timeout=2)
 
-    def test_hermes_rejects_oversized_request(self) -> None:
-        os.environ["HERMES_MAX_REQUEST_BYTES"] = "32"
+    def test_hermes_execute_requires_auth(self) -> None:
         os.environ["AGENTOPIA_INTERNAL_AUTH_TOKEN"] = "shared-token"
         sys.modules.setdefault("hermes.build_info", types.SimpleNamespace(BUILD_STAMP="test", RUNTIME_FEATURES=[]))
         sys.modules.setdefault("hermes.dashboard_state", types.SimpleNamespace(build_operator_queue_state=lambda root: {}))
@@ -74,20 +103,23 @@ class RequestLimitTests(unittest.TestCase):
         sys.modules.setdefault("hermes.paperclip_comments", types.SimpleNamespace(PaperclipCommentPoster=_DummyCommentPoster))
         sys.modules.setdefault("hermes.memory.service", types.SimpleNamespace(MemPalaceService=_DummyMemPalace))
 
-        from hermes.app import HermesHandler, ThreadingHTTPServer
+        from importlib import reload
+        import hermes.app as hermes_app
 
-        server = ThreadingHTTPServer(("127.0.0.1", 0), HermesHandler)
+        reload(hermes_app)
+        server = hermes_app.ThreadingHTTPServer(("127.0.0.1", 0), hermes_app.HermesHandler)
         thread = threading.Thread(target=server.handle_request)
         thread.start()
         time.sleep(0.1)
 
         conn = HTTPConnection("127.0.0.1", server.server_address[1])
-        payload = json.dumps({"x": "y" * 100}).encode()
-        conn.request("POST", "/internal/execute", body=payload, headers={"Content-Type": "application/json", "Content-Length": str(len(payload)), "Authorization": "Bearer shared-token"})
+        payload = json.dumps({"task": {"title": "ok"}}).encode()
+        conn.request("POST", "/internal/execute", body=payload, headers={"Content-Type": "application/json", "Content-Length": str(len(payload))})
         response = conn.getresponse()
         body = response.read().decode()
-        self.assertEqual(response.status, 413)
-        self.assertIn("request body too large", body)
+        self.assertEqual(response.status, 401)
+        self.assertIn("unauthorized", body)
+        conn.close()
         server.server_close()
         thread.join(timeout=2)
 

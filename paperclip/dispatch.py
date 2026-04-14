@@ -1,20 +1,25 @@
 from __future__ import annotations
 
 import json
+import os
 from urllib import request
 from urllib.error import HTTPError
 
 
 class HermesDispatchClient:
-    def __init__(self, base_url: str = "http://127.0.0.1:3200"):
+    def __init__(self, base_url: str = "http://127.0.0.1:3200", auth_token: str | None = None):
         self.base_url = base_url.rstrip("/")
+        self.auth_token = auth_token if auth_token is not None else os.environ.get("AGENTOPIA_INTERNAL_AUTH_TOKEN", "")
 
     def submit(self, payload: dict) -> dict:
         data = json.dumps(payload).encode()
+        headers = {"Content-Type": "application/json"}
+        if self.auth_token:
+            headers["Authorization"] = f"Bearer {self.auth_token}"
         req = request.Request(
             f"{self.base_url}/internal/execute",
             data=data,
-            headers={"Content-Type": "application/json"},
+            headers=headers,
             method="POST",
         )
         try:

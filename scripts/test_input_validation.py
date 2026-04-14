@@ -44,6 +44,7 @@ class InputValidationHandlerTests(unittest.TestCase):
 
     def test_hermes_rejects_control_chars(self) -> None:
         os.environ["HERMES_MAX_REQUEST_BYTES"] = str(1024 * 1024)
+        os.environ["AGENTOPIA_INTERNAL_AUTH_TOKEN"] = "shared-token"
         sys.modules.setdefault("hermes.build_info", types.SimpleNamespace(BUILD_STAMP="test", RUNTIME_FEATURES=[]))
         sys.modules.setdefault("hermes.dashboard_state", types.SimpleNamespace(build_operator_queue_state=lambda root: {}))
         sys.modules.setdefault("hermes.callback_store", types.SimpleNamespace(HermesCallbackStore=lambda root: object()))
@@ -93,7 +94,7 @@ class InputValidationHandlerTests(unittest.TestCase):
 
         conn = HTTPConnection("127.0.0.1", server.server_address[1])
         payload = json.dumps({"task": {"title": "bad\u0000title"}}).encode()
-        conn.request("POST", "/internal/execute", body=payload, headers={"Content-Type": "application/json", "Content-Length": str(len(payload))})
+        conn.request("POST", "/internal/execute", body=payload, headers={"Content-Type": "application/json", "Content-Length": str(len(payload)), "Authorization": "Bearer shared-token"})
         response = conn.getresponse()
         body = response.read().decode()
         self.assertEqual(response.status, 400)

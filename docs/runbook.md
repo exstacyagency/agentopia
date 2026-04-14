@@ -54,6 +54,10 @@ Use `docs/production-secret-injection.md` for the secret injection path. Run `sc
 
 Use `docs/secret-storage-handling.md` for the current handling baseline and run `python3 scripts/check-secret-handling.py` to verify repo-level secret handling rules.
 
+## Service-to-service authentication
+
+Use `docs/service-to-service-auth.md` for the internal auth baseline and run `./.venv/bin/python scripts/test_internal_auth.py` to verify protected internal endpoints reject unauthenticated requests.
+
 ## Runtime and container hardening
 
 Use `docs/runtime-container-hardening.md` for the hardening baseline and run `python3 scripts/check-compose-hardening.py` after compose changes.
@@ -146,6 +150,7 @@ See `docs/container-image-versioning.md`.
 - If staging readiness is unclear, run `scripts/staging-checklist.sh` and review `docs/staging-environment.md`.
 - If production secret injection readiness is unclear, review `docs/production-secret-injection.md` and run `scripts/render-production-env.sh`.
 - If secret handling readiness is unclear, review `docs/secret-storage-handling.md` and run `python3 scripts/check-secret-handling.py`.
+- If service-to-service auth readiness is unclear, review `docs/service-to-service-auth.md` and run `./.venv/bin/python scripts/test_internal_auth.py`.
 - If runtime/container hardening readiness is unclear, review `docs/runtime-container-hardening.md` and run `python3 scripts/check-compose-hardening.py`.
 - If dependency scan readiness is unclear, review `docs/dependency-vulnerability-scanning.md` and run `scripts/run-dependency-scan.sh`.
 - If provenance readiness is unclear, review `docs/image-dependency-provenance.md` and run `python3 scripts/check-provenance.py`.
