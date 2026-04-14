@@ -197,6 +197,10 @@ Use `docs/dependency-aware-health-checks.md` for the current health baseline. Pa
 
 Use `docs/operator-runbooks.md` for the current troubleshooting baseline across health, auth, deployment, rollback, and security verification flows.
 
+## Metrics
+
+Use `docs/metrics.md` for the current metrics baseline. Paperclip and Hermes now expose basic Prometheus-style counters at `/metrics`.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.
