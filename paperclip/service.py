@@ -8,6 +8,7 @@ from paperclip.db import PaperclipDB
 from paperclip.dispatch import HermesDispatchClient
 from paperclip.state_machine import assert_transition
 from scripts.contracts import validate_payload
+from scripts.trace_log import TraceLogger
 
 
 def utcnow() -> str:
@@ -18,6 +19,7 @@ class PaperclipService:
     def __init__(self, db_path: Path, dispatch_client: HermesDispatchClient | None = None):
         self.db = PaperclipDB(db_path)
         self.dispatch_client = dispatch_client or HermesDispatchClient()
+        self.traces = TraceLogger(db_path.parent.parent if db_path.parent.name == 'data' else db_path.parent)
 
     def submit_task(self, payload: dict) -> dict:
         errors = validate_payload("task_request_v1.json", payload)
@@ -46,6 +48,7 @@ class PaperclipService:
             }
         )
         self.db.add_audit_event(task["id"], "task_received", "paperclip", {"state": initial_state}, created_at)
+        self.traces.record(payload["trace"]["trace_id"], "paperclip", "task_submitted", task_id=task["id"], state=initial_state)
 
         self.transition_task(task["id"], "validating", actor="paperclip", details={"schema_version": payload["schema_version"]})
         next_state = "pending_approval" if approval["required"] and approval["status"] != "approved" else "approved"
@@ -78,7 +81,10 @@ class PaperclipService:
             raise ValueError(f"task must be approved before dispatch: {task_id}")
         self.transition_task(task_id, "queued", actor="paperclip", details={"dispatch": "hermes"})
         self.transition_task(task_id, "running", actor="paperclip", details={"dispatch": "hermes"})
-        self.dispatch_client.submit(task["request_payload"], correlation_id=correlation_id or task["request_payload"].get("trace", {}).get("trace_id"))
+        trace_id = correlation_id or task["request_payload"].get("trace", {}).get("trace_id")
+        if trace_id:
+            self.traces.record(trace_id, "paperclip", "task_dispatched", task_id=task_id)
+        self.dispatch_client.submit(task["request_payload"], correlation_id=trace_id)
         return self.get_task(task_id)
 
     def record_result(self, task_id: str, result: dict) -> dict:
@@ -88,6 +94,9 @@ class PaperclipService:
         created_at = utcnow()
         self.db.store_result(task_id, result, created_at)
         self.db.add_audit_event(task_id, "result_recorded", "paperclip", {"status": status}, created_at)
+        trace_id = (result.get("trace") or {}).get("trace_id")
+        if trace_id:
+            self.traces.record(trace_id, "paperclip", "result_recorded", task_id=task_id, status=status)
         return self.get_task(task_id)
 
     def get_task(self, task_id: str) -> dict | None:
