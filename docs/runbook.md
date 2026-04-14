@@ -58,6 +58,10 @@ Use `docs/secret-storage-handling.md` for the current handling baseline and run 
 
 Use `docs/service-to-service-auth.md` for the internal auth baseline and run `./.venv/bin/python scripts/test_internal_auth.py` to verify protected internal endpoints reject unauthenticated requests.
 
+## Client API authentication
+
+Use `docs/client-api-authentication.md` for the client auth baseline and run `./.venv/bin/python scripts/test_client_api_auth.py` to verify client-facing task submission rejects unauthenticated requests.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval consistency baseline and run `./.venv/bin/python scripts/test_approval_reconciliation.py` to verify mismatch detection.
@@ -195,6 +199,7 @@ See `docs/container-image-versioning.md`.
 - If production secret injection readiness is unclear, review `docs/production-secret-injection.md` and run `scripts/render-production-env.sh`.
 - If secret handling readiness is unclear, review `docs/secret-storage-handling.md` and run `python3 scripts/check-secret-handling.py`.
 - If service-to-service auth readiness is unclear, review `docs/service-to-service-auth.md` and run `./.venv/bin/python scripts/test_internal_auth.py`.
+- If client API auth readiness is unclear, review `docs/client-api-authentication.md` and run `./.venv/bin/python scripts/test_client_api_auth.py`.
 - If approval reconciliation readiness is unclear, review `docs/approval-reconciliation.md` and run `./.venv/bin/python scripts/test_approval_reconciliation.py`.
 - If approval expiration readiness is unclear, review `docs/approval-expiration.md` and run `./.venv/bin/python scripts/test_approval_expiration.py`.
 - If approval audit readiness is unclear, review `docs/approval-audit-trail.md` and run `./.venv/bin/python scripts/test_approval_audit_trail.py`.

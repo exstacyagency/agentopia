@@ -161,6 +161,10 @@ Use `docs/secret-storage-handling.md` for the current secret handling baseline a
 
 Use `docs/service-to-service-auth.md` for the internal auth baseline. Protected internal endpoints now use a shared bearer token via `AGENTOPIA_INTERNAL_AUTH_TOKEN`.
 
+## Client API authentication
+
+Use `docs/client-api-authentication.md` for the client-facing auth baseline. Paperclip task submission now requires a bearer token via `PAPERCLIP_CLIENT_API_KEY`.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.

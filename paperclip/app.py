@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PAPERCLIP_DB_PATH = Path(os.environ.get("PAPERCLIP_DB_PATH", str(ROOT / "data" / "paperclip.sqlite3")))
 HERMES_BASE_URL = os.environ.get("HERMES_BASE_URL", "http://127.0.0.1:3200")
 INTERNAL_AUTH_TOKEN = os.environ.get("AGENTOPIA_INTERNAL_AUTH_TOKEN", "")
+CLIENT_API_TOKEN = os.environ.get("PAPERCLIP_CLIENT_API_KEY", "")
 SERVICE = PaperclipService(PAPERCLIP_DB_PATH, dispatch_client=HermesDispatchClient(HERMES_BASE_URL, auth_token=INTERNAL_AUTH_TOKEN))
 MAX_REQUEST_BYTES = int(os.environ.get("PAPERCLIP_MAX_REQUEST_BYTES", str(1024 * 1024)))
 RATE_LIMIT_COUNT = int(os.environ.get("PAPERCLIP_RATE_LIMIT_COUNT", "30"))
@@ -51,6 +52,14 @@ class PaperclipHandler(BaseHTTPRequestHandler):
 
     def _require_internal_auth(self) -> bool:
         expected = INTERNAL_AUTH_TOKEN
+        provided = self.headers.get("Authorization", "")
+        if expected and provided == f"Bearer {expected}":
+            return True
+        self._send(401, {"error": "unauthorized"})
+        return False
+
+    def _require_client_auth(self) -> bool:
+        expected = CLIENT_API_TOKEN
         provided = self.headers.get("Authorization", "")
         if expected and provided == f"Bearer {expected}":
             return True
@@ -138,6 +147,8 @@ class PaperclipHandler(BaseHTTPRequestHandler):
         try:
             body = self._read_json_body()
             if parsed.path == "/tasks":
+                if not self._require_client_auth():
+                    return
                 task = SERVICE.submit_task(body)
                 self._send(201, task)
                 return
