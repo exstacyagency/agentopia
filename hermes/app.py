@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
@@ -20,6 +21,7 @@ from scripts.input_validation import InputValidationError, validate_strings
 from scripts.metrics import MetricsRegistry
 from scripts.rate_limit import InMemoryRateLimiter
 from scripts.structured_logging import log_event
+from scripts.trace_log import TraceLogger
 
 ROOT = os.path.dirname(os.path.dirname(__file__))
 EXECUTOR = HermesExecutor(os.path.abspath(ROOT))
@@ -35,6 +37,7 @@ RATE_LIMIT_COUNT = int(os.environ.get("HERMES_RATE_LIMIT_COUNT", "30"))
 RATE_LIMIT_WINDOW_SECONDS = int(os.environ.get("HERMES_RATE_LIMIT_WINDOW_SECONDS", "60"))
 RATE_LIMITER = InMemoryRateLimiter(RATE_LIMIT_COUNT, RATE_LIMIT_WINDOW_SECONDS)
 METRICS = MetricsRegistry()
+TRACE_LOGGER = TraceLogger(Path(os.path.abspath(ROOT)))
 
 
 class HermesHandler(BaseHTTPRequestHandler):
@@ -132,6 +135,9 @@ class HermesHandler(BaseHTTPRequestHandler):
             return
         try:
             body = self._read_json_body()
+            trace_id = ((body.get("trace") or {}).get("trace_id")) if isinstance(body, dict) else None
+            if trace_id:
+                TRACE_LOGGER.record(trace_id, "hermes", "execution_received", path=parsed.path)
         except InputValidationError as exc:
             self._send(400, {"error": str(exc)})
             return
@@ -184,6 +190,9 @@ class HermesHandler(BaseHTTPRequestHandler):
 
         result = EXECUTOR.execute(body)
         persisted_path = PERSISTENCE.persist_result(result)
+        trace_id = (result.get("trace") or {}).get("trace_id")
+        if trace_id:
+            TRACE_LOGGER.record(trace_id, "hermes", "result_persisted", path=str(persisted_path))
         result["persistence"] = {"result_path": str(persisted_path)}
 
         metadata = (result.get("result") or {}).get("metadata") or {}
