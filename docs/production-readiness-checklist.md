@@ -61,7 +61,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add structured logging
 - [x] Add correlation IDs across requests and runs
 - [x] Add metrics
-- [ ] Add alerts
+- [x] Add alerts
 - [x] Add tracing or equivalent request/run visibility
 - [x] Add dependency-aware health checks
 - [x] Add operator runbooks for common failures

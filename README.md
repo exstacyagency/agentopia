@@ -201,6 +201,10 @@ Use `docs/operator-runbooks.md` for the current troubleshooting baseline across 
 
 Use `docs/metrics.md` for the current metrics baseline. Paperclip and Hermes now expose basic Prometheus-style counters at `/metrics`.
 
+## Alerts
+
+Use `docs/alerts.md` for the current alerting baseline and `python3 scripts/check_alerts.py` to evaluate the local health and rejection-counter alert conditions.
+
 ## Tracing and request/run visibility
 
 Use `docs/tracing-visibility.md` for the current trace visibility baseline. Important flow events now append to per-trace JSONL logs under `var/traces/`.
