@@ -6,15 +6,16 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
 from hermes.build_info import BUILD_STAMP, RUNTIME_FEATURES
+from hermes.callback_store import HermesCallbackStore
 from hermes.dashboard_state import build_operator_queue_state
 from hermes.executor import HermesExecutor
-from hermes.persistence import HermesPersistence
-from hermes.callback_store import HermesCallbackStore
 from hermes.issue_actions import handle_issue_action
 from hermes.memory.service import MemPalaceService
 from hermes.paperclip_comments import PaperclipCommentPoster
+from hermes.persistence import HermesPersistence
 from hermes.postback_store import HermesPostbackStore
 from hermes.runtime_checks import summarize_runtime_guards
+from scripts.input_validation import InputValidationError, validate_strings
 
 ROOT = os.path.dirname(os.path.dirname(__file__))
 EXECUTOR = HermesExecutor(os.path.abspath(ROOT))
@@ -42,7 +43,9 @@ class HermesHandler(BaseHTTPRequestHandler):
             self._send(413, {"error": "request body too large", "max_bytes": MAX_REQUEST_BYTES})
             raise ValueError("request_too_large")
         raw = self.rfile.read(length) if length else b"{}"
-        return json.loads(raw.decode() or "{}")
+        body = json.loads(raw.decode() or "{}")
+        validate_strings(body)
+        return body
 
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
@@ -75,6 +78,9 @@ class HermesHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         try:
             body = self._read_json_body()
+        except InputValidationError as exc:
+            self._send(400, {"error": str(exc)})
+            return
         except ValueError as exc:
             if str(exc) == "request_too_large":
                 return
