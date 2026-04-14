@@ -95,7 +95,12 @@ class PaperclipHandler(BaseHTTPRequestHandler):
 </html>""")
             return
         if parsed.path == "/health":
-            self._send(200, {"ok": True, "service": "paperclip"})
+            dependencies = {
+                "db_path_exists": PAPERCLIP_DB_PATH.parent.exists(),
+                "internal_auth_configured": bool(INTERNAL_AUTH_TOKEN),
+            }
+            ok = all(dependencies.values())
+            self._send(200 if ok else 503, {"ok": ok, "service": "paperclip", "dependencies": dependencies})
             return
         if len(parts) == 2 and parts[0] == "tasks":
             task = SERVICE.get_task(parts[1])

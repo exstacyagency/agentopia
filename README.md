@@ -189,6 +189,10 @@ Use `docs/structured-logging.md` for the current service-log baseline. Paperclip
 
 Use `docs/correlation-ids.md` for the current request correlation baseline. Paperclip and Hermes now propagate or generate `X-Correlation-ID` values across internal requests and responses.
 
+## Dependency-aware health checks
+
+Use `docs/dependency-aware-health-checks.md` for the current health baseline. Paperclip and Hermes health endpoints now report required dependency/config readiness, not just process liveness.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.
