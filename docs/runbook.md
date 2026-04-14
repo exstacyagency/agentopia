@@ -3,6 +3,10 @@
 ## Local bootstrap
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e .
 cp .env.example .env
 scripts/agentopia setup
 ```
@@ -15,6 +19,10 @@ scripts/agentopia doctor
 scripts/agentopia runtime-check
 scripts/agentopia status
 scripts/agentopia smoke
+PYTHONPATH=. python3 scripts/test_contract_schemas.py
+PYTHONPATH=. python3 scripts/test_paperclip_service.py
+PYTHONPATH=. python3 scripts/test_hermes_executor.py
+PYTHONPATH=. python3 scripts/test_integration_flow.py
 ```
 
 ## Workflow commands

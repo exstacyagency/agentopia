@@ -31,13 +31,12 @@ class HermesExecutorTests(unittest.TestCase):
         errors = validate_payload("task_result_v1.json", result)
         self.assertEqual(errors, [])
 
-    def test_unsupported_task_type_returns_failure(self) -> None:
+    def test_text_generation_request_returns_valid_result(self) -> None:
         executor = HermesExecutor(ROOT)
         payload = self.load_fixture("task_request_valid.json")
         payload["task"]["type"] = "text_generation"
         result = executor.execute(payload)
-        self.assertEqual(result["run"]["status"], "failed")
-        self.assertEqual(result["result"]["error"]["code"], "EXECUTION_FAILED")
+        self.assertEqual(result["run"]["status"], "succeeded")
         errors = validate_payload("task_result_v1.json", result)
         self.assertEqual(errors, [])
 
