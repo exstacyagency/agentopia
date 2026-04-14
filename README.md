@@ -193,6 +193,10 @@ Use `docs/correlation-ids.md` for the current request correlation baseline. Pape
 
 Use `docs/dependency-aware-health-checks.md` for the current health baseline. Paperclip and Hermes health endpoints now report required dependency/config readiness, not just process liveness.
 
+## Operator runbooks
+
+Use `docs/operator-runbooks.md` for the current troubleshooting baseline across health, auth, deployment, rollback, and security verification flows.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.
