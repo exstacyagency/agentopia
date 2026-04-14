@@ -149,6 +149,10 @@ Use `docs/secret-storage-handling.md` for the current secret handling baseline a
 
 Use `docs/service-to-service-auth.md` for the internal auth baseline. Protected internal endpoints now use a shared bearer token via `AGENTOPIA_INTERNAL_AUTH_TOKEN`.
 
+## Approval reconciliation
+
+Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.
+
 ## Runtime and container hardening
 
 Use `docs/runtime-container-hardening.md` for the hardening baseline and `python3 scripts/check-compose-hardening.py` to verify the compose file still includes the expected safeguards.
