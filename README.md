@@ -185,6 +185,10 @@ Use `docs/audit-logging.md` for the current audit logging baseline. Paperclip ke
 
 Use `docs/structured-logging.md` for the current service-log baseline. Paperclip and Hermes now emit JSON log lines for key service events.
 
+## Correlation IDs
+
+Use `docs/correlation-ids.md` for the current request correlation baseline. Paperclip and Hermes now propagate or generate `X-Correlation-ID` values across internal requests and responses.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.

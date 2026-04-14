@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 
 from paperclip.dispatch import HermesDispatchClient
 from paperclip.service import PaperclipService
+from scripts.correlation import CORRELATION_HEADER, get_or_create_correlation_id
 from scripts.input_validation import InputValidationError, validate_strings
 from scripts.rate_limit import InMemoryRateLimiter
 from scripts.structured_logging import log_event
@@ -26,12 +27,15 @@ RATE_LIMITER = InMemoryRateLimiter(RATE_LIMIT_COUNT, RATE_LIMIT_WINDOW_SECONDS)
 class PaperclipHandler(BaseHTTPRequestHandler):
     def _send(self, status: int, payload: dict) -> None:
         body = json.dumps(payload, indent=2).encode()
+        correlation_id = getattr(self, "correlation_id", None)
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
+        if correlation_id:
+            self.send_header(CORRELATION_HEADER, correlation_id)
         self.end_headers()
         self.wfile.write(body)
-        log_event("paperclip", "response_sent", status=status, path=self.path)
+        log_event("paperclip", "response_sent", status=status, path=self.path, correlation_id=correlation_id)
 
     def _client_ip(self) -> str:
         return self.client_address[0] if self.client_address else "unknown"
@@ -108,9 +112,10 @@ class PaperclipHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
         parts = [part for part in parsed.path.split("/") if part]
-        log_event("paperclip", "request_received", method="POST", path=parsed.path)
+        self.correlation_id = get_or_create_correlation_id(self.headers)
+        log_event("paperclip", "request_received", method="POST", path=parsed.path, correlation_id=self.correlation_id)
         if not self._enforce_rate_limit():
-            log_event("paperclip", "request_rejected", reason="rate_limit", path=parsed.path)
+            log_event("paperclip", "request_rejected", reason="rate_limit", path=parsed.path, correlation_id=self.correlation_id)
             return
         try:
             body = self._read_json_body()

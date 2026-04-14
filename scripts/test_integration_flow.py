@@ -47,7 +47,7 @@ class FakeDispatchClient:
         self.result = result
         self.service: PaperclipService | None = None
 
-    def submit(self, payload: dict) -> dict:
+    def submit(self, payload: dict, correlation_id: str | None = None) -> dict:
         assert self.service is not None
         self.service.record_result(payload["task"]["id"], self.result)
         return self.result

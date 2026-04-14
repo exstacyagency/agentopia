@@ -94,6 +94,10 @@ Use `docs/audit-logging.md` for the audit baseline and run `./.venv/bin/python s
 
 Use `docs/structured-logging.md` for the service logging baseline and run `./.venv/bin/python scripts/test_structured_logging.py` to verify JSON log output.
 
+## Correlation IDs
+
+Use `docs/correlation-ids.md` for the current correlation baseline and run `./.venv/bin/python scripts/test_correlation_ids.py` to verify propagation and response headers.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for the rollback path. Run `scripts/rollback-checklist.sh` after restoring the previous known-good image refs and config.
@@ -164,4 +168,5 @@ See `docs/container-image-versioning.md`.
 - If rate-limiting readiness is unclear, review `docs/rate-limiting-abuse-protection.md` and run `./.venv/bin/python scripts/test_rate_limits.py`.
 - If audit logging readiness is unclear, review `docs/audit-logging.md` and run `./.venv/bin/python scripts/test_audit_logging.py`.
 - If structured logging readiness is unclear, review `docs/structured-logging.md` and run `./.venv/bin/python scripts/test_structured_logging.py`.
+- If correlation ID readiness is unclear, review `docs/correlation-ids.md` and run `./.venv/bin/python scripts/test_correlation_ids.py`.
 - If rollback readiness is unclear, run `scripts/rollback-checklist.sh` and review `docs/rollback-process.md`.
