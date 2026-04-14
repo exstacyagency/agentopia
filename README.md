@@ -127,6 +127,10 @@ Release and staging-to-production promotion criteria are documented in `docs/rel
 
 Use `docs/deployment-process.md` for the repeatable deployment flow and `scripts/deploy-checklist.sh` for the current deployment validation checklist.
 
+## Rollback process
+
+Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.
+
 ## How to start
 
 ```bash
