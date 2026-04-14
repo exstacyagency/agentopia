@@ -59,9 +59,9 @@ Run:
 
 ## Notes
 
-This is a minimal first scoped-key slice. It does not yet include:
+This scoped-key baseline now pairs with `docs/api-key-rotation-revocation.md` for active/revoked registry handling and overlapping key rotation windows.
 
-- key rotation
-- key revocation
-- per-tenant isolation
+Still not included:
+
 - management APIs for issuing keys
+- per-tenant isolation
