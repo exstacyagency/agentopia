@@ -78,6 +78,10 @@ Use `docs/input-validation-sanitization.md` for the current baseline and run `./
 
 Use `docs/rate-limiting-abuse-protection.md` for the current baseline and run `./.venv/bin/python scripts/test_rate_limits.py` to verify repeated requests are limited.
 
+## Audit logging
+
+Use `docs/audit-logging.md` for the audit baseline and run `./.venv/bin/python scripts/test_audit_logging.py` to verify Paperclip and Hermes audit behavior.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for the rollback path. Run `scripts/rollback-checklist.sh` after restoring the previous known-good image refs and config.
@@ -144,4 +148,5 @@ See `docs/container-image-versioning.md`.
 - If request limit readiness is unclear, review `docs/request-size-limits.md` and run `./.venv/bin/python scripts/test_request_limits.py`.
 - If input validation readiness is unclear, review `docs/input-validation-sanitization.md` and run `./.venv/bin/python scripts/test_input_validation.py`.
 - If rate-limiting readiness is unclear, review `docs/rate-limiting-abuse-protection.md` and run `./.venv/bin/python scripts/test_rate_limits.py`.
+- If audit logging readiness is unclear, review `docs/audit-logging.md` and run `./.venv/bin/python scripts/test_audit_logging.py`.
 - If rollback readiness is unclear, run `scripts/rollback-checklist.sh` and review `docs/rollback-process.md`.

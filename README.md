@@ -169,6 +169,10 @@ Use `docs/input-validation-sanitization.md` for the current safer input validati
 
 Use `docs/rate-limiting-abuse-protection.md` for the current abuse-control baseline. Paperclip and Hermes both enforce configurable per-IP request limits.
 
+## Audit logging
+
+Use `docs/audit-logging.md` for the current audit logging baseline. Paperclip keeps audit events in SQLite, and Hermes now writes structured audit records for persistence-side events.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.

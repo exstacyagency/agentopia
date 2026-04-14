@@ -41,7 +41,7 @@ This checklist captures the minimum work required before Agentopia should be use
 ### Security and secrets
 - [ ] Add secret storage and handling strategy
 - [ ] Add stronger service-to-service authentication
-- [ ] Add audit logging
+- [x] Add audit logging
 - [x] Add request size limits
 - [x] Add rate limiting and abuse protection
 - [x] Add safer input validation and sanitization
