@@ -76,3 +76,19 @@ jobs:
         run: |
           . .venv/bin/activate
           python -m pip_audit -r requirements.lock
+
+  image-dependency-provenance:
+    name: Image and dependency provenance checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run provenance checks
+        run: python3 scripts/check-provenance.py

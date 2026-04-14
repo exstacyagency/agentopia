@@ -149,6 +149,10 @@ Use `docs/runtime-container-hardening.md` for the hardening baseline and `python
 
 Use `docs/dependency-vulnerability-scanning.md` for the scan policy and `scripts/run-dependency-scan.sh` to run the local dependency audit path.
 
+## Image and dependency provenance
+
+Use `docs/image-dependency-provenance.md` for provenance expectations and `python3 scripts/check-provenance.py` to verify the current baseline.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.
