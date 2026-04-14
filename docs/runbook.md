@@ -54,6 +54,10 @@ Use `docs/production-secret-injection.md` for the secret injection path. Run `sc
 
 Use `docs/runtime-container-hardening.md` for the hardening baseline and run `python3 scripts/check-compose-hardening.py` after compose changes.
 
+## Dependency and vulnerability scanning
+
+Use `docs/dependency-vulnerability-scanning.md` for the scan policy and run `scripts/run-dependency-scan.sh` to audit pinned dependencies.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for the rollback path. Run `scripts/rollback-checklist.sh` after restoring the previous known-good image refs and config.
@@ -114,4 +118,5 @@ See `docs/container-image-versioning.md`.
 - If staging readiness is unclear, run `scripts/staging-checklist.sh` and review `docs/staging-environment.md`.
 - If production secret injection readiness is unclear, review `docs/production-secret-injection.md` and run `scripts/render-production-env.sh`.
 - If runtime/container hardening readiness is unclear, review `docs/runtime-container-hardening.md` and run `python3 scripts/check-compose-hardening.py`.
+- If dependency scan readiness is unclear, review `docs/dependency-vulnerability-scanning.md` and run `scripts/run-dependency-scan.sh`.
 - If rollback readiness is unclear, run `scripts/rollback-checklist.sh` and review `docs/rollback-process.md`.

@@ -44,3 +44,35 @@ jobs:
           python scripts/test_paperclip_service.py
           python scripts/test_hermes_executor.py
           python scripts/test_integration_flow.py
+
+  dependency-vulnerability-scan:
+    name: Dependency vulnerability scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Create virtual environment
+        run: python -m venv .venv
+
+      - name: Install pinned dependencies
+        run: |
+          . .venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock
+
+      - name: Install audit tooling
+        run: |
+          . .venv/bin/activate
+          python -m pip install 'pip-audit>=2.7.3,<3'
+
+      - name: Run dependency vulnerability scan
+        run: |
+          . .venv/bin/activate
+          python -m pip_audit -r requirements.lock

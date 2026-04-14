@@ -145,6 +145,10 @@ Use `docs/production-secret-injection.md` for the secret injection policy and `s
 
 Use `docs/runtime-container-hardening.md` for the hardening baseline and `python3 scripts/check-compose-hardening.py` to verify the compose file still includes the expected safeguards.
 
+## Dependency and vulnerability scanning
+
+Use `docs/dependency-vulnerability-scanning.md` for the scan policy and `scripts/run-dependency-scan.sh` to run the local dependency audit path.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.
