@@ -70,6 +70,10 @@ Use `docs/artifact-access-redaction.md` for the current artifact handling baseli
 
 Use `docs/request-size-limits.md` for the current policy and run `./.venv/bin/python scripts/test_request_limits.py` to verify oversized requests are rejected.
 
+## Input validation and sanitization
+
+Use `docs/input-validation-sanitization.md` for the current baseline and run `./.venv/bin/python scripts/test_input_validation.py` to verify unsafe control-character payloads are rejected.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for the rollback path. Run `scripts/rollback-checklist.sh` after restoring the previous known-good image refs and config.
@@ -134,4 +138,5 @@ See `docs/container-image-versioning.md`.
 - If provenance readiness is unclear, review `docs/image-dependency-provenance.md` and run `python3 scripts/check-provenance.py`.
 - If artifact handling readiness is unclear, review `docs/artifact-access-redaction.md` and run `./.venv/bin/python scripts/test_persistence_redaction.py`.
 - If request limit readiness is unclear, review `docs/request-size-limits.md` and run `./.venv/bin/python scripts/test_request_limits.py`.
+- If input validation readiness is unclear, review `docs/input-validation-sanitization.md` and run `./.venv/bin/python scripts/test_input_validation.py`.
 - If rollback readiness is unclear, run `scripts/rollback-checklist.sh` and review `docs/rollback-process.md`.

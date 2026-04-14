@@ -161,6 +161,10 @@ Use `docs/artifact-access-redaction.md` for the current artifact handling baseli
 
 Use `docs/request-size-limits.md` for the current request body limit policy. Paperclip and Hermes both enforce configurable max request sizes.
 
+## Input validation and sanitization
+
+Use `docs/input-validation-sanitization.md` for the current safer input validation baseline. Paperclip and Hermes both reject request payload strings containing unsafe control characters.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.

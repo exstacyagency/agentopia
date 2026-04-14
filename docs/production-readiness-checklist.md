@@ -44,7 +44,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [ ] Add audit logging
 - [x] Add request size limits
 - [ ] Add rate limiting and abuse protection
-- [ ] Add safer input validation and sanitization
+- [x] Add safer input validation and sanitization
 - [x] Add dependency and vulnerability scanning
 - [x] Add image and dependency provenance checks
 - [x] Add artifact access controls and sensitive-output redaction rules

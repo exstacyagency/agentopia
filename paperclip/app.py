@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 
 from paperclip.dispatch import HermesDispatchClient
 from paperclip.service import PaperclipService
+from scripts.input_validation import InputValidationError, validate_strings
 
 ROOT = Path(__file__).resolve().parent.parent
 PAPERCLIP_DB_PATH = Path(os.environ.get("PAPERCLIP_DB_PATH", str(ROOT / "data" / "paperclip.sqlite3")))
@@ -31,7 +32,9 @@ class PaperclipHandler(BaseHTTPRequestHandler):
             self._send(413, {"error": "request body too large", "max_bytes": MAX_REQUEST_BYTES})
             raise ValueError("request_too_large")
         raw = self.rfile.read(length) if length else b"{}"
-        return json.loads(raw.decode())
+        body = json.loads(raw.decode())
+        validate_strings(body)
+        return body
 
     def _send_html(self, status: int, html: str) -> None:
         body = html.encode()
@@ -98,6 +101,9 @@ class PaperclipHandler(BaseHTTPRequestHandler):
                     task = SERVICE.dispatch_task(parts[1])
                 self._send(200, task)
                 return
+        except InputValidationError as exc:
+            self._send(400, {"error": str(exc)})
+            return
         except ValueError as exc:
             if str(exc) == "request_too_large":
                 return
