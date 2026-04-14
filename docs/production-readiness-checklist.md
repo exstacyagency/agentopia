@@ -51,7 +51,7 @@ This checklist captures the minimum work required before Agentopia should be use
 
 ### Build, release, and supply chain hygiene
 - [x] Add a proper Python project/dependency manifest
-- [ ] Add pinned dependency resolution or lockfile support
+- [x] Add pinned dependency resolution or lockfile support
 - [x] Add reproducible build/install steps for local, CI, and production
 - [x] Add CI validation in a clean environment
 - [ ] Add container/image versioning strategy

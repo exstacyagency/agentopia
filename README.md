@@ -99,13 +99,14 @@ The runtime stack now expects the following env vars to be set in `.env`:
 
 ## Python environment
 
-Use a local virtualenv and install the repo in editable mode:
+Use a local virtualenv and install the repo in editable mode with pinned dependencies:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -e .
+python -m pip install -r requirements.lock
+python -m pip install -e . --no-deps
 ```
 
 ## Continuous integration
