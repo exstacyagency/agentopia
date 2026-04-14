@@ -14,7 +14,8 @@ from scripts.rate_limit import InMemoryRateLimiter
 ROOT = Path(__file__).resolve().parent.parent
 PAPERCLIP_DB_PATH = Path(os.environ.get("PAPERCLIP_DB_PATH", str(ROOT / "data" / "paperclip.sqlite3")))
 HERMES_BASE_URL = os.environ.get("HERMES_BASE_URL", "http://127.0.0.1:3200")
-SERVICE = PaperclipService(PAPERCLIP_DB_PATH, dispatch_client=HermesDispatchClient(HERMES_BASE_URL))
+INTERNAL_AUTH_TOKEN = os.environ.get("AGENTOPIA_INTERNAL_AUTH_TOKEN", "")
+SERVICE = PaperclipService(PAPERCLIP_DB_PATH, dispatch_client=HermesDispatchClient(HERMES_BASE_URL, auth_token=INTERNAL_AUTH_TOKEN))
 MAX_REQUEST_BYTES = int(os.environ.get("PAPERCLIP_MAX_REQUEST_BYTES", str(1024 * 1024)))
 RATE_LIMIT_COUNT = int(os.environ.get("PAPERCLIP_RATE_LIMIT_COUNT", "30"))
 RATE_LIMIT_WINDOW_SECONDS = int(os.environ.get("PAPERCLIP_RATE_LIMIT_WINDOW_SECONDS", "60"))
@@ -37,6 +38,14 @@ class PaperclipHandler(BaseHTTPRequestHandler):
         if RATE_LIMITER.allow(self._client_ip()):
             return True
         self._send(429, {"error": "rate limit exceeded", "limit": RATE_LIMIT_COUNT, "window_seconds": RATE_LIMIT_WINDOW_SECONDS})
+        return False
+
+    def _require_internal_auth(self) -> bool:
+        expected = INTERNAL_AUTH_TOKEN
+        provided = self.headers.get("Authorization", "")
+        if expected and provided == f"Bearer {expected}":
+            return True
+        self._send(401, {"error": "unauthorized"})
         return False
 
     def _read_json_body(self) -> dict:
@@ -106,6 +115,8 @@ class PaperclipHandler(BaseHTTPRequestHandler):
                 self._send(201, task)
                 return
             if len(parts) == 4 and parts[0] == "internal" and parts[1] == "tasks" and parts[3] == "result":
+                if not self._require_internal_auth():
+                    return
                 task = SERVICE.record_result(parts[2], body)
                 self._send(200, task)
                 return

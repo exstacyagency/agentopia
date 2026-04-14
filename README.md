@@ -145,6 +145,10 @@ Use `docs/production-secret-injection.md` for the secret injection policy and `s
 
 Use `docs/secret-storage-handling.md` for the current secret handling baseline and `python3 scripts/check-secret-handling.py` to verify obvious repo-level secret handling rules.
 
+## Service-to-service authentication
+
+Use `docs/service-to-service-auth.md` for the internal auth baseline. Protected internal endpoints now use a shared bearer token via `AGENTOPIA_INTERNAL_AUTH_TOKEN`.
+
 ## Runtime and container hardening
 
 Use `docs/runtime-container-hardening.md` for the hardening baseline and `python3 scripts/check-compose-hardening.py` to verify the compose file still includes the expected safeguards.
