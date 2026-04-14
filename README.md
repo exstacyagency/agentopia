@@ -157,6 +157,10 @@ Use `docs/approval-reconciliation.md` for the current approval state consistency
 
 Use `docs/approval-expiration.md` for the current stale-approval baseline and `./.venv/bin/python scripts/check_approval_expiration.py` to detect expired pending approvals.
 
+## Approval audit trail
+
+Use `docs/approval-audit-trail.md` for the current approval action audit baseline and `./.venv/bin/python scripts/list_approval_audit_events.py <task_id>` to inspect approval-specific events.
+
 ## Runtime and container hardening
 
 Use `docs/runtime-container-hardening.md` for the hardening baseline and `python3 scripts/check-compose-hardening.py` to verify the compose file still includes the expected safeguards.

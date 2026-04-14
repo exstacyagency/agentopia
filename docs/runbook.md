@@ -66,6 +66,10 @@ Use `docs/approval-reconciliation.md` for the current approval consistency basel
 
 Use `docs/approval-expiration.md` for the stale-approval baseline and run `./.venv/bin/python scripts/test_approval_expiration.py` to verify expiration detection.
 
+## Approval audit trail
+
+Use `docs/approval-audit-trail.md` for the approval audit baseline and run `./.venv/bin/python scripts/test_approval_audit_trail.py` to verify approval-specific event recording.
+
 ## Runtime and container hardening
 
 Use `docs/runtime-container-hardening.md` for the hardening baseline and run `python3 scripts/check-compose-hardening.py` after compose changes.
@@ -189,6 +193,7 @@ See `docs/container-image-versioning.md`.
 - If service-to-service auth readiness is unclear, review `docs/service-to-service-auth.md` and run `./.venv/bin/python scripts/test_internal_auth.py`.
 - If approval reconciliation readiness is unclear, review `docs/approval-reconciliation.md` and run `./.venv/bin/python scripts/test_approval_reconciliation.py`.
 - If approval expiration readiness is unclear, review `docs/approval-expiration.md` and run `./.venv/bin/python scripts/test_approval_expiration.py`.
+- If approval audit readiness is unclear, review `docs/approval-audit-trail.md` and run `./.venv/bin/python scripts/test_approval_audit_trail.py`.
 - If runtime/container hardening readiness is unclear, review `docs/runtime-container-hardening.md` and run `python3 scripts/check-compose-hardening.py`.
 - If dependency scan readiness is unclear, review `docs/dependency-vulnerability-scanning.md` and run `scripts/run-dependency-scan.sh`.
 - If provenance readiness is unclear, review `docs/image-dependency-provenance.md` and run `python3 scripts/check-provenance.py`.
