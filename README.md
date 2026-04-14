@@ -119,6 +119,10 @@ Runtime image refs should use explicit version tags or immutable digests. Avoid 
 
 See `docs/container-image-versioning.md`.
 
+## Release promotion policy
+
+Release and staging-to-production promotion criteria are documented in `docs/release-promotion-criteria.md`.
+
 ## How to start
 
 ```bash
