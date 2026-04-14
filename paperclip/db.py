@@ -15,6 +15,9 @@ CREATE TABLE IF NOT EXISTS tasks (
     risk_level TEXT NOT NULL,
     requester_id TEXT NOT NULL,
     requester_display_name TEXT NOT NULL,
+    tenant_id TEXT NOT NULL DEFAULT '',
+    org_id TEXT NOT NULL DEFAULT '',
+    client_id TEXT NOT NULL DEFAULT '',
     state TEXT NOT NULL,
     approval_status TEXT NOT NULL DEFAULT 'unknown',
     request_payload TEXT NOT NULL,
@@ -55,9 +58,9 @@ class PaperclipDB:
             """
             INSERT INTO tasks (
                 id, schema_version, type, title, description, priority, risk_level,
-                requester_id, requester_display_name, state, approval_status, request_payload,
+                requester_id, requester_display_name, tenant_id, org_id, client_id, state, approval_status, request_payload,
                 created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 record["id"],
@@ -69,6 +72,9 @@ class PaperclipDB:
                 record["risk_level"],
                 record["requester_id"],
                 record["requester_display_name"],
+                record.get("tenant_id", ""),
+                record.get("org_id", ""),
+                record.get("client_id", ""),
                 record["state"],
                 record["approval_status"],
                 json.dumps(record["request_payload"]),

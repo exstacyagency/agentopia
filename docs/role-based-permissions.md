@@ -28,7 +28,7 @@ For file-based keys, a key may define either:
 - `scope`, or
 - `role`
 
-If a role is present, Paperclip maps it to allowed scopes before authorizing the request.
+If a role is present, Paperclip maps it to allowed scopes before authorizing the request. File-based keys may also carry `tenant_id`, `org_id`, and `client_id` metadata that is used by the tenant isolation layer.
 
 ## Current protected behavior
 

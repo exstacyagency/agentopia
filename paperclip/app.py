@@ -73,6 +73,9 @@ class PaperclipHandler(BaseHTTPRequestHandler):
                     "key_id": identity.key_id,
                     "scope": identity.scope or "tasks.write",
                     "role": identity.role,
+                    "tenant_id": identity.tenant_id,
+                    "org_id": identity.org_id,
+                    "client_id": identity.client_id,
                     "source": "file",
                 }
                 return True
@@ -104,6 +107,11 @@ class PaperclipHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _tenant_can_access_task(self, task: dict) -> bool:
+        tenant_id = (self.client_api_identity or {}).get("tenant_id")
+        task_tenant_id = ((task or {}).get("tenant") or {}).get("tenant_id")
+        return bool(tenant_id and task_tenant_id and tenant_id == task_tenant_id)
 
     def do_GET(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
@@ -145,13 +153,27 @@ class PaperclipHandler(BaseHTTPRequestHandler):
             self._send(200 if ok else 503, {"ok": ok, "service": "paperclip", "dependencies": dependencies})
             return
         if len(parts) == 2 and parts[0] == "tasks":
+            if not self._require_client_auth():
+                return
             task = SERVICE.get_task(parts[1])
             if task is None:
                 self._send(404, {"error": "task not found"})
                 return
+            if not self._tenant_can_access_task(task):
+                self._send(403, {"error": "forbidden", "reason": "tenant_mismatch"})
+                return
             self._send(200, task)
             return
         if len(parts) == 3 and parts[0] == "tasks" and parts[2] == "audit":
+            if not self._require_client_auth():
+                return
+            task = SERVICE.get_task(parts[1])
+            if task is None:
+                self._send(404, {"error": "task not found"})
+                return
+            if not self._tenant_can_access_task(task):
+                self._send(403, {"error": "forbidden", "reason": "tenant_mismatch"})
+                return
             self._send(200, {"events": SERVICE.get_audit(parts[1])})
             return
         self._send(404, {"error": "not found"})
@@ -172,7 +194,14 @@ class PaperclipHandler(BaseHTTPRequestHandler):
             if parsed.path == "/tasks":
                 if not self._require_client_auth():
                     return
-                task = SERVICE.submit_task(body)
+                task = SERVICE.submit_task(
+                    body,
+                    tenant_context={
+                        "tenant_id": (self.client_api_identity or {}).get("tenant_id", ""),
+                        "org_id": (self.client_api_identity or {}).get("org_id", ""),
+                        "client_id": (self.client_api_identity or {}).get("client_id", ""),
+                    },
+                )
                 log_event(
                     "paperclip",
                     "client_api_authenticated",

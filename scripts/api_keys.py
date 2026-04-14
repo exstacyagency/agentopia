@@ -19,6 +19,9 @@ class ApiKeyIdentity:
     scope: str
     status: str = "active"
     role: str | None = None
+    tenant_id: str | None = None
+    org_id: str | None = None
+    client_id: str | None = None
 
 
 def _fingerprint(raw_key: str) -> str:
@@ -82,11 +85,22 @@ def resolve_api_key_identity_from_file(authorization_header: str, registry_path:
         key = str(item.get("key", "")).strip()
         scope = str(item.get("scope", "")).strip()
         role = str(item.get("role", "")).strip() or None
+        tenant_id = str(item.get("tenant_id", "")).strip() or None
+        org_id = str(item.get("org_id", "")).strip() or None
+        client_id = str(item.get("client_id", "")).strip() or None
         key_id = str(item.get("id", "")).strip() or _fingerprint(key)
         status = str(item.get("status", "active")).strip() or "active"
         if role and not scope:
             allowed_scopes = sorted(ROLE_SCOPES.get(role, set()))
             scope = allowed_scopes[0] if allowed_scopes else ""
         if key and provided == key:
-            return ApiKeyIdentity(key_id=key_id, scope=scope, status=status, role=role)
+            return ApiKeyIdentity(
+                key_id=key_id,
+                scope=scope,
+                status=status,
+                role=role,
+                tenant_id=tenant_id,
+                org_id=org_id,
+                client_id=client_id,
+            )
     return None

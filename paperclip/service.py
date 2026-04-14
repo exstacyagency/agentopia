@@ -23,7 +23,7 @@ class PaperclipService:
         self.traces = TraceLogger(db_path.parent.parent if db_path.parent.name == 'data' else db_path.parent)
         self.approval_ttl_seconds = int(os.environ.get("PAPERCLIP_APPROVAL_TTL_SECONDS", "3600"))
 
-    def submit_task(self, payload: dict) -> dict:
+    def submit_task(self, payload: dict, tenant_context: dict | None = None) -> dict:
         errors = validate_payload("task_request_v1.json", payload)
         if errors:
             raise ValueError("; ".join(errors))
@@ -32,6 +32,7 @@ class PaperclipService:
         approval = payload["execution_policy"]["approval"]
         created_at = utcnow()
         initial_state = "received"
+        tenant_context = tenant_context or {}
         self.db.create_task(
             {
                 "id": task["id"],
@@ -43,6 +44,9 @@ class PaperclipService:
                 "risk_level": task["risk_level"],
                 "requester_id": task["requester"]["id"],
                 "requester_display_name": task["requester"]["display_name"],
+                "tenant_id": tenant_context.get("tenant_id", ""),
+                "org_id": tenant_context.get("org_id", ""),
+                "client_id": tenant_context.get("client_id", ""),
                 "state": initial_state,
                 "approval_status": approval["status"],
                 "request_payload": payload,
@@ -131,6 +135,11 @@ class PaperclipService:
             "requester": {
                 "id": task["requester_id"],
                 "display_name": task["requester_display_name"],
+            },
+            "tenant": {
+                "tenant_id": task["tenant_id"],
+                "org_id": task["org_id"],
+                "client_id": task["client_id"],
             },
             "state": task["state"],
             "approval_status": task["approval_status"],
