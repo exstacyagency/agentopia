@@ -1,0 +1,10 @@
+{
+  "keys": [
+    {
+      "id": "example_tasks_write_primary",
+      "scope": "tasks.write",
+      "key": "replace-me-client-write-key",
+      "status": "active"
+    }
+  ]
+}

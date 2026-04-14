@@ -169,6 +169,10 @@ Use `docs/client-api-authentication.md` for the client-facing auth baseline. Pap
 
 Use `docs/scoped-api-keys.md` for the scoped key baseline. Paperclip now supports `PAPERCLIP_CLIENT_API_KEYS` with per-key scopes, starting with `tasks.write` for `POST /tasks`.
 
+## API key rotation and revocation
+
+Use `docs/api-key-rotation-revocation.md` for the current key lifecycle baseline. Paperclip now supports a file-based key registry via `PAPERCLIP_CLIENT_API_KEYS_FILE` so multiple active keys can coexist during rotation and revoked keys can be rejected explicitly.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.

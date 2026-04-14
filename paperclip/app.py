@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 
 from paperclip.dispatch import HermesDispatchClient
 from paperclip.service import PaperclipService
-from scripts.api_keys import configured_client_api_keys, resolve_api_key_identity
+from scripts.api_keys import configured_client_api_keys, configured_client_api_keys_file, resolve_api_key_identity, resolve_api_key_identity_from_file
 from scripts.correlation import CORRELATION_HEADER, get_or_create_correlation_id
 from scripts.input_validation import InputValidationError, validate_strings
 from scripts.metrics import MetricsRegistry
@@ -21,6 +21,7 @@ HERMES_BASE_URL = os.environ.get("HERMES_BASE_URL", "http://127.0.0.1:3200")
 INTERNAL_AUTH_TOKEN = os.environ.get("AGENTOPIA_INTERNAL_AUTH_TOKEN", "")
 CLIENT_API_TOKEN = os.environ.get("PAPERCLIP_CLIENT_API_KEY", "")
 CLIENT_API_KEYS = configured_client_api_keys()
+CLIENT_API_KEYS_FILE = configured_client_api_keys_file()
 SERVICE = PaperclipService(PAPERCLIP_DB_PATH, dispatch_client=HermesDispatchClient(HERMES_BASE_URL, auth_token=INTERNAL_AUTH_TOKEN))
 MAX_REQUEST_BYTES = int(os.environ.get("PAPERCLIP_MAX_REQUEST_BYTES", str(1024 * 1024)))
 RATE_LIMIT_COUNT = int(os.environ.get("PAPERCLIP_RATE_LIMIT_COUNT", "30"))
@@ -62,13 +63,21 @@ class PaperclipHandler(BaseHTTPRequestHandler):
 
     def _require_client_auth(self) -> bool:
         provided = self.headers.get("Authorization", "")
+        identity = resolve_api_key_identity_from_file(provided, CLIENT_API_KEYS_FILE)
+        if identity is not None:
+            if identity.status != "active":
+                self._send(401, {"error": "unauthorized", "reason": "api_key_revoked"})
+                return False
+            if identity.scope == "tasks.write":
+                self.client_api_identity = {"key_id": identity.key_id, "scope": identity.scope, "source": "file"}
+                return True
         identity = resolve_api_key_identity(provided, CLIENT_API_KEYS)
         if identity is not None and identity.scope == "tasks.write":
-            self.client_api_identity = {"key_id": identity.key_id, "scope": identity.scope}
+            self.client_api_identity = {"key_id": identity.key_id, "scope": identity.scope, "source": "env"}
             return True
         expected = CLIENT_API_TOKEN
         if expected and provided == f"Bearer {expected}":
-            self.client_api_identity = {"key_id": "legacy-client-key", "scope": "tasks.write"}
+            self.client_api_identity = {"key_id": "legacy-client-key", "scope": "tasks.write", "source": "legacy"}
             return True
         self._send(401, {"error": "unauthorized"})
         return False
@@ -125,6 +134,7 @@ class PaperclipHandler(BaseHTTPRequestHandler):
             dependencies = {
                 "db_path_exists": PAPERCLIP_DB_PATH.parent.exists(),
                 "internal_auth_configured": bool(INTERNAL_AUTH_TOKEN),
+                "client_api_keys_file_exists": CLIENT_API_KEYS_FILE.exists(),
             }
             ok = all(dependencies.values())
             self._send(200 if ok else 503, {"ok": ok, "service": "paperclip", "dependencies": dependencies})
