@@ -9,12 +9,16 @@ from urllib.parse import urlparse
 from paperclip.dispatch import HermesDispatchClient
 from paperclip.service import PaperclipService
 from scripts.input_validation import InputValidationError, validate_strings
+from scripts.rate_limit import InMemoryRateLimiter
 
 ROOT = Path(__file__).resolve().parent.parent
 PAPERCLIP_DB_PATH = Path(os.environ.get("PAPERCLIP_DB_PATH", str(ROOT / "data" / "paperclip.sqlite3")))
 HERMES_BASE_URL = os.environ.get("HERMES_BASE_URL", "http://127.0.0.1:3200")
 SERVICE = PaperclipService(PAPERCLIP_DB_PATH, dispatch_client=HermesDispatchClient(HERMES_BASE_URL))
 MAX_REQUEST_BYTES = int(os.environ.get("PAPERCLIP_MAX_REQUEST_BYTES", str(1024 * 1024)))
+RATE_LIMIT_COUNT = int(os.environ.get("PAPERCLIP_RATE_LIMIT_COUNT", "30"))
+RATE_LIMIT_WINDOW_SECONDS = int(os.environ.get("PAPERCLIP_RATE_LIMIT_WINDOW_SECONDS", "60"))
+RATE_LIMITER = InMemoryRateLimiter(RATE_LIMIT_COUNT, RATE_LIMIT_WINDOW_SECONDS)
 
 
 class PaperclipHandler(BaseHTTPRequestHandler):
@@ -25,6 +29,15 @@ class PaperclipHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _client_ip(self) -> str:
+        return self.client_address[0] if self.client_address else "unknown"
+
+    def _enforce_rate_limit(self) -> bool:
+        if RATE_LIMITER.allow(self._client_ip()):
+            return True
+        self._send(429, {"error": "rate limit exceeded", "limit": RATE_LIMIT_COUNT, "window_seconds": RATE_LIMIT_WINDOW_SECONDS})
+        return False
 
     def _read_json_body(self) -> dict:
         length = int(self.headers.get("Content-Length", "0"))
@@ -84,6 +97,8 @@ class PaperclipHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
         parts = [part for part in parsed.path.split("/") if part]
+        if not self._enforce_rate_limit():
+            return
         try:
             body = self._read_json_body()
             if parsed.path == "/tasks":
