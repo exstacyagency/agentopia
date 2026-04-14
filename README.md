@@ -165,6 +165,10 @@ Use `docs/service-to-service-auth.md` for the internal auth baseline. Protected 
 
 Use `docs/client-api-authentication.md` for the client-facing auth baseline. Paperclip task submission now requires a bearer token via `PAPERCLIP_CLIENT_API_KEY`.
 
+## Scoped API keys
+
+Use `docs/scoped-api-keys.md` for the scoped key baseline. Paperclip now supports `PAPERCLIP_CLIENT_API_KEYS` with per-key scopes, starting with `tasks.write` for `POST /tasks`.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.

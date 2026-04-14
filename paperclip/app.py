@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 
 from paperclip.dispatch import HermesDispatchClient
 from paperclip.service import PaperclipService
+from scripts.api_keys import configured_client_api_keys, resolve_api_key_identity
 from scripts.correlation import CORRELATION_HEADER, get_or_create_correlation_id
 from scripts.input_validation import InputValidationError, validate_strings
 from scripts.metrics import MetricsRegistry
@@ -19,6 +20,7 @@ PAPERCLIP_DB_PATH = Path(os.environ.get("PAPERCLIP_DB_PATH", str(ROOT / "data" /
 HERMES_BASE_URL = os.environ.get("HERMES_BASE_URL", "http://127.0.0.1:3200")
 INTERNAL_AUTH_TOKEN = os.environ.get("AGENTOPIA_INTERNAL_AUTH_TOKEN", "")
 CLIENT_API_TOKEN = os.environ.get("PAPERCLIP_CLIENT_API_KEY", "")
+CLIENT_API_KEYS = configured_client_api_keys()
 SERVICE = PaperclipService(PAPERCLIP_DB_PATH, dispatch_client=HermesDispatchClient(HERMES_BASE_URL, auth_token=INTERNAL_AUTH_TOKEN))
 MAX_REQUEST_BYTES = int(os.environ.get("PAPERCLIP_MAX_REQUEST_BYTES", str(1024 * 1024)))
 RATE_LIMIT_COUNT = int(os.environ.get("PAPERCLIP_RATE_LIMIT_COUNT", "30"))
@@ -59,9 +61,14 @@ class PaperclipHandler(BaseHTTPRequestHandler):
         return False
 
     def _require_client_auth(self) -> bool:
-        expected = CLIENT_API_TOKEN
         provided = self.headers.get("Authorization", "")
+        identity = resolve_api_key_identity(provided, CLIENT_API_KEYS)
+        if identity is not None and identity.scope == "tasks.write":
+            self.client_api_identity = {"key_id": identity.key_id, "scope": identity.scope}
+            return True
+        expected = CLIENT_API_TOKEN
         if expected and provided == f"Bearer {expected}":
+            self.client_api_identity = {"key_id": "legacy-client-key", "scope": "tasks.write"}
             return True
         self._send(401, {"error": "unauthorized"})
         return False
@@ -139,6 +146,7 @@ class PaperclipHandler(BaseHTTPRequestHandler):
         parts = [part for part in parsed.path.split("/") if part]
         self.correlation_id = get_or_create_correlation_id(self.headers)
         METRICS.inc("paperclip_requests_received_total")
+        self.client_api_identity = None
         log_event("paperclip", "request_received", method="POST", path=parsed.path, correlation_id=self.correlation_id)
         if not self._enforce_rate_limit():
             METRICS.inc("paperclip_requests_rejected_total")
@@ -150,6 +158,13 @@ class PaperclipHandler(BaseHTTPRequestHandler):
                 if not self._require_client_auth():
                     return
                 task = SERVICE.submit_task(body)
+                log_event(
+                    "paperclip",
+                    "client_api_authenticated",
+                    path=parsed.path,
+                    correlation_id=self.correlation_id,
+                    api_key=self.client_api_identity,
+                )
                 self._send(201, task)
                 return
             if len(parts) == 4 and parts[0] == "internal" and parts[1] == "tasks" and parts[3] == "result":

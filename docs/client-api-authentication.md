@@ -15,11 +15,13 @@ Paperclip should require a bearer token on client-facing task submission request
 Config:
 
 - `PAPERCLIP_CLIENT_API_KEY`
+- `PAPERCLIP_CLIENT_API_KEYS`
 
 Expected usage:
 
 - clients send `Authorization: Bearer <token>` to Paperclip
 - Paperclip rejects unauthenticated task submission requests
+- scoped keys can be configured separately from the legacy single token path
 - internal endpoints continue using `AGENTOPIA_INTERNAL_AUTH_TOKEN`
 
 ## Current protected endpoints
