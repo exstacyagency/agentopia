@@ -153,6 +153,10 @@ Use `docs/service-to-service-auth.md` for the internal auth baseline. Protected 
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.
 
+## Approval expiration
+
+Use `docs/approval-expiration.md` for the current stale-approval baseline and `./.venv/bin/python scripts/check_approval_expiration.py` to detect expired pending approvals.
+
 ## Runtime and container hardening
 
 Use `docs/runtime-container-hardening.md` for the hardening baseline and `python3 scripts/check-compose-hardening.py` to verify the compose file still includes the expected safeguards.

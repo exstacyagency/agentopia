@@ -68,7 +68,7 @@ This checklist captures the minimum work required before Agentopia should be use
 
 ### Governance and approval correctness
 - [x] Add reliable approval state reconciliation
-- [ ] Add approval expiration and timeout behavior
+- [x] Add approval expiration and timeout behavior
 - [ ] Add audit trail for approval actions
 - [ ] Add operator recovery tools for stuck approval states
 
