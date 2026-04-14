@@ -1,6 +1,8 @@
 # .env intentionally tracked for local runtime defaults in this scaffold
 .env.*
 !.env.example
+config/environments/*.secrets.env
+config/environments/*.rendered.env
 .DS_Store
 node_modules/
 coverage/
