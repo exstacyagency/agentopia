@@ -110,6 +110,10 @@ Use `docs/operator-runbooks.md` for the common failure runbook baseline.
 
 Use `docs/metrics.md` for the current metrics baseline and run `./.venv/bin/python scripts/test_metrics.py` to verify the metrics endpoints.
 
+## Alerts
+
+Use `docs/alerts.md` for the current alerting baseline and run `./.venv/bin/python scripts/test_alerts.py` to verify local alert evaluation behavior.
+
 ## Tracing and request/run visibility
 
 Use `docs/tracing-visibility.md` for the current trace visibility baseline and run `./.venv/bin/python scripts/test_tracing_visibility.py` to verify per-trace logs.
@@ -188,5 +192,6 @@ See `docs/container-image-versioning.md`.
 - If dependency-aware health readiness is unclear, review `docs/dependency-aware-health-checks.md` and run `./.venv/bin/python scripts/test_health_checks.py`.
 - If operator guidance is unclear, review `docs/operator-runbooks.md` and follow the matching failure scenario.
 - If metrics readiness is unclear, review `docs/metrics.md` and run `./.venv/bin/python scripts/test_metrics.py`.
+- If alerting readiness is unclear, review `docs/alerts.md` and run `./.venv/bin/python scripts/test_alerts.py`.
 - If tracing visibility is unclear, review `docs/tracing-visibility.md` and run `./.venv/bin/python scripts/test_tracing_visibility.py`.
 - If rollback readiness is unclear, run `scripts/rollback-checklist.sh` and review `docs/rollback-process.md`.
