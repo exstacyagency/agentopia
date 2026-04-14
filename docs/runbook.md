@@ -69,10 +69,14 @@ Set these values in `.env` before trying to boot the runtime stack:
 - `HERMES_MODEL`
 - `HERMES_API_KEY`
 
+For runtime images, use explicit version tags or immutable digests. Do not use floating tags like `latest`, `main`, `master`, `dev`, or `nightly`.
+
+See `docs/container-image-versioning.md`.
+
 ## Troubleshooting
 
 - If validation fails, check for missing files or directories.
-- If runtime-check fails, it will print exactly which runtime targets are missing for each service and a JSON report.
+- If runtime-check fails, it will print exactly which runtime targets are missing for each service, any invalid image refs, and a JSON report.
 - If smoke fails, check the compose file for the expected service names and profiles.
 - If a config file is blank, rerun `scripts/agentopia setup`.
 - If runtime startup fails, confirm the real Paperclip and Hermes images or commands are correct.

@@ -54,7 +54,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add pinned dependency resolution or lockfile support
 - [x] Add reproducible build/install steps for local, CI, and production
 - [x] Add CI validation in a clean environment
-- [ ] Add container/image versioning strategy
+- [x] Add container/image versioning strategy
 - [ ] Add release and promotion criteria for staging to production
 
 ### Observability and operations
