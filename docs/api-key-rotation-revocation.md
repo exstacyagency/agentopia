@@ -25,7 +25,7 @@ File format:
   "keys": [
     {
       "id": "customer_a_primary",
-      "scope": "tasks.write",
+      "role": "submitter",
       "key": "secret-value",
       "status": "active"
     },
@@ -60,6 +60,8 @@ If a key is marked `revoked`:
 ## Current supported scope
 
 - `tasks.write`
+
+Keys in the registry may now carry either a direct `scope` or a `role`. See `docs/role-based-permissions.md` for current role mappings.
 
 ## Compatibility
 

@@ -7,11 +7,18 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
+ROLE_SCOPES = {
+    "submitter": {"tasks.write"},
+    "viewer": set(),
+}
+
+
 @dataclass(frozen=True)
 class ApiKeyIdentity:
     key_id: str
     scope: str
     status: str = "active"
+    role: str | None = None
 
 
 def _fingerprint(raw_key: str) -> str:
@@ -59,6 +66,12 @@ def configured_client_api_keys_file() -> Path:
     return Path(os.environ.get("PAPERCLIP_CLIENT_API_KEYS_FILE", str(_default_registry_path())))
 
 
+def role_allows_scope(role: str | None, required_scope: str) -> bool:
+    if not role:
+        return False
+    return required_scope in ROLE_SCOPES.get(role, set())
+
+
 def resolve_api_key_identity_from_file(authorization_header: str, registry_path: Path) -> ApiKeyIdentity | None:
     provided = _extract_bearer_token(authorization_header)
     if not provided or not registry_path.exists():
@@ -68,8 +81,12 @@ def resolve_api_key_identity_from_file(authorization_header: str, registry_path:
     for item in payload.get("keys", []):
         key = str(item.get("key", "")).strip()
         scope = str(item.get("scope", "")).strip()
+        role = str(item.get("role", "")).strip() or None
         key_id = str(item.get("id", "")).strip() or _fingerprint(key)
         status = str(item.get("status", "active")).strip() or "active"
+        if role and not scope:
+            allowed_scopes = sorted(ROLE_SCOPES.get(role, set()))
+            scope = allowed_scopes[0] if allowed_scopes else ""
         if key and provided == key:
-            return ApiKeyIdentity(key_id=key_id, scope=scope, status=status)
+            return ApiKeyIdentity(key_id=key_id, scope=scope, status=status, role=role)
     return None

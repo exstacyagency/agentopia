@@ -1,8 +1,8 @@
 {
   "keys": [
     {
-      "id": "example_tasks_write_primary",
-      "scope": "tasks.write",
+      "id": "example_submitter_primary",
+      "role": "submitter",
       "key": "replace-me-client-write-key",
       "status": "active"
     }

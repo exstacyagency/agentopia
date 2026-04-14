@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 
 from paperclip.dispatch import HermesDispatchClient
 from paperclip.service import PaperclipService
-from scripts.api_keys import configured_client_api_keys, configured_client_api_keys_file, resolve_api_key_identity, resolve_api_key_identity_from_file
+from scripts.api_keys import configured_client_api_keys, configured_client_api_keys_file, resolve_api_key_identity, resolve_api_key_identity_from_file, role_allows_scope
 from scripts.correlation import CORRELATION_HEADER, get_or_create_correlation_id
 from scripts.input_validation import InputValidationError, validate_strings
 from scripts.metrics import MetricsRegistry
@@ -68,8 +68,13 @@ class PaperclipHandler(BaseHTTPRequestHandler):
             if identity.status != "active":
                 self._send(401, {"error": "unauthorized", "reason": "api_key_revoked"})
                 return False
-            if identity.scope == "tasks.write":
-                self.client_api_identity = {"key_id": identity.key_id, "scope": identity.scope, "source": "file"}
+            if identity.scope == "tasks.write" or role_allows_scope(identity.role, "tasks.write"):
+                self.client_api_identity = {
+                    "key_id": identity.key_id,
+                    "scope": identity.scope or "tasks.write",
+                    "role": identity.role,
+                    "source": "file",
+                }
                 return True
         identity = resolve_api_key_identity(provided, CLIENT_API_KEYS)
         if identity is not None and identity.scope == "tasks.write":
