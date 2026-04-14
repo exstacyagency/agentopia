@@ -173,6 +173,10 @@ Use `docs/approval-expiration.md` for the current stale-approval baseline and `.
 
 Use `docs/approval-audit-trail.md` for the current approval action audit baseline and `./.venv/bin/python scripts/list_approval_audit_events.py <task_id>` to inspect approval-specific events.
 
+## Approval recovery tools
+
+Use `docs/approval-recovery-tools.md` for the current stuck-approval recovery baseline and `./.venv/bin/python scripts/recover_stuck_approvals.py --list` to inspect recoverable tasks.
+
 ## Runtime and container hardening
 
 Use `docs/runtime-container-hardening.md` for the hardening baseline and `python3 scripts/check-compose-hardening.py` to verify the compose file still includes the expected safeguards.

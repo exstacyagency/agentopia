@@ -70,7 +70,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add reliable approval state reconciliation
 - [x] Add approval expiration and timeout behavior
 - [x] Add audit trail for approval actions
-- [ ] Add operator recovery tools for stuck approval states
+- [x] Add operator recovery tools for stuck approval states
 
 ### Memory safety
 - [ ] Add tenant-scoped memory boundaries

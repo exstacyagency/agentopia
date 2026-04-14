@@ -192,6 +192,23 @@ class PaperclipService:
                 )
         return mismatches
 
+    def list_stuck_approval_tasks(self, now: datetime | None = None) -> list[dict]:
+        by_task_id = {}
+        for item in self.reconcile_approval_status():
+            by_task_id[item["task_id"]] = {**item, "reason": "state_mismatch"}
+        for item in self.find_expired_approvals(now=now):
+            by_task_id[item["task_id"]] = {**item, "reason": "expired_pending_approval"}
+        return list(by_task_id.values())
+
+    def recover_stuck_approval(self, task_id: str, actor: str = "operator") -> dict | None:
+        task = self.db.get_task(task_id)
+        if task is None:
+            return None
+        updated_at = utcnow()
+        self.db.update_task_state(task_id, "pending_approval", updated_at, approval_status="pending")
+        self.db.add_audit_event(task_id, "approval_recovery_reset_pending", actor, {"from_state": task["state"], "from_approval_status": task.get("approval_status")}, updated_at)
+        return self.get_task(task_id)
+
 
 def main() -> int:
     root = Path(__file__).resolve().parent.parent
