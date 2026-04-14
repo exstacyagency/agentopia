@@ -115,6 +115,8 @@ Minimum rollback data:
 - prior known-good config state
 - operator note for why rollback might be needed
 
+See `docs/rollback-process.md` and `scripts/rollback-checklist.sh` for the rollback path.
+
 ## Deployment anti-patterns
 
 Do not deploy when:
