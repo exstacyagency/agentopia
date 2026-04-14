@@ -41,6 +41,15 @@ CREATE TABLE IF NOT EXISTS task_results (
     created_at TEXT NOT NULL,
     FOREIGN KEY(task_id) REFERENCES tasks(id)
 );
+
+CREATE TABLE IF NOT EXISTS task_queue (
+    task_id TEXT PRIMARY KEY,
+    status TEXT NOT NULL,
+    correlation_id TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY(task_id) REFERENCES tasks(id)
+);
 """
 
 
@@ -132,6 +141,39 @@ class PaperclipDB:
             data["request_payload"] = json.loads(data["request_payload"])
             tasks.append(data)
         return tasks
+
+    def enqueue_task(self, task_id: str, correlation_id: str | None, created_at: str) -> None:
+        self.conn.execute(
+            "INSERT OR REPLACE INTO task_queue (task_id, status, correlation_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+            (task_id, "queued", correlation_id, created_at, created_at),
+        )
+        self.conn.commit()
+
+    def mark_queue_dispatched(self, task_id: str, updated_at: str) -> None:
+        self.conn.execute(
+            "UPDATE task_queue SET status = ?, updated_at = ? WHERE task_id = ?",
+            ("dispatched", updated_at, task_id),
+        )
+        self.conn.commit()
+
+    def get_queue_item(self, task_id: str) -> dict | None:
+        row = self.conn.execute(
+            "SELECT task_id, status, correlation_id, created_at, updated_at FROM task_queue WHERE task_id = ?",
+            (task_id,),
+        ).fetchone()
+        return dict(row) if row is not None else None
+
+    def list_queue_items(self, status: str | None = None) -> list[dict]:
+        if status is None:
+            rows = self.conn.execute(
+                "SELECT task_id, status, correlation_id, created_at, updated_at FROM task_queue ORDER BY created_at ASC"
+            ).fetchall()
+        else:
+            rows = self.conn.execute(
+                "SELECT task_id, status, correlation_id, created_at, updated_at FROM task_queue WHERE status = ? ORDER BY created_at ASC",
+                (status,),
+            ).fetchall()
+        return [dict(row) for row in rows]
 
     def store_result(self, task_id: str, payload: dict, created_at: str) -> None:
         self.conn.execute(

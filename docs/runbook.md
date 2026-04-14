@@ -78,6 +78,10 @@ Use `docs/role-based-permissions.md` for the permission baseline and run `./.ven
 
 Use `docs/tenant-isolation.md` for the current isolation baseline and run `./.venv/bin/python scripts/test_tenant_isolation.py` to verify cross-tenant task access is rejected.
 
+## Durable queue
+
+Use `docs/durable-queue.md` for the current queue baseline and run `./.venv/bin/python scripts/test_durable_queue.py` to verify queue persistence and inspection.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval consistency baseline and run `./.venv/bin/python scripts/test_approval_reconciliation.py` to verify mismatch detection.
@@ -220,6 +224,7 @@ See `docs/container-image-versioning.md`.
 - If API key rotation or revocation readiness is unclear, review `docs/api-key-rotation-revocation.md` and run `./.venv/bin/python scripts/test_api_key_rotation_revocation.py`.
 - If role-based permission readiness is unclear, review `docs/role-based-permissions.md` and run `./.venv/bin/python scripts/test_role_permissions.py`.
 - If tenant isolation readiness is unclear, review `docs/tenant-isolation.md` and run `./.venv/bin/python scripts/test_tenant_isolation.py`.
+- If durable queue readiness is unclear, review `docs/durable-queue.md` and run `./.venv/bin/python scripts/test_durable_queue.py`.
 - If approval reconciliation readiness is unclear, review `docs/approval-reconciliation.md` and run `./.venv/bin/python scripts/test_approval_reconciliation.py`.
 - If approval expiration readiness is unclear, review `docs/approval-expiration.md` and run `./.venv/bin/python scripts/test_approval_expiration.py`.
 - If approval audit readiness is unclear, review `docs/approval-audit-trail.md` and run `./.venv/bin/python scripts/test_approval_audit_trail.py`.
