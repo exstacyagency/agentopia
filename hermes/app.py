@@ -98,6 +98,14 @@ class HermesHandler(BaseHTTPRequestHandler):
             self._send(200, MEMPALACE.status())
             return
 
+        if parsed.path == "/internal/memory/mine":
+            self._send(200, MEMPALACE.run_operation("mine"))
+            return
+
+        if parsed.path == "/internal/memory/reindex":
+            self._send(200, MEMPALACE.run_operation("reindex"))
+            return
+
         if parsed.path != "/internal/execute":
             self._send(404, {"error": "not found"})
             return
