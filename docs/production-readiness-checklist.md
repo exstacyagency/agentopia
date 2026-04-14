@@ -90,7 +90,7 @@ This checklist captures the minimum work required before Agentopia should be use
 
 ### Deployment maturity
 - [x] Add repeatable deployment process
-- [ ] Add staging environment
+- [x] Add staging environment
 - [x] Add rollback process
 - [x] Add per-environment config validation
 - [ ] Add production secret injection

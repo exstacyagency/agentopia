@@ -133,6 +133,10 @@ Use `scripts/validate-environment-configs.sh` to validate the tracked environmen
 
 Production-like configs should use digest-pinned image refs, while development and staging can use explicit non-floating tags.
 
+## Staging environment
+
+Use `docs/staging-environment.md` for the minimum staging definition and `scripts/staging-checklist.sh` for the staging preflight checklist.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.
