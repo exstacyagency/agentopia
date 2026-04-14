@@ -59,7 +59,7 @@ This checklist captures the minimum work required before Agentopia should be use
 
 ### Observability and operations
 - [x] Add structured logging
-- [ ] Add correlation IDs across requests and runs
+- [x] Add correlation IDs across requests and runs
 - [ ] Add metrics
 - [ ] Add alerts
 - [ ] Add tracing or equivalent request/run visibility

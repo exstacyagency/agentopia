@@ -51,7 +51,7 @@ class PaperclipService:
         next_state = "pending_approval" if approval["required"] and approval["status"] != "approved" else "approved"
         self.transition_task(task["id"], next_state, actor="paperclip", details={"approval_status": approval["status"]})
         if next_state == "approved":
-            self.dispatch_task(task["id"])
+            self.dispatch_task(task["id"], correlation_id=payload.get("trace", {}).get("trace_id"))
         return self.get_task(task["id"])
 
     def transition_task(self, task_id: str, target_state: str, actor: str, details: dict | None = None) -> dict:
@@ -70,7 +70,7 @@ class PaperclipService:
         )
         return self.get_task(task_id)
 
-    def dispatch_task(self, task_id: str) -> dict:
+    def dispatch_task(self, task_id: str, correlation_id: str | None = None) -> dict:
         task = self.db.get_task(task_id)
         if task is None:
             raise KeyError(task_id)
@@ -78,7 +78,7 @@ class PaperclipService:
             raise ValueError(f"task must be approved before dispatch: {task_id}")
         self.transition_task(task_id, "queued", actor="paperclip", details={"dispatch": "hermes"})
         self.transition_task(task_id, "running", actor="paperclip", details={"dispatch": "hermes"})
-        self.dispatch_client.submit(task["request_payload"])
+        self.dispatch_client.submit(task["request_payload"], correlation_id=correlation_id or task["request_payload"].get("trace", {}).get("trace_id"))
         return self.get_task(task_id)
 
     def record_result(self, task_id: str, result: dict) -> dict:
