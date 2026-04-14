@@ -31,6 +31,8 @@ Before deployment, have all of the following ready:
 - environment-specific `.env` values
 - rollback target image refs
 
+For staging, use `config/environments/staging.env` as the tracked baseline and `scripts/staging-checklist.sh` as the preflight checklist.
+
 ## Repeatable deployment flow
 
 ### 1. Prepare environment config

@@ -42,6 +42,10 @@ Use `docs/deployment-process.md` for the repeatable deployment flow. Run `script
 
 Run `scripts/validate-environment-configs.sh` to validate the tracked development, staging, and production config templates.
 
+## Staging environment
+
+Use `docs/staging-environment.md` for the staging definition and run `scripts/staging-checklist.sh` before treating staging as ready.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for the rollback path. Run `scripts/rollback-checklist.sh` after restoring the previous known-good image refs and config.
@@ -99,4 +103,5 @@ See `docs/container-image-versioning.md`.
 - If promotion readiness is unclear, review `docs/release-promotion-criteria.md` and verify the image refs, validation output, and rollback target are recorded.
 - If deployment readiness is unclear, run `scripts/deploy-checklist.sh` and review `docs/deployment-process.md`.
 - If environment config readiness is unclear, run `scripts/validate-environment-configs.sh`.
+- If staging readiness is unclear, run `scripts/staging-checklist.sh` and review `docs/staging-environment.md`.
 - If rollback readiness is unclear, run `scripts/rollback-checklist.sh` and review `docs/rollback-process.md`.
