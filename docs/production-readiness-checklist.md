@@ -21,7 +21,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [ ] Add a safer shell execution layer
 
 ### Durable job/runtime system
-- [ ] Add a durable queue
+- [x] Add a durable queue
 - [ ] Add retries with backoff
 - [ ] Add timeout enforcement
 - [ ] Add worker claiming and leasing

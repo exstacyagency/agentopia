@@ -63,7 +63,8 @@ class PaperclipService:
         next_state = "pending_approval" if approval["required"] and approval["status"] != "approved" else "approved"
         self.transition_task(task["id"], next_state, actor="paperclip", details={"approval_status": approval["status"]})
         if next_state == "approved":
-            self.dispatch_task(task["id"], correlation_id=payload.get("trace", {}).get("trace_id"))
+            self.enqueue_task(task["id"], correlation_id=payload.get("trace", {}).get("trace_id"))
+            self.process_queue(task["id"])
         return self.get_task(task["id"])
 
     def transition_task(self, task_id: str, target_state: str, actor: str, details: dict | None = None) -> dict:
@@ -93,14 +94,37 @@ class PaperclipService:
             self.db.add_audit_event(task_id, "approval_rejected", actor, details or {}, updated_at)
         return self.get_task(task_id)
 
-    def dispatch_task(self, task_id: str, correlation_id: str | None = None) -> dict:
+    def enqueue_task(self, task_id: str, correlation_id: str | None = None) -> dict:
         task = self.db.get_task(task_id)
         if task is None:
             raise KeyError(task_id)
         if task["state"] != "approved":
-            raise ValueError(f"task must be approved before dispatch: {task_id}")
-        self.transition_task(task_id, "queued", actor="paperclip", details={"dispatch": "hermes"})
+            raise ValueError(f"task must be approved before queueing: {task_id}")
+        queued = self.transition_task(task_id, "queued", actor="paperclip", details={"queue": "sqlite"})
+        queued_at = utcnow()
+        self.db.enqueue_task(task_id, correlation_id, queued_at)
+        self.db.add_audit_event(task_id, "task_enqueued", "paperclip", {"correlation_id": correlation_id}, queued_at)
+        return queued
+
+    def process_queue(self, task_id: str) -> dict:
+        queue_item = self.db.get_queue_item(task_id)
+        if queue_item is None:
+            raise KeyError(task_id)
+        if queue_item["status"] != "queued":
+            return self.get_task(task_id)
+        return self.dispatch_task(task_id, correlation_id=queue_item.get("correlation_id"))
+
+    def dispatch_task(self, task_id: str, correlation_id: str | None = None) -> dict:
+        task = self.db.get_task(task_id)
+        if task is None:
+            raise KeyError(task_id)
+        if task["state"] == "approved":
+            self.enqueue_task(task_id, correlation_id=correlation_id)
+            task = self.db.get_task(task_id)
+        if task is None or task["state"] != "queued":
+            raise ValueError(f"task must be queued before dispatch: {task_id}")
         self.transition_task(task_id, "running", actor="paperclip", details={"dispatch": "hermes"})
+        self.db.mark_queue_dispatched(task_id, utcnow())
         trace_id = correlation_id or task["request_payload"].get("trace", {}).get("trace_id")
         if trace_id:
             self.traces.record(trace_id, "paperclip", "task_dispatched", task_id=task_id)
@@ -152,6 +176,9 @@ class PaperclipService:
 
     def get_audit(self, task_id: str) -> list[dict]:
         return self.db.get_audit_events(task_id)
+
+    def get_queue(self, status: str | None = None) -> list[dict]:
+        return self.db.list_queue_items(status=status)
 
     def get_approval_audit(self, task_id: str) -> list[dict]:
         return [

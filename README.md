@@ -181,6 +181,10 @@ Use `docs/role-based-permissions.md` for the current permission baseline. File-b
 
 Use `docs/tenant-isolation.md` for the current ownership baseline. File-based client API keys can now carry tenant metadata, Paperclip stamps tasks with tenant ownership, and cross-tenant reads are rejected.
 
+## Durable queue
+
+Use `docs/durable-queue.md` for the current queue baseline. Paperclip now persists approved tasks in a SQLite-backed queue before dispatching them to Hermes.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.
