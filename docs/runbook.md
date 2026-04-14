@@ -25,6 +25,10 @@ PYTHONPATH=. python3 scripts/test_hermes_executor.py
 PYTHONPATH=. python3 scripts/test_integration_flow.py
 ```
 
+## CI validation
+
+GitHub Actions runs the same clean-environment validation suite on pushes and pull requests using a fresh virtualenv and editable install from `pyproject.toml`.
+
 ## Workflow commands
 
 - `scripts/agentopia boot` — full repo workflow

@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'build/**'
+      - 'ci/**'
+      - 'docs/**'
+  pull_request:
+
+jobs:
+  clean-environment-validation:
+    name: Clean environment validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Create virtual environment
+        run: python -m venv .venv
+
+      - name: Install project
+        run: |
+          . .venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+
+      - name: Run clean-environment validation suite
+        run: |
+          . .venv/bin/activate
+          python scripts/test_contract_schemas.py
+          python scripts/test_paperclip_service.py
+          python scripts/test_hermes_executor.py
+          python scripts/test_integration_flow.py
