@@ -1,4 +1,4 @@
-.env
+# .env intentionally tracked for local runtime defaults in this scaffold
 .env.*
 !.env.example
 .DS_Store

@@ -113,6 +113,12 @@ python -m pip install -e . --no-deps
 
 GitHub Actions now validates the repo in a clean environment by creating a virtualenv, installing from `pyproject.toml`, and running the core test suite.
 
+## Container image policy
+
+Runtime image refs should use explicit version tags or immutable digests. Avoid floating tags like `latest`, `main`, `master`, `dev`, and `nightly`.
+
+See `docs/container-image-versioning.md`.
+
 ## How to start
 
 ```bash

@@ -2,8 +2,14 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
+
+
+FLOATING_IMAGE_TAGS = {"latest", "main", "master", "dev", "nightly"}
+IMAGE_DIGEST_RE = re.compile(r".+@sha256:[0-9a-fA-F]{64}$")
+IMAGE_TAG_RE = re.compile(r".+:([^/@]+)$")
 
 
 @dataclass(frozen=True)
@@ -44,7 +50,28 @@ class RuntimeTargets:
                 missing.append(key.upper())
         return missing
 
+    def invalid_images(self) -> list[str]:
+        invalid: list[str] = []
+        checks = {
+            "PAPERCLIP_IMAGE": self.paperclip_image,
+            "HERMES_IMAGE": self.hermes_image,
+        }
+        for key, image in checks.items():
+            if not image:
+                continue
+            if IMAGE_DIGEST_RE.match(image):
+                continue
+            match = IMAGE_TAG_RE.match(image)
+            if not match:
+                invalid.append(f"{key}: image must use an explicit tag or sha256 digest")
+                continue
+            tag = match.group(1).strip().lower()
+            if tag in FLOATING_IMAGE_TAGS:
+                invalid.append(f"{key}: floating tag '{tag}' is not allowed")
+        return invalid
+
     def report_data(self) -> dict:
+        invalid_images = self.invalid_images()
         return {
             "paperclip": {
                 "image": bool(self.paperclip_image),
@@ -58,6 +85,7 @@ class RuntimeTargets:
                 "api_key": bool(self.hermes_api_key),
             },
             "missing": self.missing(),
+            "invalid_images": invalid_images,
             "ok": self.ok(),
         }
 
@@ -74,6 +102,9 @@ class RuntimeTargets:
             lines.extend(f"- {key}" for key in data["missing"])
         else:
             lines.append("all runtime targets present")
+        if data["invalid_images"]:
+            lines.append("invalid image refs:")
+            lines.extend(f"- {item}" for item in data["invalid_images"])
         return "\n".join(lines)
 
     def report_json(self) -> str:
@@ -112,4 +143,4 @@ class RuntimeTargets:
         return json.dumps(self.startup_plan(), indent=2) + "\n"
 
     def ok(self) -> bool:
-        return not self.missing()
+        return not self.missing() and not self.invalid_images()
