@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from hermes.audit import HermesAuditLogger
 from hermes.redaction import redact_value
 
 
@@ -14,6 +15,7 @@ class HermesPersistence:
         self.base = self.root / "var" / "hermes"
         self.runs_dir = self.base / "runs"
         self.callbacks_dir = self.base / "callbacks"
+        self.audit = HermesAuditLogger(self.root)
         self.runs_dir.mkdir(parents=True, exist_ok=True)
         self.callbacks_dir.mkdir(parents=True, exist_ok=True)
 
@@ -26,6 +28,14 @@ class HermesPersistence:
             "result": redact_value(result),
         }
         path.write_text(json.dumps(payload, indent=2) + "\n")
+        self.audit.record(
+            "persist_result",
+            {
+                "path": str(path.relative_to(self.root)),
+                "task_id": task_id,
+                "run_id": run_id,
+            },
+        )
         return path
 
     def record_callback_attempt(
@@ -51,4 +61,15 @@ class HermesPersistence:
             "retryable": not success,
         }
         path.write_text(json.dumps(redact_value(payload), indent=2) + "\n")
+        self.audit.record(
+            "record_callback_attempt",
+            {
+                "path": str(path.relative_to(self.root)),
+                "task_id": task_id,
+                "run_id": run_id,
+                "success": success,
+                "status_code": status_code,
+                "error": error,
+            },
+        )
         return path
