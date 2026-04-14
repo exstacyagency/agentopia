@@ -6,14 +6,12 @@ from hermes.action_labels import derive_action_labels
 from hermes.decision_trace import build_decision_trace
 from hermes.file_ops import FileWriteError, revert_workspace_file, write_workspace_file
 from hermes.memory.service import MemPalaceService
-from hermes.memory.service import MemPalaceService
 from hermes.policy import evaluate_task_policy
 from hermes.repo_ops import apply_repo_write, preview_repo_write
 from scripts.contracts import validate_payload
 
 SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation", "structured_extract", "repo_change_plan", "implementation_draft", "repo_write", "file_write", "file_revert", "shell_command"}
 MEMORY = MemPalaceService()
-+MEMORY = MemPalaceService()
 
 
 class HermesExecutor:

@@ -97,6 +97,17 @@ The runtime stack now expects the following env vars to be set in `.env`:
 - `HERMES_MODEL`
 - `HERMES_API_KEY`
 
+## Python environment
+
+Use a local virtualenv and install the repo in editable mode:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e .
+```
+
 ## How to start
 
 ```bash

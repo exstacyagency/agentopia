@@ -34,6 +34,9 @@
           "type": "array",
           "items": { "type": "string" }
         },
+        "metadata": {
+          "type": "object"
+        },
         "error": {
           "oneOf": [
             { "type": "null" },
@@ -73,7 +76,8 @@
         "properties": {
           "type": { "type": "string", "minLength": 1 },
           "path": { "type": "string", "minLength": 1 },
-          "content_type": { "type": "string", "minLength": 1 }
+          "content_type": { "type": "string", "minLength": 1 },
+          "metadata": { "type": "object" }
         }
       }
     },
