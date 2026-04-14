@@ -24,6 +24,7 @@ POSTBACK_STORE = HermesPostbackStore(os.path.abspath(ROOT))
 COMMENT_POSTER = PaperclipCommentPoster()
 MEMPALACE = MemPalaceService()
 PAPERCLIP_RESULT_URL = os.environ.get("PAPERCLIP_RESULT_URL", "http://127.0.0.1:3200/internal/tasks/{task_id}/result")
+MAX_REQUEST_BYTES = int(os.environ.get("HERMES_MAX_REQUEST_BYTES", str(1024 * 1024)))
 
 
 class HermesHandler(BaseHTTPRequestHandler):
@@ -34,6 +35,14 @@ class HermesHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
+
+    def _read_json_body(self) -> dict:
+        length = int(self.headers.get("Content-Length", "0"))
+        if length > MAX_REQUEST_BYTES:
+            self._send(413, {"error": "request body too large", "max_bytes": MAX_REQUEST_BYTES})
+            raise ValueError("request_too_large")
+        raw = self.rfile.read(length) if length else b"{}"
+        return json.loads(raw.decode() or "{}")
 
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
@@ -64,9 +73,12 @@ class HermesHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
-        length = int(self.headers.get("Content-Length", "0"))
-        raw = self.rfile.read(length) if length else b"{}"
-        body = json.loads(raw.decode() or "{}")
+        try:
+            body = self._read_json_body()
+        except ValueError as exc:
+            if str(exc) == "request_too_large":
+                return
+            raise
 
         if parsed.path.startswith("/internal/tasks/") and parsed.path.endswith("/result"):
             task_id = parsed.path.split("/")[3]
