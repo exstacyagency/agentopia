@@ -157,6 +157,10 @@ Use `docs/image-dependency-provenance.md` for provenance expectations and `pytho
 
 Use `docs/artifact-access-redaction.md` for the current artifact handling baseline. Persisted results are internal-only by default and now redact obvious secret-bearing values before writing.
 
+## Request size limits
+
+Use `docs/request-size-limits.md` for the current request body limit policy. Paperclip and Hermes both enforce configurable max request sizes.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.

@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PAPERCLIP_DB_PATH = Path(os.environ.get("PAPERCLIP_DB_PATH", str(ROOT / "data" / "paperclip.sqlite3")))
 HERMES_BASE_URL = os.environ.get("HERMES_BASE_URL", "http://127.0.0.1:3200")
 SERVICE = PaperclipService(PAPERCLIP_DB_PATH, dispatch_client=HermesDispatchClient(HERMES_BASE_URL))
+MAX_REQUEST_BYTES = int(os.environ.get("PAPERCLIP_MAX_REQUEST_BYTES", str(1024 * 1024)))
 
 
 class PaperclipHandler(BaseHTTPRequestHandler):
@@ -23,6 +24,14 @@ class PaperclipHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _read_json_body(self) -> dict:
+        length = int(self.headers.get("Content-Length", "0"))
+        if length > MAX_REQUEST_BYTES:
+            self._send(413, {"error": "request body too large", "max_bytes": MAX_REQUEST_BYTES})
+            raise ValueError("request_too_large")
+        raw = self.rfile.read(length) if length else b"{}"
+        return json.loads(raw.decode())
 
     def _send_html(self, status: int, html: str) -> None:
         body = html.encode()
@@ -72,10 +81,8 @@ class PaperclipHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
         parts = [part for part in parsed.path.split("/") if part]
-        length = int(self.headers.get("Content-Length", "0"))
-        raw = self.rfile.read(length) if length else b"{}"
-        body = json.loads(raw.decode())
         try:
+            body = self._read_json_body()
             if parsed.path == "/tasks":
                 task = SERVICE.submit_task(body)
                 self._send(201, task)
@@ -91,11 +98,13 @@ class PaperclipHandler(BaseHTTPRequestHandler):
                     task = SERVICE.dispatch_task(parts[1])
                 self._send(200, task)
                 return
+        except ValueError as exc:
+            if str(exc) == "request_too_large":
+                return
+            self._send(400, {"error": str(exc)})
+            return
         except KeyError:
             self._send(404, {"error": "task not found"})
-            return
-        except ValueError as exc:
-            self._send(400, {"error": str(exc)})
             return
         self._send(404, {"error": "not found"})
 

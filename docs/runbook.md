@@ -66,6 +66,10 @@ Use `docs/image-dependency-provenance.md` for provenance expectations and run `p
 
 Use `docs/artifact-access-redaction.md` for the current artifact handling baseline and run `./.venv/bin/python scripts/test_persistence_redaction.py` to verify redaction behavior.
 
+## Request size limits
+
+Use `docs/request-size-limits.md` for the current policy and run `./.venv/bin/python scripts/test_request_limits.py` to verify oversized requests are rejected.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for the rollback path. Run `scripts/rollback-checklist.sh` after restoring the previous known-good image refs and config.
@@ -129,4 +133,5 @@ See `docs/container-image-versioning.md`.
 - If dependency scan readiness is unclear, review `docs/dependency-vulnerability-scanning.md` and run `scripts/run-dependency-scan.sh`.
 - If provenance readiness is unclear, review `docs/image-dependency-provenance.md` and run `python3 scripts/check-provenance.py`.
 - If artifact handling readiness is unclear, review `docs/artifact-access-redaction.md` and run `./.venv/bin/python scripts/test_persistence_redaction.py`.
+- If request limit readiness is unclear, review `docs/request-size-limits.md` and run `./.venv/bin/python scripts/test_request_limits.py`.
 - If rollback readiness is unclear, run `scripts/rollback-checklist.sh` and review `docs/rollback-process.md`.
