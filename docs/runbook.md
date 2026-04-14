@@ -50,6 +50,10 @@ Use `docs/staging-environment.md` for the staging definition and run `scripts/st
 
 Use `docs/production-secret-injection.md` for the secret injection path. Run `scripts/render-production-env.sh` after preparing the untracked production secrets file and before deployment.
 
+## Runtime and container hardening
+
+Use `docs/runtime-container-hardening.md` for the hardening baseline and run `python3 scripts/check-compose-hardening.py` after compose changes.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for the rollback path. Run `scripts/rollback-checklist.sh` after restoring the previous known-good image refs and config.
@@ -109,4 +113,5 @@ See `docs/container-image-versioning.md`.
 - If environment config readiness is unclear, run `scripts/validate-environment-configs.sh`.
 - If staging readiness is unclear, run `scripts/staging-checklist.sh` and review `docs/staging-environment.md`.
 - If production secret injection readiness is unclear, review `docs/production-secret-injection.md` and run `scripts/render-production-env.sh`.
+- If runtime/container hardening readiness is unclear, review `docs/runtime-container-hardening.md` and run `python3 scripts/check-compose-hardening.py`.
 - If rollback readiness is unclear, run `scripts/rollback-checklist.sh` and review `docs/rollback-process.md`.

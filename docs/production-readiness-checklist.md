@@ -94,7 +94,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add rollback process
 - [x] Add per-environment config validation
 - [x] Add production secret injection
-- [ ] Harden runtime and container setup
+- [x] Harden runtime and container setup
 
 ### Test coverage for dangerous paths
 - [ ] Add auth tests

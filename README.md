@@ -141,6 +141,10 @@ Use `docs/staging-environment.md` for the minimum staging definition and `script
 
 Use `docs/production-secret-injection.md` for the secret injection policy and `scripts/render-production-env.sh` to build a validated production runtime env from tracked templates plus untracked secrets.
 
+## Runtime and container hardening
+
+Use `docs/runtime-container-hardening.md` for the hardening baseline and `python3 scripts/check-compose-hardening.py` to verify the compose file still includes the expected safeguards.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.
