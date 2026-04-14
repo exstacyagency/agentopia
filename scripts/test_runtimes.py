@@ -20,6 +20,7 @@ class RuntimeTargetsTests(unittest.TestCase):
         env_path = self.make_env(
             "\n".join(
                 [
+                    "NODE_ENV=development",
                     "PAPERCLIP_IMAGE=paperclipai/paperclip:1.0.0",
                     "HERMES_IMAGE=ghcr.io/hermes-agent/hermes:1.0.0",
                     "PAPERCLIP_URL=http://localhost:3100",
@@ -39,6 +40,7 @@ class RuntimeTargetsTests(unittest.TestCase):
         env_path = self.make_env(
             "\n".join(
                 [
+                    "NODE_ENV=production",
                     f"PAPERCLIP_IMAGE=paperclipai/paperclip@sha256:{digest}",
                     f"HERMES_IMAGE=ghcr.io/hermes-agent/hermes@sha256:{digest}",
                     "PAPERCLIP_URL=http://localhost:3100",
@@ -57,6 +59,7 @@ class RuntimeTargetsTests(unittest.TestCase):
         env_path = self.make_env(
             "\n".join(
                 [
+                    "NODE_ENV=development",
                     "PAPERCLIP_IMAGE=paperclipai/paperclip:latest",
                     "HERMES_IMAGE=ghcr.io/hermes-agent/hermes:main",
                     "PAPERCLIP_URL=http://localhost:3100",
