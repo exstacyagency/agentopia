@@ -50,6 +50,10 @@ Use `docs/staging-environment.md` for the staging definition and run `scripts/st
 
 Use `docs/production-secret-injection.md` for the secret injection path. Run `scripts/render-production-env.sh` after preparing the untracked production secrets file and before deployment.
 
+## Secret storage and handling
+
+Use `docs/secret-storage-handling.md` for the current handling baseline and run `python3 scripts/check-secret-handling.py` to verify repo-level secret handling rules.
+
 ## Runtime and container hardening
 
 Use `docs/runtime-container-hardening.md` for the hardening baseline and run `python3 scripts/check-compose-hardening.py` after compose changes.
@@ -141,6 +145,7 @@ See `docs/container-image-versioning.md`.
 - If environment config readiness is unclear, run `scripts/validate-environment-configs.sh`.
 - If staging readiness is unclear, run `scripts/staging-checklist.sh` and review `docs/staging-environment.md`.
 - If production secret injection readiness is unclear, review `docs/production-secret-injection.md` and run `scripts/render-production-env.sh`.
+- If secret handling readiness is unclear, review `docs/secret-storage-handling.md` and run `python3 scripts/check-secret-handling.py`.
 - If runtime/container hardening readiness is unclear, review `docs/runtime-container-hardening.md` and run `python3 scripts/check-compose-hardening.py`.
 - If dependency scan readiness is unclear, review `docs/dependency-vulnerability-scanning.md` and run `scripts/run-dependency-scan.sh`.
 - If provenance readiness is unclear, review `docs/image-dependency-provenance.md` and run `python3 scripts/check-provenance.py`.
