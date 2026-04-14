@@ -89,7 +89,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [ ] Return sane, consistent error messages
 
 ### Deployment maturity
-- [ ] Add repeatable deployment process
+- [x] Add repeatable deployment process
 - [ ] Add staging environment
 - [ ] Add rollback process
 - [ ] Add per-environment config validation

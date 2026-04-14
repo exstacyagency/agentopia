@@ -34,6 +34,10 @@ GitHub Actions runs the same clean-environment validation suite on pushes and pu
 
 Use `docs/release-promotion-criteria.md` as the minimum gate for moving changes from merged code to staging-like validation and then toward production-like rollout.
 
+## Deployment process
+
+Use `docs/deployment-process.md` for the repeatable deployment flow. Run `scripts/deploy-checklist.sh` before considering a deployment ready to execute.
+
 ## Workflow commands
 
 - `scripts/agentopia boot` — full repo workflow
@@ -85,3 +89,4 @@ See `docs/container-image-versioning.md`.
 - If a config file is blank, rerun `scripts/agentopia setup`.
 - If runtime startup fails, confirm the real Paperclip and Hermes images or commands are correct.
 - If promotion readiness is unclear, review `docs/release-promotion-criteria.md` and verify the image refs, validation output, and rollback target are recorded.
+- If deployment readiness is unclear, run `scripts/deploy-checklist.sh` and review `docs/deployment-process.md`.
