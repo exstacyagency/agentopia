@@ -20,11 +20,11 @@ scripts/agentopia doctor
 scripts/agentopia runtime-check
 scripts/agentopia status
 scripts/agentopia smoke
-PYTHONPATH=. python3 scripts/test_contract_schemas.py
-PYTHONPATH=. python3 scripts/test_paperclip_service.py
-PYTHONPATH=. python3 scripts/test_hermes_executor.py
-PYTHONPATH=. python3 scripts/test_integration_flow.py
+./scripts/validate-suite.sh core
+./scripts/validate-suite.sh full
 ```
+
+Use `core` for the default fast path and `full` for broad regression coverage.
 
 ## CI validation
 

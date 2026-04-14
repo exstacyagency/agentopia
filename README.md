@@ -109,6 +109,18 @@ python -m pip install -r requirements.lock
 python -m pip install -e . --no-deps
 ```
 
+## Validation modes
+
+Use a single validation entrypoint:
+
+```bash
+./scripts/validate-suite.sh core
+./scripts/validate-suite.sh full
+```
+
+- `core` runs the contract and integration smoke set
+- `full` runs the broader regression and hardening checks
+
 ## Continuous integration
 
 GitHub Actions now validates the repo in a clean environment by creating a virtualenv, installing from `pyproject.toml`, and running the core test suite.
