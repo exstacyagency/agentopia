@@ -153,6 +153,10 @@ Use `docs/dependency-vulnerability-scanning.md` for the scan policy and `scripts
 
 Use `docs/image-dependency-provenance.md` for provenance expectations and `python3 scripts/check-provenance.py` to verify the current baseline.
 
+## Artifact access and redaction
+
+Use `docs/artifact-access-redaction.md` for the current artifact handling baseline. Persisted results are internal-only by default and now redact obvious secret-bearing values before writing.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.
