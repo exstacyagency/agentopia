@@ -78,11 +78,17 @@ class HermesHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
         if parsed.path == "/health":
+            dependencies = {
+                "paperclip_result_url_configured": bool(PAPERCLIP_RESULT_URL),
+                "internal_auth_configured": bool(INTERNAL_AUTH_TOKEN),
+            }
+            ok = all(dependencies.values())
             self._send(
-                200,
+                200 if ok else 503,
                 {
-                    "ok": True,
+                    "ok": ok,
                     "service": "hermes",
+                    "dependencies": dependencies,
                     "runtime": summarize_runtime_guards(getattr(COMMENT_POSTER, "base_url", None)),
                     "build": {
                         "stamp": BUILD_STAMP,

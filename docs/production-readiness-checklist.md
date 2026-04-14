@@ -63,7 +63,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [ ] Add metrics
 - [ ] Add alerts
 - [ ] Add tracing or equivalent request/run visibility
-- [ ] Add dependency-aware health checks
+- [x] Add dependency-aware health checks
 - [ ] Add operator runbooks for common failures
 
 ### Governance and approval correctness
