@@ -51,6 +51,8 @@ class PaperclipService:
             }
         )
         self.db.add_audit_event(task["id"], "task_received", "paperclip", {"state": initial_state}, created_at)
+        if approval["required"]:
+            self.db.add_audit_event(task["id"], "approval_requested", "paperclip", {"approval_status": approval["status"]}, created_at)
         self.traces.record(payload["trace"]["trace_id"], "paperclip", "task_submitted", task_id=task["id"], state=initial_state)
 
         self.transition_task(task["id"], "validating", actor="paperclip", details={"schema_version": payload["schema_version"]})
@@ -81,6 +83,10 @@ class PaperclipService:
             details or {},
             updated_at,
         )
+        if target_state == "approved":
+            self.db.add_audit_event(task_id, "approval_granted", actor, details or {}, updated_at)
+        elif target_state == "rejected":
+            self.db.add_audit_event(task_id, "approval_rejected", actor, details or {}, updated_at)
         return self.get_task(task_id)
 
     def dispatch_task(self, task_id: str, correlation_id: str | None = None) -> dict:
@@ -138,6 +144,13 @@ class PaperclipService:
     def get_audit(self, task_id: str) -> list[dict]:
         return self.db.get_audit_events(task_id)
 
+    def get_approval_audit(self, task_id: str) -> list[dict]:
+        return [
+            event
+            for event in self.db.get_audit_events(task_id)
+            if event["event_type"] in {"approval_requested", "approval_granted", "approval_rejected", "approval_expired"}
+        ]
+
     def find_expired_approvals(self, now: datetime | None = None) -> list[dict]:
         now = now or datetime.now(timezone.utc)
         expired: list[dict] = []
@@ -145,7 +158,7 @@ class PaperclipService:
             if task["state"] != "pending_approval":
                 continue
             updated_at = datetime.fromisoformat(task["updated_at"].replace("Z", "+00:00"))
-            if updated_at + timedelta(seconds=self.approval_ttl_seconds) < now:
+            if updated_at + timedelta(seconds=self.approval_ttl_seconds) <= now:
                 expired.append(
                     {
                         "task_id": task["id"],
@@ -154,6 +167,7 @@ class PaperclipService:
                         "updated_at": task["updated_at"],
                     }
                 )
+                self.db.add_audit_event(task["id"], "approval_expired", "paperclip", {"updated_at": task["updated_at"]}, now.isoformat().replace("+00:00", "Z"))
         return expired
 
     def reconcile_approval_status(self) -> list[dict]:
