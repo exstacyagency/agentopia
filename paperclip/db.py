@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     requester_id TEXT NOT NULL,
     requester_display_name TEXT NOT NULL,
     state TEXT NOT NULL,
+    approval_status TEXT NOT NULL DEFAULT 'unknown',
     request_payload TEXT NOT NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
@@ -54,9 +55,9 @@ class PaperclipDB:
             """
             INSERT INTO tasks (
                 id, schema_version, type, title, description, priority, risk_level,
-                requester_id, requester_display_name, state, request_payload,
+                requester_id, requester_display_name, state, approval_status, request_payload,
                 created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 record["id"],
@@ -69,6 +70,7 @@ class PaperclipDB:
                 record["requester_id"],
                 record["requester_display_name"],
                 record["state"],
+                record["approval_status"],
                 json.dumps(record["request_payload"]),
                 record["created_at"],
                 record["updated_at"],
@@ -84,11 +86,17 @@ class PaperclipDB:
         data["request_payload"] = json.loads(data["request_payload"])
         return data
 
-    def update_task_state(self, task_id: str, state: str, updated_at: str) -> None:
-        self.conn.execute(
-            "UPDATE tasks SET state = ?, updated_at = ? WHERE id = ?",
-            (state, updated_at, task_id),
-        )
+    def update_task_state(self, task_id: str, state: str, updated_at: str, approval_status: str | None = None) -> None:
+        if approval_status is None:
+            self.conn.execute(
+                "UPDATE tasks SET state = ?, updated_at = ? WHERE id = ?",
+                (state, updated_at, task_id),
+            )
+        else:
+            self.conn.execute(
+                "UPDATE tasks SET state = ?, approval_status = ?, updated_at = ? WHERE id = ?",
+                (state, approval_status, updated_at, task_id),
+            )
         self.conn.commit()
 
     def add_audit_event(self, task_id: str, event_type: str, actor: str, payload: dict, created_at: str) -> None:
@@ -109,6 +117,15 @@ class PaperclipDB:
             item["payload"] = json.loads(item.pop("payload_json"))
             events.append(item)
         return events
+
+    def list_tasks(self) -> list[dict]:
+        rows = self.conn.execute("SELECT * FROM tasks ORDER BY created_at ASC").fetchall()
+        tasks: list[dict] = []
+        for row in rows:
+            data = dict(row)
+            data["request_payload"] = json.loads(data["request_payload"])
+            tasks.append(data)
+        return tasks
 
     def store_result(self, task_id: str, payload: dict, created_at: str) -> None:
         self.conn.execute(

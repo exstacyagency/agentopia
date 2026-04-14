@@ -42,6 +42,7 @@ class PaperclipService:
                 "requester_id": task["requester"]["id"],
                 "requester_display_name": task["requester"]["display_name"],
                 "state": initial_state,
+                "approval_status": approval["status"],
                 "request_payload": payload,
                 "created_at": created_at,
                 "updated_at": created_at,
@@ -63,7 +64,14 @@ class PaperclipService:
             raise KeyError(task_id)
         assert_transition(task["state"], target_state)
         updated_at = utcnow()
-        self.db.update_task_state(task_id, target_state, updated_at)
+        approval_status = None
+        if target_state == "pending_approval":
+            approval_status = "pending"
+        elif target_state == "approved":
+            approval_status = "approved"
+        elif target_state == "rejected":
+            approval_status = "rejected"
+        self.db.update_task_state(task_id, target_state, updated_at, approval_status=approval_status)
         self.db.add_audit_event(
             task_id,
             f"state_changed:{task['state']}->{target_state}",
@@ -117,6 +125,7 @@ class PaperclipService:
                 "display_name": task["requester_display_name"],
             },
             "state": task["state"],
+            "approval_status": task["approval_status"],
             "created_at": task["created_at"],
             "updated_at": task["updated_at"],
         }
@@ -126,6 +135,28 @@ class PaperclipService:
 
     def get_audit(self, task_id: str) -> list[dict]:
         return self.db.get_audit_events(task_id)
+
+    def reconcile_approval_status(self) -> list[dict]:
+        mismatches: list[dict] = []
+        for task in self.db.list_tasks():
+            state = task["state"]
+            approval_status = task.get("approval_status") or "unknown"
+            ok = True
+            if state == "pending_approval":
+                ok = approval_status == "pending"
+            elif state == "approved":
+                ok = approval_status in {"approved", "not_required"}
+            elif state == "rejected":
+                ok = approval_status == "rejected"
+            if not ok:
+                mismatches.append(
+                    {
+                        "task_id": task["id"],
+                        "state": state,
+                        "approval_status": approval_status,
+                    }
+                )
+        return mismatches
 
 
 def main() -> int:
