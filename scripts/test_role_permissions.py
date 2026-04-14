@@ -84,7 +84,7 @@ class RolePermissionTests(unittest.TestCase):
     def test_submitter_role_can_submit_tasks(self) -> None:
         registry = {
             "keys": [
-                {"id": "submitter-key", "role": "submitter", "key": "submitter-secret", "status": "active"},
+                {"id": "submitter-key", "role": "submitter", "tenant_id": "tenant-submitter", "org_id": "org-submitter", "client_id": "client-submitter", "key": "submitter-secret", "status": "active"},
             ]
         }
         status, body = self._run_request(registry, "submitter-secret")
@@ -94,7 +94,7 @@ class RolePermissionTests(unittest.TestCase):
     def test_viewer_role_cannot_submit_tasks(self) -> None:
         registry = {
             "keys": [
-                {"id": "viewer-key", "role": "viewer", "key": "viewer-secret", "status": "active"},
+                {"id": "viewer-key", "role": "viewer", "tenant_id": "tenant-viewer", "org_id": "org-viewer", "client_id": "client-viewer", "key": "viewer-secret", "status": "active"},
             ]
         }
         status, body = self._run_request(registry, "viewer-secret")

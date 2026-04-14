@@ -5,7 +5,7 @@ This checklist captures the minimum work required before Agentopia should be use
 ## P0: Must be done before any paying client
 
 ### Auth, tenants, and permissions
-- [ ] Add client/org/tenant isolation
+- [x] Add client/org/tenant isolation
 - [x] Add authentication for all client-facing APIs
 - [x] Add role-based permissions
 - [x] Add scoped API keys
@@ -98,7 +98,7 @@ This checklist captures the minimum work required before Agentopia should be use
 
 ### Test coverage for dangerous paths
 - [x] Add auth tests
-- [ ] Add tenancy isolation tests
+- [x] Add tenancy isolation tests
 - [ ] Add dangerous action tests for file_write, repo_write, and shell_command
 - [ ] Add retry and reconciliation tests
 - [ ] Add end-to-end HTTP/process tests

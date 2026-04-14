@@ -84,8 +84,8 @@ class ApiKeyRotationRevocationTests(unittest.TestCase):
     def test_rotation_allows_old_and_new_active_keys_during_cutover(self) -> None:
         registry = {
             "keys": [
-                {"id": "old-primary", "scope": "tasks.write", "key": "old-key", "status": "active"},
-                {"id": "new-primary", "scope": "tasks.write", "key": "new-key", "status": "active"},
+                {"id": "old-primary", "scope": "tasks.write", "tenant_id": "tenant-rotation", "org_id": "org-rotation", "client_id": "client-old", "key": "old-key", "status": "active"},
+                {"id": "new-primary", "scope": "tasks.write", "tenant_id": "tenant-rotation", "org_id": "org-rotation", "client_id": "client-new", "key": "new-key", "status": "active"},
             ]
         }
         old_status, _ = self._run_request(registry, "old-key")
@@ -96,7 +96,7 @@ class ApiKeyRotationRevocationTests(unittest.TestCase):
     def test_revoked_key_is_rejected(self) -> None:
         registry = {
             "keys": [
-                {"id": "old-primary", "scope": "tasks.write", "key": "old-key", "status": "revoked"},
+                {"id": "old-primary", "scope": "tasks.write", "tenant_id": "tenant-rotation", "org_id": "org-rotation", "client_id": "client-old", "key": "old-key", "status": "revoked"},
             ]
         }
         status, body = self._run_request(registry, "old-key")

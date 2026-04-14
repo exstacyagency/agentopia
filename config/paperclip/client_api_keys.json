@@ -3,6 +3,9 @@
     {
       "id": "example_submitter_primary",
       "role": "submitter",
+      "tenant_id": "tenant_example",
+      "org_id": "org_example",
+      "client_id": "client_example",
       "key": "replace-me-client-write-key",
       "status": "active"
     }
