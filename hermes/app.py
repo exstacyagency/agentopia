@@ -17,6 +17,7 @@ from hermes.postback_store import HermesPostbackStore
 from hermes.runtime_checks import summarize_runtime_guards
 from scripts.input_validation import InputValidationError, validate_strings
 from scripts.rate_limit import InMemoryRateLimiter
+from scripts.structured_logging import log_event
 
 ROOT = os.path.dirname(os.path.dirname(__file__))
 EXECUTOR = HermesExecutor(os.path.abspath(ROOT))
@@ -41,6 +42,7 @@ class HermesHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
+        log_event("hermes", "response_sent", status=status, path=self.path)
 
     def _client_ip(self) -> str:
         return self.client_address[0] if self.client_address else "unknown"
@@ -98,7 +100,9 @@ class HermesHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
+        log_event("hermes", "request_received", method="POST", path=parsed.path)
         if not self._enforce_rate_limit():
+            log_event("hermes", "request_rejected", reason="rate_limit", path=parsed.path)
             return
         if parsed.path == "/internal/execute" and not self._require_internal_auth():
             return
@@ -244,6 +248,7 @@ class HermesHandler(BaseHTTPRequestHandler):
 def main() -> int:
     port = int(os.environ.get("HERMES_PORT", "3200"))
     server = ThreadingHTTPServer(("0.0.0.0", port), HermesHandler)
+    log_event("hermes", "service_start", port=port)
     print(f"hermes listening on http://0.0.0.0:{port}")
     server.serve_forever()
     return 0

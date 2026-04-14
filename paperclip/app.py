@@ -10,6 +10,7 @@ from paperclip.dispatch import HermesDispatchClient
 from paperclip.service import PaperclipService
 from scripts.input_validation import InputValidationError, validate_strings
 from scripts.rate_limit import InMemoryRateLimiter
+from scripts.structured_logging import log_event
 
 ROOT = Path(__file__).resolve().parent.parent
 PAPERCLIP_DB_PATH = Path(os.environ.get("PAPERCLIP_DB_PATH", str(ROOT / "data" / "paperclip.sqlite3")))
@@ -30,6 +31,7 @@ class PaperclipHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+        log_event("paperclip", "response_sent", status=status, path=self.path)
 
     def _client_ip(self) -> str:
         return self.client_address[0] if self.client_address else "unknown"
@@ -106,7 +108,9 @@ class PaperclipHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
         parts = [part for part in parsed.path.split("/") if part]
+        log_event("paperclip", "request_received", method="POST", path=parsed.path)
         if not self._enforce_rate_limit():
+            log_event("paperclip", "request_rejected", reason="rate_limit", path=parsed.path)
             return
         try:
             body = self._read_json_body()
@@ -144,6 +148,7 @@ class PaperclipHandler(BaseHTTPRequestHandler):
 def main() -> int:
     port = int(os.environ.get("PAPERCLIP_PORT", "3100"))
     server = ThreadingHTTPServer(("0.0.0.0", port), PaperclipHandler)
+    log_event("paperclip", "service_start", port=port)
     print(f"paperclip listening on http://0.0.0.0:{port}")
     server.serve_forever()
     return 0

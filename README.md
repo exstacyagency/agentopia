@@ -181,6 +181,10 @@ Use `docs/rate-limiting-abuse-protection.md` for the current abuse-control basel
 
 Use `docs/audit-logging.md` for the current audit logging baseline. Paperclip keeps audit events in SQLite, and Hermes now writes structured audit records for persistence-side events.
 
+## Structured logging
+
+Use `docs/structured-logging.md` for the current service-log baseline. Paperclip and Hermes now emit JSON log lines for key service events.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.
