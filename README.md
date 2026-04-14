@@ -123,6 +123,10 @@ See `docs/container-image-versioning.md`.
 
 Release and staging-to-production promotion criteria are documented in `docs/release-promotion-criteria.md`.
 
+## Deployment process
+
+Use `docs/deployment-process.md` for the repeatable deployment flow and `scripts/deploy-checklist.sh` for the current deployment validation checklist.
+
 ## How to start
 
 ```bash
