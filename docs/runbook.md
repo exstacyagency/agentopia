@@ -38,6 +38,10 @@ Use `docs/release-promotion-criteria.md` as the minimum gate for moving changes 
 
 Use `docs/deployment-process.md` for the repeatable deployment flow. Run `scripts/deploy-checklist.sh` before considering a deployment ready to execute.
 
+## Environment config validation
+
+Run `scripts/validate-environment-configs.sh` to validate the tracked development, staging, and production config templates.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for the rollback path. Run `scripts/rollback-checklist.sh` after restoring the previous known-good image refs and config.
@@ -94,4 +98,5 @@ See `docs/container-image-versioning.md`.
 - If runtime startup fails, confirm the real Paperclip and Hermes images or commands are correct.
 - If promotion readiness is unclear, review `docs/release-promotion-criteria.md` and verify the image refs, validation output, and rollback target are recorded.
 - If deployment readiness is unclear, run `scripts/deploy-checklist.sh` and review `docs/deployment-process.md`.
+- If environment config readiness is unclear, run `scripts/validate-environment-configs.sh`.
 - If rollback readiness is unclear, run `scripts/rollback-checklist.sh` and review `docs/rollback-process.md`.

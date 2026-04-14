@@ -14,6 +14,7 @@ IMAGE_TAG_RE = re.compile(r".+:([^/@]+)$")
 
 @dataclass(frozen=True)
 class RuntimeTargets:
+    node_env: str
     paperclip_image: str
     hermes_image: str
     paperclip_url: str
@@ -33,6 +34,7 @@ class RuntimeTargets:
                 key, value = line.split("=", 1)
                 env[key.strip()] = value.strip()
         data = {
+            "node_env": os.environ.get("NODE_ENV", env.get("NODE_ENV", "")).strip(),
             "paperclip_image": os.environ.get("PAPERCLIP_IMAGE", env.get("PAPERCLIP_IMAGE", "")).strip(),
             "hermes_image": os.environ.get("HERMES_IMAGE", env.get("HERMES_IMAGE", "")).strip(),
             "paperclip_url": os.environ.get("PAPERCLIP_URL", env.get("PAPERCLIP_URL", "")).strip(),
@@ -52,6 +54,7 @@ class RuntimeTargets:
 
     def invalid_images(self) -> list[str]:
         invalid: list[str] = []
+        require_digests = self.node_env.lower() == "production"
         checks = {
             "PAPERCLIP_IMAGE": self.paperclip_image,
             "HERMES_IMAGE": self.hermes_image,
@@ -65,6 +68,9 @@ class RuntimeTargets:
             if not match:
                 invalid.append(f"{key}: image must use an explicit tag or sha256 digest")
                 continue
+            if require_digests:
+                invalid.append(f"{key}: production requires a sha256 digest image ref")
+                continue
             tag = match.group(1).strip().lower()
             if tag in FLOATING_IMAGE_TAGS:
                 invalid.append(f"{key}: floating tag '{tag}' is not allowed")
@@ -73,6 +79,7 @@ class RuntimeTargets:
     def report_data(self) -> dict:
         invalid_images = self.invalid_images()
         return {
+            "environment": self.node_env or "unknown",
             "paperclip": {
                 "image": bool(self.paperclip_image),
                 "url": bool(self.paperclip_url),

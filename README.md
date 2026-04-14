@@ -127,6 +127,12 @@ Release and staging-to-production promotion criteria are documented in `docs/rel
 
 Use `docs/deployment-process.md` for the repeatable deployment flow and `scripts/deploy-checklist.sh` for the current deployment validation checklist.
 
+## Environment config validation
+
+Use `scripts/validate-environment-configs.sh` to validate the tracked environment templates in `config/environments/`.
+
+Production-like configs should use digest-pinned image refs, while development and staging can use explicit non-floating tags.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for rollback guidance and `scripts/rollback-checklist.sh` for the current rollback verification checklist.

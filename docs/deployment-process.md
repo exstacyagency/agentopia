@@ -16,6 +16,7 @@ Current repo state:
 - local/dev workflow is script-driven
 - runtime configuration comes from `.env`
 - runtime validation is available through `scripts/env-validator.py`
+- tracked environment templates live in `config/environments/`
 - image refs should already follow `docs/container-image-versioning.md`
 - promotion decisions should already follow `docs/release-promotion-criteria.md`
 
@@ -43,6 +44,12 @@ python3 scripts/env-validator.py
 ```
 
 Do not continue if env validation fails.
+
+For tracked environment templates, also run:
+
+```bash
+./scripts/validate-environment-configs.sh
+```
 
 ### 2. Verify the repo state
 
