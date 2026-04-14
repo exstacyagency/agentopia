@@ -2,13 +2,26 @@ services:
   paperclip:
     image: ${PAPERCLIP_IMAGE}
     container_name: agentopia-paperclip
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "3100:3100"
     env_file:
       - .env
     volumes:
-      - ./config/paperclip:/app/config/paperclip
-      - ./config/hermes:/app/config/hermes
+      - ./config/paperclip:/app/config/paperclip:ro
+      - ./config/hermes:/app/config/hermes:ro
     healthcheck:
       test: ["CMD-SHELL", "python3 /app/config/paperclip/healthcheck.py"]
       interval: 10s
@@ -21,11 +34,24 @@ services:
   hermes:
     image: ${HERMES_IMAGE}
     container_name: agentopia-hermes
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     env_file:
       - .env
     volumes:
-      - ./config/hermes:/app/config/hermes
-      - ./config/paperclip:/app/config/paperclip
+      - ./config/hermes:/app/config/hermes:ro
+      - ./config/paperclip:/app/config/paperclip:ro
     depends_on:
       paperclip:
         condition: service_healthy

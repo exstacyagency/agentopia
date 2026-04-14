@@ -98,6 +98,7 @@ If using the local Hermes isolation workflow, follow the relevant startup script
 Run:
 
 ```bash
+python3 scripts/check-compose-hardening.py
 scripts/agentopia status
 scripts/agentopia runtime-check
 scripts/agentopia smoke
