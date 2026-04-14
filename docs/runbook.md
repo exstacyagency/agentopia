@@ -106,6 +106,10 @@ Use `docs/dependency-aware-health-checks.md` for the current health baseline and
 
 Use `docs/operator-runbooks.md` for the common failure runbook baseline.
 
+## Metrics
+
+Use `docs/metrics.md` for the current metrics baseline and run `./.venv/bin/python scripts/test_metrics.py` to verify the metrics endpoints.
+
 ## Rollback process
 
 Use `docs/rollback-process.md` for the rollback path. Run `scripts/rollback-checklist.sh` after restoring the previous known-good image refs and config.
@@ -179,4 +183,5 @@ See `docs/container-image-versioning.md`.
 - If correlation ID readiness is unclear, review `docs/correlation-ids.md` and run `./.venv/bin/python scripts/test_correlation_ids.py`.
 - If dependency-aware health readiness is unclear, review `docs/dependency-aware-health-checks.md` and run `./.venv/bin/python scripts/test_health_checks.py`.
 - If operator guidance is unclear, review `docs/operator-runbooks.md` and follow the matching failure scenario.
+- If metrics readiness is unclear, review `docs/metrics.md` and run `./.venv/bin/python scripts/test_metrics.py`.
 - If rollback readiness is unclear, run `scripts/rollback-checklist.sh` and review `docs/rollback-process.md`.

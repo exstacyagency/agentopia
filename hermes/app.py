@@ -17,6 +17,7 @@ from hermes.postback_store import HermesPostbackStore
 from hermes.runtime_checks import summarize_runtime_guards
 from scripts.correlation import CORRELATION_HEADER, get_or_create_correlation_id
 from scripts.input_validation import InputValidationError, validate_strings
+from scripts.metrics import MetricsRegistry
 from scripts.rate_limit import InMemoryRateLimiter
 from scripts.structured_logging import log_event
 
@@ -33,6 +34,7 @@ MAX_REQUEST_BYTES = int(os.environ.get("HERMES_MAX_REQUEST_BYTES", str(1024 * 10
 RATE_LIMIT_COUNT = int(os.environ.get("HERMES_RATE_LIMIT_COUNT", "30"))
 RATE_LIMIT_WINDOW_SECONDS = int(os.environ.get("HERMES_RATE_LIMIT_WINDOW_SECONDS", "60"))
 RATE_LIMITER = InMemoryRateLimiter(RATE_LIMIT_COUNT, RATE_LIMIT_WINDOW_SECONDS)
+METRICS = MetricsRegistry()
 
 
 class HermesHandler(BaseHTTPRequestHandler):
@@ -46,6 +48,7 @@ class HermesHandler(BaseHTTPRequestHandler):
             self.send_header(CORRELATION_HEADER, correlation_id)
         self.end_headers()
         self.wfile.write(data)
+        METRICS.inc("hermes_responses_sent_total")
         log_event("hermes", "response_sent", status=status, path=self.path, correlation_id=correlation_id)
 
     def _client_ip(self) -> str:
@@ -77,6 +80,14 @@ class HermesHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
+        if parsed.path == "/metrics":
+            body = METRICS.render().encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; version=0.0.4")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         if parsed.path == "/health":
             dependencies = {
                 "paperclip_result_url_configured": bool(PAPERCLIP_RESULT_URL),
@@ -111,8 +122,10 @@ class HermesHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
         self.correlation_id = get_or_create_correlation_id(self.headers)
+        METRICS.inc("hermes_requests_received_total")
         log_event("hermes", "request_received", method="POST", path=parsed.path, correlation_id=self.correlation_id)
         if not self._enforce_rate_limit():
+            METRICS.inc("hermes_requests_rejected_total")
             log_event("hermes", "request_rejected", reason="rate_limit", path=parsed.path, correlation_id=self.correlation_id)
             return
         if parsed.path == "/internal/execute" and not self._require_internal_auth():
