@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from hermes.redaction import redact_value
+
 
 class HermesPersistence:
     def __init__(self, root: Path):
@@ -21,7 +23,7 @@ class HermesPersistence:
         path = self.runs_dir / f"{task_id}__{run_id}.json"
         payload = {
             "persisted_at": datetime.now(timezone.utc).isoformat(),
-            "result": result,
+            "result": redact_value(result),
         }
         path.write_text(json.dumps(payload, indent=2) + "\n")
         return path
@@ -48,5 +50,5 @@ class HermesPersistence:
             "attempt_count": 1,
             "retryable": not success,
         }
-        path.write_text(json.dumps(payload, indent=2) + "\n")
+        path.write_text(json.dumps(redact_value(payload), indent=2) + "\n")
         return path
