@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+import os
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from paperclip.db import PaperclipDB
@@ -20,6 +21,7 @@ class PaperclipService:
         self.db = PaperclipDB(db_path)
         self.dispatch_client = dispatch_client or HermesDispatchClient()
         self.traces = TraceLogger(db_path.parent.parent if db_path.parent.name == 'data' else db_path.parent)
+        self.approval_ttl_seconds = int(os.environ.get("PAPERCLIP_APPROVAL_TTL_SECONDS", "3600"))
 
     def submit_task(self, payload: dict) -> dict:
         errors = validate_payload("task_request_v1.json", payload)
@@ -135,6 +137,24 @@ class PaperclipService:
 
     def get_audit(self, task_id: str) -> list[dict]:
         return self.db.get_audit_events(task_id)
+
+    def find_expired_approvals(self, now: datetime | None = None) -> list[dict]:
+        now = now or datetime.now(timezone.utc)
+        expired: list[dict] = []
+        for task in self.db.list_tasks():
+            if task["state"] != "pending_approval":
+                continue
+            updated_at = datetime.fromisoformat(task["updated_at"].replace("Z", "+00:00"))
+            if updated_at + timedelta(seconds=self.approval_ttl_seconds) < now:
+                expired.append(
+                    {
+                        "task_id": task["id"],
+                        "state": task["state"],
+                        "approval_status": task.get("approval_status") or "unknown",
+                        "updated_at": task["updated_at"],
+                    }
+                )
+        return expired
 
     def reconcile_approval_status(self) -> list[dict]:
         mismatches: list[dict] = []
