@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from hermes.action_labels import derive_action_labels
+from hermes.execution_limits import enforce_execution_runtime, enforce_output_size, max_output_bytes_for, max_runtime_seconds_for
 from hermes.file_ops import preview_change, revert_workspace_file, write_workspace_file
 from hermes.network_policy import NetworkEgressDeniedError, enforce_network_policy
 from hermes.repo_ops import apply_repo_write, preview_repo_write
@@ -43,7 +44,9 @@ class HermesExecutor:
 
         try:
             enforce_tool_permission(task_request)
-            payload = self._dispatch[task_type](task_request, preview_only=preview_only)
+            with enforce_execution_runtime(max_runtime_seconds_for(task_request)):
+                payload = self._dispatch[task_type](task_request, preview_only=preview_only)
+                enforce_output_size(payload, max_output_bytes_for(task_request))
             return self._success(task_id, trace_id, payload)
         except ToolPermissionError as exc:
             return self._failure(task_id, trace_id, str(exc), code="TOOL_PERMISSION_DENIED")
@@ -142,8 +145,7 @@ class HermesExecutor:
         command = task_request.get("task", {}).get("context", {}).get("command") or task_request.get("task", {}).get("description", "")
         validate_shell_command(command)
         enforce_network_policy(task_request, command)
-        runtime_minutes = task_request.get("execution_policy", {}).get("budget", {}).get("max_runtime_minutes", 0)
-        max_runtime_seconds = max(1, int(runtime_minutes * 60)) if runtime_minutes else None
+        max_runtime_seconds = max_runtime_seconds_for(task_request)
         result = self.runner.run(CommandRequest(command=command, cwd=self.workspace, max_runtime_seconds=max_runtime_seconds))
         return {
             "summary": f"Executed shell command: {command}",

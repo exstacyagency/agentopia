@@ -157,7 +157,8 @@ This is the payload Hermes receives after approval/policy checks.
 {
   "budget": {
     "max_cost_usd": 5.0,
-    "max_runtime_minutes": 15
+    "max_runtime_minutes": 15,
+    "max_output_bytes": 65536
   },
   "approval": {
     "required": false,
@@ -189,6 +190,9 @@ This is the payload Hermes receives after approval/policy checks.
 ### `budget` required
 - `max_cost_usd`
 - `max_runtime_minutes`
+
+### `budget` optional
+- `max_output_bytes`
 
 ### `approval` required
 - `required`

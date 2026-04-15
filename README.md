@@ -245,6 +245,10 @@ Use `docs/sandbox-adapter.md` for the current OS-level sandbox baseline. Hermes 
 
 Use `docs/safer-shell-execution-layer.md` for the current shell-safety baseline. Hermes now validates `shell_command` requests against a restricted syntax and executable allowlist before runner execution.
 
+## Resource and time limits
+
+Use `docs/resource-time-limits.md` for the current Hermes execution-limit baseline. Runtime limits now apply at both the runner and executor boundary, and oversized execution payloads can be rejected before success results are returned.
+
 ## Public API contract
 
 Use `docs/public-api-contract.md` for the stable v1 Paperclip client-facing API surface, including which endpoints are public, which are internal-only, and the current auth and error expectations.
