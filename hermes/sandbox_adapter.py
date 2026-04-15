@@ -6,7 +6,7 @@ from pathlib import Path
 
 from hermes.runner import CommandRequest
 
-SANDBOX_PROFILE = """
+SANDBOX_PROFILE_TEMPLATE = """
 (version 1)
 (deny default)
 (allow process*)
@@ -27,14 +27,21 @@ SANDBOX_PROFILE = """
     (subpath \"{workspace}\")
     (subpath \"{tmpdir}\")
 )
-(deny network*)
+{network_rule}
 """
 
 
 class MacOSSandboxAdapter:
+    def __init__(self, allow_network: bool = False):
+        self.allow_network = allow_network
+
+    def sandbox_profile(self, workspace: Path, tmpdir: str) -> str:
+        network_rule = "(allow network*)" if self.allow_network else "(deny network*)"
+        return SANDBOX_PROFILE_TEMPLATE.format(workspace=str(workspace), tmpdir=tmpdir, network_rule=network_rule)
+
     def run(self, request: CommandRequest) -> dict:
         with tempfile.TemporaryDirectory() as tmp:
-            profile = SANDBOX_PROFILE.format(workspace=str(request.cwd), tmpdir=tmp)
+            profile = self.sandbox_profile(request.cwd, tmp)
             profile_path = Path(tmp) / "sandbox.sb"
             profile_path.write_text(profile)
             completed = subprocess.run(

@@ -14,7 +14,7 @@ This checklist captures the minimum work required before Agentopia should be use
 ### Execution sandbox and safety controls
 - [x] Add sandboxed execution for Hermes actions
 - [x] Add per-tool permission enforcement
-- [ ] Add network egress controls
+- [x] Add network egress controls
 - [x] Add strict write boundaries
 - [x] Add resource and time limits
 - [ ] Add cancellation support

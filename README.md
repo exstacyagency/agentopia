@@ -249,6 +249,10 @@ Use `docs/safer-shell-execution-layer.md` for the current shell-safety baseline.
 
 Use `docs/resource-time-limits.md` for the current Hermes execution-limit baseline. Runtime limits now apply at both the runner and executor boundary, and oversized execution payloads can be rejected before success results are returned.
 
+## Network egress controls
+
+Use `docs/network-egress-controls.md` for the current Hermes network-control baseline. Network-oriented commands are classified at the policy layer, and the macOS sandbox adapter now ties network allowance or denial into the OS sandbox profile.
+
 ## Public API contract
 
 Use `docs/public-api-contract.md` for the stable v1 Paperclip client-facing API surface, including which endpoints are public, which are internal-only, and the current auth and error expectations.
