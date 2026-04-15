@@ -122,6 +122,10 @@ Use `docs/sandbox-execution-runner.md` for the current deny-by-default command b
 
 Use `docs/strict-write-boundaries.md` for the current workspace write-boundary baseline and run `./.venv/bin/python scripts/test_strict_write_boundaries.py` to verify path escapes are rejected before mutation helpers run.
 
+## Per-tool permissions
+
+Use `docs/per-tool-permissions.md` for the current permission baseline and run `./.venv/bin/python scripts/test_tool_permissions.py` to verify Hermes rejects task types whose required tool class is not allowed by policy.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline and run `./.venv/bin/python scripts/test_postgres_persistence.py` to verify Postgres backend selection through `PAPERCLIP_DATABASE_URL`.
@@ -295,6 +299,7 @@ See `docs/container-image-versioning.md`.
 - If Hermes executor-boundary readiness is unclear, review `docs/hermes-executor-dispatch-boundary.md` and run `./.venv/bin/python scripts/test_hermes_dispatch_boundary.py` plus `./.venv/bin/python scripts/test_hermes_executor.py`.
 - If Hermes command-runner readiness is unclear, review `docs/sandbox-execution-runner.md` and run `./.venv/bin/python scripts/test_hermes_runner_boundary.py` plus `./.venv/bin/python scripts/test_hermes_executor.py`.
 - If strict write-boundary readiness is unclear, review `docs/strict-write-boundaries.md` and run `./.venv/bin/python scripts/test_strict_write_boundaries.py`.
+- If per-tool permission readiness is unclear, review `docs/per-tool-permissions.md` and run `./.venv/bin/python scripts/test_tool_permissions.py`.
 - If Postgres persistence readiness is unclear, review `docs/postgres-persistence.md` and run `./.venv/bin/python scripts/test_postgres_persistence.py`.
 - If transactional state readiness is unclear, review `docs/transactional-state-updates.md` and run `./.venv/bin/python scripts/test_transactional_state_updates.py`.
 - If backup/restore readiness is unclear, review `docs/backup-restore-plan.md`, run `./scripts/backup-restore-checklist.sh`, and run `./.venv/bin/python scripts/test_backup_restore_checklist.py`.

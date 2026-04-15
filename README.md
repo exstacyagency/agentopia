@@ -225,6 +225,10 @@ Use `docs/sandbox-execution-runner.md` for the current deny-by-default command e
 
 Use `docs/strict-write-boundaries.md` for the current workspace mutation boundary baseline. Hermes now rejects file and repo write paths that escape the workspace root.
 
+## Per-tool permissions
+
+Use `docs/per-tool-permissions.md` for the current permission baseline. Hermes now maps task types to explicit tool classes and rejects requests whose required tool class is not allowed.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline. Paperclip can now select a Postgres-backed DB implementation via `PAPERCLIP_DATABASE_URL`, while SQLite remains the default local path.
