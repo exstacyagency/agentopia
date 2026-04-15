@@ -24,6 +24,7 @@ class PaperclipService:
         self.approval_ttl_seconds = int(os.environ.get("PAPERCLIP_APPROVAL_TTL_SECONDS", "3600"))
         self.queue_max_attempts = int(os.environ.get("PAPERCLIP_QUEUE_MAX_ATTEMPTS", "3"))
         self.queue_backoff_seconds = int(os.environ.get("PAPERCLIP_QUEUE_BACKOFF_SECONDS", "5"))
+        self.queue_timeout_seconds = int(os.environ.get("PAPERCLIP_QUEUE_TIMEOUT_SECONDS", "300"))
 
     def submit_task(self, payload: dict, tenant_context: dict | None = None) -> dict:
         errors = validate_payload("task_request_v1.json", payload)
@@ -111,6 +112,22 @@ class PaperclipService:
     def _queue_backoff_seconds(self, attempt_count: int) -> int:
         return self.queue_backoff_seconds * (2 ** max(0, attempt_count - 1))
 
+    def enforce_timeouts(self, now: datetime | None = None) -> list[dict]:
+        now = now or datetime.now(timezone.utc)
+        timed_out: list[dict] = []
+        for item in self.db.list_queue_items(status="running"):
+            timeout_at = item.get("timeout_at")
+            if not timeout_at:
+                continue
+            deadline = datetime.fromisoformat(timeout_at.replace("Z", "+00:00"))
+            if deadline <= now:
+                updated_at = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+                self.db.mark_queue_timed_out(item["task_id"], "queue timeout exceeded", updated_at)
+                self.transition_task(item["task_id"], "failed", actor="paperclip", details={"reason": "timeout"})
+                self.db.add_audit_event(item["task_id"], "task_timed_out", "paperclip", {"timeout_at": timeout_at}, updated_at)
+                timed_out.append({"task_id": item["task_id"], "timeout_at": timeout_at})
+        return timed_out
+
     def process_queue(self, task_id: str, now: datetime | None = None) -> dict:
         queue_item = self.db.get_queue_item(task_id)
         if queue_item is None:
@@ -151,6 +168,9 @@ class PaperclipService:
         if task is None or task["state"] != "queued":
             raise ValueError(f"task must be queued before dispatch: {task_id}")
         self.transition_task(task_id, "running", actor="paperclip", details={"dispatch": "hermes"})
+        started_at = utcnow()
+        timeout_at = (datetime.fromisoformat(started_at.replace("Z", "+00:00")) + timedelta(seconds=self.queue_timeout_seconds)).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        self.db.mark_queue_running(task_id, started_at, timeout_at, started_at)
         self.db.mark_queue_dispatched(task_id, utcnow())
         trace_id = correlation_id or task["request_payload"].get("trace", {}).get("trace_id")
         if trace_id:

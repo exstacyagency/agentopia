@@ -23,7 +23,7 @@ This checklist captures the minimum work required before Agentopia should be use
 ### Durable job/runtime system
 - [x] Add a durable queue
 - [x] Add retries with backoff
-- [ ] Add timeout enforcement
+- [x] Add timeout enforcement
 - [ ] Add worker claiming and leasing
 - [ ] Add idempotent task submission
 - [ ] Add idempotent result handling
