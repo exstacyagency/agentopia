@@ -213,6 +213,10 @@ Use `docs/dead-letter-handling.md` for the current terminal-failure baseline. Qu
 
 Use `docs/migrations.md` for the current schema migration baseline. Paperclip now applies ordered SQL migrations from `migrations/` and records applied versions in `schema_migrations`.
 
+## Postgres persistence
+
+Use `docs/postgres-persistence.md` for the current production DB baseline. Paperclip can now select a Postgres-backed DB implementation via `PAPERCLIP_DATABASE_URL`, while SQLite remains the default local path.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.

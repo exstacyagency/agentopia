@@ -1,14 +1,22 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from pathlib import Path
 
+from paperclip.postgres_db import PostgresPaperclipDB
 from scripts.migrations import apply_migrations
 
 
 class PaperclipDB:
     def __init__(self, path: Path):
+        database_url = os.environ.get("PAPERCLIP_DATABASE_URL", "")
+        if database_url.startswith("postgres://") or database_url.startswith("postgresql://"):
+            delegate = PostgresPaperclipDB(database_url)
+            self.__dict__ = delegate.__dict__
+            self.__class__ = delegate.__class__
+            return
         self.path = path
         self.path.parent.mkdir(parents=True, exist_ok=True)
         apply_migrations(self.path)
