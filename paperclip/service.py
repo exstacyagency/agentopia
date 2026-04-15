@@ -22,6 +22,8 @@ class PaperclipService:
         self.dispatch_client = dispatch_client or HermesDispatchClient()
         self.traces = TraceLogger(db_path.parent.parent if db_path.parent.name == 'data' else db_path.parent)
         self.approval_ttl_seconds = int(os.environ.get("PAPERCLIP_APPROVAL_TTL_SECONDS", "3600"))
+        self.queue_max_attempts = int(os.environ.get("PAPERCLIP_QUEUE_MAX_ATTEMPTS", "3"))
+        self.queue_backoff_seconds = int(os.environ.get("PAPERCLIP_QUEUE_BACKOFF_SECONDS", "5"))
 
     def submit_task(self, payload: dict, tenant_context: dict | None = None) -> dict:
         errors = validate_payload("task_request_v1.json", payload)
@@ -102,17 +104,42 @@ class PaperclipService:
             raise ValueError(f"task must be approved before queueing: {task_id}")
         queued = self.transition_task(task_id, "queued", actor="paperclip", details={"queue": "sqlite"})
         queued_at = utcnow()
-        self.db.enqueue_task(task_id, correlation_id, queued_at)
+        self.db.enqueue_task(task_id, correlation_id, queued_at, max_attempts=self.queue_max_attempts)
         self.db.add_audit_event(task_id, "task_enqueued", "paperclip", {"correlation_id": correlation_id}, queued_at)
         return queued
 
-    def process_queue(self, task_id: str) -> dict:
+    def _queue_backoff_seconds(self, attempt_count: int) -> int:
+        return self.queue_backoff_seconds * (2 ** max(0, attempt_count - 1))
+
+    def process_queue(self, task_id: str, now: datetime | None = None) -> dict:
         queue_item = self.db.get_queue_item(task_id)
         if queue_item is None:
             raise KeyError(task_id)
         if queue_item["status"] != "queued":
             return self.get_task(task_id)
-        return self.dispatch_task(task_id, correlation_id=queue_item.get("correlation_id"))
+        now = now or datetime.now(timezone.utc)
+        next_attempt_at = queue_item.get("next_attempt_at")
+        if next_attempt_at:
+            scheduled = datetime.fromisoformat(next_attempt_at.replace("Z", "+00:00"))
+            if scheduled > now:
+                return self.get_task(task_id)
+        try:
+            return self.dispatch_task(task_id, correlation_id=queue_item.get("correlation_id"))
+        except Exception as exc:
+            self.db.update_task_state(task_id, "queued", utcnow())
+            attempt_count = int(queue_item.get("attempt_count", 0)) + 1
+            backoff_seconds = self._queue_backoff_seconds(attempt_count)
+            next_retry_at = (now + timedelta(seconds=backoff_seconds)).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+            updated_at = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+            self.db.mark_queue_retry(task_id, attempt_count, next_retry_at, str(exc), updated_at)
+            self.db.add_audit_event(
+                task_id,
+                "task_retry_scheduled",
+                "paperclip",
+                {"attempt_count": attempt_count, "next_attempt_at": next_retry_at, "error": str(exc)},
+                updated_at,
+            )
+            return self.get_task(task_id)
 
     def dispatch_task(self, task_id: str, correlation_id: str | None = None) -> dict:
         task = self.db.get_task(task_id)

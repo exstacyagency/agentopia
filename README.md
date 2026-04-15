@@ -185,6 +185,10 @@ Use `docs/tenant-isolation.md` for the current ownership baseline. File-based cl
 
 Use `docs/durable-queue.md` for the current queue baseline. Paperclip now persists approved tasks in a SQLite-backed queue before dispatching them to Hermes.
 
+## Retries with backoff
+
+Use `docs/retries-backoff.md` for the current retry baseline. Queue items now persist retry counters, next-at timestamps, and latest errors when dispatch fails.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.
