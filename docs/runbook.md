@@ -134,6 +134,10 @@ Use `docs/resource-time-limits.md` for the current execution-limit baseline and 
 
 Use `docs/network-egress-controls.md` for the current network policy baseline and run `./.venv/bin/python scripts/test_network_egress_controls.py` to verify network-oriented shell commands are rejected when `allow_network` is false.
 
+## Sandbox adapter
+
+Use `docs/sandbox-adapter.md` for the current OS-level sandbox baseline and run `./.venv/bin/python scripts/test_sandbox_adapter.py` to verify sandboxed command execution can write inside the workspace while network access remains blocked.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline and run `./.venv/bin/python scripts/test_postgres_persistence.py` to verify Postgres backend selection through `PAPERCLIP_DATABASE_URL`.
@@ -310,6 +314,7 @@ See `docs/container-image-versioning.md`.
 - If per-tool permission readiness is unclear, review `docs/per-tool-permissions.md` and run `./.venv/bin/python scripts/test_tool_permissions.py`.
 - If resource/time-limit readiness is unclear, review `docs/resource-time-limits.md` and run `./.venv/bin/python scripts/test_execution_limits.py`.
 - If network-egress readiness is unclear, review `docs/network-egress-controls.md` and run `./.venv/bin/python scripts/test_network_egress_controls.py`.
+- If sandbox-adapter readiness is unclear, review `docs/sandbox-adapter.md` and run `./.venv/bin/python scripts/test_sandbox_adapter.py`.
 - If Postgres persistence readiness is unclear, review `docs/postgres-persistence.md` and run `./.venv/bin/python scripts/test_postgres_persistence.py`.
 - If transactional state readiness is unclear, review `docs/transactional-state-updates.md` and run `./.venv/bin/python scripts/test_transactional_state_updates.py`.
 - If backup/restore readiness is unclear, review `docs/backup-restore-plan.md`, run `./scripts/backup-restore-checklist.sh`, and run `./.venv/bin/python scripts/test_backup_restore_checklist.py`.

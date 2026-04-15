@@ -12,7 +12,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add API key rotation and revocation
 
 ### Execution sandbox and safety controls
-- [ ] Add sandboxed execution for Hermes actions
+- [x] Add sandboxed execution for Hermes actions
 - [x] Add per-tool permission enforcement
 - [ ] Add network egress controls
 - [x] Add strict write boundaries

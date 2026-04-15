@@ -237,6 +237,10 @@ Use `docs/resource-time-limits.md` for the current execution-limit baseline. Her
 
 Use `docs/network-egress-controls.md` for the current network policy baseline. Hermes now rejects network-oriented shell commands when `allow_network` is false.
 
+## Sandbox adapter
+
+Use `docs/sandbox-adapter.md` for the current OS-level sandbox baseline. Hermes now has a macOS sandbox adapter for `shell_command` execution that restricts writes to the workspace and denies network access.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline. Paperclip can now select a Postgres-backed DB implementation via `PAPERCLIP_DATABASE_URL`, while SQLite remains the default local path.
