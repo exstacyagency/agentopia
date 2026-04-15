@@ -17,6 +17,10 @@ class StrictWriteBoundaryTests(unittest.TestCase):
         task["task"]["id"] = f"task_{task_type}"
         task["task"]["type"] = task_type
         task["task"]["context"] = context
+        if task_type == "file_write" or task_type == "file_revert":
+            task["execution_policy"]["permissions"]["allowed_tool_classes"] = ["file_write"]
+        elif task_type == "repo_write":
+            task["execution_policy"]["permissions"]["allowed_tool_classes"] = ["repo_write"]
         return task
 
     def test_file_write_rejects_path_escape(self) -> None:
@@ -26,7 +30,7 @@ class StrictWriteBoundaryTests(unittest.TestCase):
 
     def test_repo_write_rejects_path_escape(self) -> None:
         executor = HermesExecutor(Path.cwd())
-        result = executor.execute(self._task("repo_write", {"changes": [{"path": "../escape.txt", "content": "nope"}]}))
+        result = executor.execute(self._task("repo_write", {"changes": [{"file_path": "../escape.txt", "content": "nope"}]}))
         self.assertEqual(result["result"]["error"]["code"], "WRITE_BOUNDARY_DENIED")
 
 

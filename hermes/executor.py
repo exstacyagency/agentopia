@@ -6,6 +6,7 @@ from hermes.action_labels import derive_action_labels
 from hermes.file_ops import preview_change, revert_workspace_file, write_workspace_file
 from hermes.repo_ops import apply_repo_write, preview_repo_write
 from hermes.runner import CommandRequest, DenyByDefaultRunner, SandboxDeniedError
+from hermes.tool_permissions import ToolPermissionError, enforce_tool_permission
 from hermes.write_boundaries import WriteBoundaryError, ensure_within_write_boundary, validate_repo_changes
 from scripts.contracts import validate_payload
 
@@ -39,8 +40,11 @@ class HermesExecutor:
             return self._failure(task_id, trace_id, f"unsupported task type: {task_type}", code="VALIDATION_FAILED")
 
         try:
+            enforce_tool_permission(task_request)
             payload = self._dispatch[task_type](task_request, preview_only=preview_only)
             return self._success(task_id, trace_id, payload)
+        except ToolPermissionError as exc:
+            return self._failure(task_id, trace_id, str(exc), code="TOOL_PERMISSION_DENIED")
         except SandboxDeniedError as exc:
             return self._failure(task_id, trace_id, str(exc), code="SANDBOX_DENIED")
         except WriteBoundaryError as exc:
