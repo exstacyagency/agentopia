@@ -158,11 +158,22 @@ class PaperclipService:
         try:
             return self.dispatch_task(task_id, correlation_id=queue_item.get("correlation_id"), worker_id=worker_id)
         except Exception as exc:
-            self.db.update_task_state(task_id, "queued", utcnow())
             attempt_count = int(queue_item.get("attempt_count", 0)) + 1
+            updated_at = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+            if attempt_count >= int(queue_item.get("max_attempts", self.queue_max_attempts)):
+                self.db.mark_queue_dead_letter(task_id, attempt_count, str(exc), updated_at)
+                self.transition_task(task_id, "failed", actor="paperclip", details={"reason": "dead_letter", "error": str(exc)})
+                self.db.add_audit_event(
+                    task_id,
+                    "task_dead_lettered",
+                    "paperclip",
+                    {"attempt_count": attempt_count, "error": str(exc)},
+                    updated_at,
+                )
+                return self.get_task(task_id)
+            self.db.update_task_state(task_id, "queued", utcnow())
             backoff_seconds = self._queue_backoff_seconds(attempt_count)
             next_retry_at = (now + timedelta(seconds=backoff_seconds)).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-            updated_at = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
             self.db.mark_queue_retry(task_id, attempt_count, next_retry_at, str(exc), updated_at)
             self.db.add_audit_event(
                 task_id,

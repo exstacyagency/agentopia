@@ -199,6 +199,13 @@ class PaperclipDB:
         )
         self.conn.commit()
 
+    def mark_queue_dead_letter(self, task_id: str, attempt_count: int, last_error: str, updated_at: str) -> None:
+        self.conn.execute(
+            "UPDATE task_queue SET status = ?, attempt_count = ?, last_error = ?, updated_at = ? WHERE task_id = ?",
+            ("dead_letter", attempt_count, last_error, updated_at, task_id),
+        )
+        self.conn.commit()
+
     def mark_queue_dispatched(self, task_id: str, updated_at: str) -> None:
         self.conn.execute(
             "UPDATE task_queue SET status = ?, updated_at = ? WHERE task_id = ?",
