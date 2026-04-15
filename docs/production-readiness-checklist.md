@@ -26,7 +26,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [ ] Add timeout enforcement
 - [x] Add worker claiming and leasing
 - [x] Add idempotent task submission
-- [ ] Add idempotent result handling
+- [x] Add idempotent result handling
 - [ ] Add stuck-job recovery
 - [ ] Add dead-letter handling
 

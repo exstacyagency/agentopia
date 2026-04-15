@@ -197,6 +197,10 @@ Use `docs/worker-claiming-leasing.md` for the current lease baseline. Queue item
 
 Use `docs/idempotent-task-submission.md` for the current submission baseline. Paperclip now stores `Idempotency-Key` mappings so repeated client submits can return the original task instead of creating duplicate work.
 
+## Idempotent result handling
+
+Use `docs/idempotent-result-handling.md` for the current callback baseline. Paperclip now treats repeated result callbacks for the same task as safe no-ops that return the original stored task.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.

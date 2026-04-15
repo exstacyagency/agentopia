@@ -197,6 +197,13 @@ class PaperclipService:
         return self.get_task(task_id)
 
     def record_result(self, task_id: str, result: dict) -> dict:
+        existing_result = self.db.get_result(task_id)
+        if existing_result is not None:
+            existing_task = self.get_task(task_id)
+            if existing_task is None:
+                raise KeyError(task_id)
+            return existing_task
+
         status = result["run"]["status"]
         target_state = "succeeded" if status == "succeeded" else "failed"
         self.transition_task(task_id, target_state, actor="hermes", details={"run_status": status})
