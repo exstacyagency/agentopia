@@ -185,6 +185,13 @@ class PaperclipDB:
         )
         self.conn.commit()
 
+    def reset_queue_to_queued(self, task_id: str, updated_at: str) -> None:
+        self.conn.execute(
+            "UPDATE task_queue SET status = ?, worker_id = NULL, lease_expires_at = NULL, started_at = NULL, timeout_at = NULL, updated_at = ? WHERE task_id = ?",
+            ("queued", updated_at, task_id),
+        )
+        self.conn.commit()
+
     def mark_queue_retry(self, task_id: str, attempt_count: int, next_attempt_at: str, last_error: str, updated_at: str) -> None:
         self.conn.execute(
             "UPDATE task_queue SET status = ?, attempt_count = ?, next_attempt_at = ?, last_error = ?, updated_at = ? WHERE task_id = ?",

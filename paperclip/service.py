@@ -249,6 +249,44 @@ class PaperclipService:
     def get_audit(self, task_id: str) -> list[dict]:
         return self.db.get_audit_events(task_id)
 
+    def list_recoverable_stuck_jobs(self, now: datetime | None = None) -> list[dict]:
+        now = now or datetime.now(timezone.utc)
+        recoverable: list[dict] = []
+        for item in self.db.list_queue_items(status="running"):
+            worker_id = item.get("worker_id")
+            lease_expires_at = item.get("lease_expires_at")
+            if not worker_id or not lease_expires_at:
+                continue
+            deadline = datetime.fromisoformat(lease_expires_at.replace("Z", "+00:00"))
+            if deadline <= now:
+                recoverable.append(
+                    {
+                        "task_id": item["task_id"],
+                        "worker_id": worker_id,
+                        "lease_expires_at": lease_expires_at,
+                    }
+                )
+        return recoverable
+
+    def recover_stuck_job(self, task_id: str, actor: str = "operator", now: datetime | None = None) -> dict | None:
+        task = self.db.get_task(task_id)
+        queue_item = self.db.get_queue_item(task_id)
+        if task is None or queue_item is None:
+            return None
+        now = now or datetime.now(timezone.utc)
+        lease_expires_at = queue_item.get("lease_expires_at")
+        worker_id = queue_item.get("worker_id")
+        if not worker_id or not lease_expires_at:
+            return None
+        deadline = datetime.fromisoformat(lease_expires_at.replace("Z", "+00:00"))
+        if deadline > now:
+            return None
+        updated_at = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        self.db.reset_queue_to_queued(task_id, updated_at)
+        self.db.update_task_state(task_id, "queued", updated_at)
+        self.db.add_audit_event(task_id, "task_recovered_from_stuck", actor, {"previous_worker_id": worker_id}, updated_at)
+        return self.get_task(task_id)
+
     def enforce_timeouts(self, now: datetime | None = None) -> list[dict]:
         now = now or datetime.now(timezone.utc)
         timed_out: list[dict] = []
