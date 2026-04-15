@@ -102,6 +102,10 @@ Use `docs/idempotent-result-handling.md` for the current callback baseline and r
 
 Use `docs/stuck-job-recovery.md` for the current recovery baseline and run `./.venv/bin/python scripts/test_stuck_job_recovery.py` to verify expired running leases can be reset to queued work.
 
+## Dead-letter handling
+
+Use `docs/dead-letter-handling.md` for the current terminal-failure baseline and run `./.venv/bin/python scripts/test_dead_letter_handling.py` to verify permanently failing queue items move into dead-letter state.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval consistency baseline and run `./.venv/bin/python scripts/test_approval_reconciliation.py` to verify mismatch detection.
@@ -250,6 +254,7 @@ See `docs/container-image-versioning.md`.
 - If idempotent submission readiness is unclear, review `docs/idempotent-task-submission.md` and run `./.venv/bin/python scripts/test_idempotent_task_submission.py`.
 - If idempotent result readiness is unclear, review `docs/idempotent-result-handling.md` and run `./.venv/bin/python scripts/test_idempotent_result_handling.py`.
 - If stuck-job recovery readiness is unclear, review `docs/stuck-job-recovery.md` and run `./.venv/bin/python scripts/test_stuck_job_recovery.py`.
+- If dead-letter readiness is unclear, review `docs/dead-letter-handling.md` and run `./.venv/bin/python scripts/test_dead_letter_handling.py`.
 - If approval reconciliation readiness is unclear, review `docs/approval-reconciliation.md` and run `./.venv/bin/python scripts/test_approval_reconciliation.py`.
 - If approval expiration readiness is unclear, review `docs/approval-expiration.md` and run `./.venv/bin/python scripts/test_approval_expiration.py`.
 - If approval audit readiness is unclear, review `docs/approval-audit-trail.md` and run `./.venv/bin/python scripts/test_approval_audit_trail.py`.

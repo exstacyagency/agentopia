@@ -205,6 +205,10 @@ Use `docs/idempotent-result-handling.md` for the current callback baseline. Pape
 
 Use `docs/stuck-job-recovery.md` for the current recovery baseline. Paperclip can now detect expired running leases and reset those jobs back to queued work.
 
+## Dead-letter handling
+
+Use `docs/dead-letter-handling.md` for the current terminal-failure baseline. Queue items now move to a dead-letter state after exhausting retry attempts.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.

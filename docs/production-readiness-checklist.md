@@ -28,7 +28,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add idempotent task submission
 - [x] Add idempotent result handling
 - [x] Add stuck-job recovery
-- [ ] Add dead-letter handling
+- [x] Add dead-letter handling
 
 ### Production persistence
 - [ ] Move to Postgres or equivalent production database
