@@ -209,6 +209,10 @@ Use `docs/stuck-job-recovery.md` for the current recovery baseline. Paperclip ca
 
 Use `docs/dead-letter-handling.md` for the current terminal-failure baseline. Queue items now move to a dead-letter state after exhausting retry attempts.
 
+## Migrations
+
+Use `docs/migrations.md` for the current schema migration baseline. Paperclip now applies ordered SQL migrations from `migrations/` and records applied versions in `schema_migrations`.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.

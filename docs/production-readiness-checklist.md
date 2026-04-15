@@ -23,7 +23,7 @@ This checklist captures the minimum work required before Agentopia should be use
 ### Durable job/runtime system
 - [x] Add a durable queue
 - [x] Add retries with backoff
-- [ ] Add timeout enforcement
+- [x] Add timeout enforcement
 - [x] Add worker claiming and leasing
 - [x] Add idempotent task submission
 - [x] Add idempotent result handling
@@ -32,7 +32,7 @@ This checklist captures the minimum work required before Agentopia should be use
 
 ### Production persistence
 - [ ] Move to Postgres or equivalent production database
-- [ ] Add migrations
+- [x] Add migrations
 - [ ] Add transactional state updates where needed
 - [ ] Add durable storage layout for artifacts and results
 - [ ] Add backup and restore plan

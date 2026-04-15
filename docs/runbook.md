@@ -106,6 +106,10 @@ Use `docs/stuck-job-recovery.md` for the current recovery baseline and run `./.v
 
 Use `docs/dead-letter-handling.md` for the current terminal-failure baseline and run `./.venv/bin/python scripts/test_dead_letter_handling.py` to verify permanently failing queue items move into dead-letter state.
 
+## Migrations
+
+Use `docs/migrations.md` for the current schema migration baseline and run `./.venv/bin/python scripts/test_migrations.py` to verify ordered migration application and version tracking.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval consistency baseline and run `./.venv/bin/python scripts/test_approval_reconciliation.py` to verify mismatch detection.
@@ -255,6 +259,7 @@ See `docs/container-image-versioning.md`.
 - If idempotent result readiness is unclear, review `docs/idempotent-result-handling.md` and run `./.venv/bin/python scripts/test_idempotent_result_handling.py`.
 - If stuck-job recovery readiness is unclear, review `docs/stuck-job-recovery.md` and run `./.venv/bin/python scripts/test_stuck_job_recovery.py`.
 - If dead-letter readiness is unclear, review `docs/dead-letter-handling.md` and run `./.venv/bin/python scripts/test_dead_letter_handling.py`.
+- If migration readiness is unclear, review `docs/migrations.md` and run `./.venv/bin/python scripts/test_migrations.py`.
 - If approval reconciliation readiness is unclear, review `docs/approval-reconciliation.md` and run `./.venv/bin/python scripts/test_approval_reconciliation.py`.
 - If approval expiration readiness is unclear, review `docs/approval-expiration.md` and run `./.venv/bin/python scripts/test_approval_expiration.py`.
 - If approval audit readiness is unclear, review `docs/approval-audit-trail.md` and run `./.venv/bin/python scripts/test_approval_audit_trail.py`.
