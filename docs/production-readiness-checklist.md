@@ -33,7 +33,7 @@ This checklist captures the minimum work required before Agentopia should be use
 ### Production persistence
 - [ ] Move to Postgres or equivalent production database
 - [x] Add migrations
-- [ ] Add transactional state updates where needed
+- [x] Add transactional state updates where needed
 - [ ] Add durable storage layout for artifacts and results
 - [ ] Add backup and restore plan
 - [ ] Add retention and deletion workflows

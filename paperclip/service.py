@@ -94,18 +94,21 @@ class PaperclipService:
             approval_status = "approved"
         elif target_state == "rejected":
             approval_status = "rejected"
-        self.db.update_task_state(task_id, target_state, updated_at, approval_status=approval_status)
-        self.db.add_audit_event(
-            task_id,
-            f"state_changed:{task['state']}->{target_state}",
-            actor,
-            details or {},
-            updated_at,
-        )
-        if target_state == "approved":
-            self.db.add_audit_event(task_id, "approval_granted", actor, details or {}, updated_at)
-        elif target_state == "rejected":
-            self.db.add_audit_event(task_id, "approval_rejected", actor, details or {}, updated_at)
+        def operations(db):
+            db.update_task_state(task_id, target_state, updated_at, approval_status=approval_status)
+            db.add_audit_event(
+                task_id,
+                f"state_changed:{task['state']}->{target_state}",
+                actor,
+                details or {},
+                updated_at,
+            )
+            if target_state == "approved":
+                db.add_audit_event(task_id, "approval_granted", actor, details or {}, updated_at)
+            elif target_state == "rejected":
+                db.add_audit_event(task_id, "approval_rejected", actor, details or {}, updated_at)
+
+        self.db.run_in_transaction(operations)
         return self.get_task(task_id)
 
     def enqueue_task(self, task_id: str, correlation_id: str | None = None) -> dict:
@@ -219,8 +222,7 @@ class PaperclipService:
         target_state = "succeeded" if status == "succeeded" else "failed"
         self.transition_task(task_id, target_state, actor="hermes", details={"run_status": status})
         created_at = utcnow()
-        self.db.store_result(task_id, result, created_at)
-        self.db.add_audit_event(task_id, "result_recorded", "paperclip", {"status": status}, created_at)
+        self.db.store_result_with_audit(task_id, result, status, created_at)
         trace_id = (result.get("trace") or {}).get("trace_id")
         if trace_id:
             self.traces.record(trace_id, "paperclip", "result_recorded", task_id=task_id, status=status)

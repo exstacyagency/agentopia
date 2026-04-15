@@ -217,6 +217,10 @@ Use `docs/migrations.md` for the current schema migration baseline. Paperclip no
 
 Use `docs/postgres-persistence.md` for the current production DB baseline. Paperclip can now select a Postgres-backed DB implementation via `PAPERCLIP_DATABASE_URL`, while SQLite remains the default local path.
 
+## Transactional state updates
+
+Use `docs/transactional-state-updates.md` for the current transactional safety baseline. Paperclip now wraps state transitions and result persistence with audit side effects in DB transactions on the SQLite path.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.
