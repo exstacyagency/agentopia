@@ -5,7 +5,9 @@ import unittest
 from pathlib import Path
 
 from hermes.executor import HermesExecutor
+from hermes.network_policy import network_enabled_request
 from hermes.runner import CommandRequest
+from hermes.sandbox_adapter import MacOSSandboxAdapter
 
 
 class AllowRunner:
@@ -47,6 +49,18 @@ class NetworkEgressControlTests(unittest.TestCase):
         executor = HermesExecutor(Path.cwd(), runner=AllowRunner())
         result = executor.execute(self._shell_task("curl https://example.com", allow_network=True))
         self.assertEqual(result["run"]["status"], "succeeded")
+
+    def test_network_enabled_request_rejects_false_policy(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "network-enabled execution denied"):
+            network_enabled_request(self._shell_task("curl https://example.com", allow_network=False), "curl https://example.com", Path.cwd())
+
+    def test_macos_sandbox_profile_denies_network_by_default(self) -> None:
+        profile = MacOSSandboxAdapter().sandbox_profile(Path.cwd(), "/tmp/test")
+        self.assertIn("(deny network*)", profile)
+
+    def test_macos_sandbox_profile_can_allow_network_when_enabled(self) -> None:
+        profile = MacOSSandboxAdapter(allow_network=True).sandbox_profile(Path.cwd(), "/tmp/test")
+        self.assertIn("(allow network*)", profile)
 
 
 if __name__ == "__main__":
