@@ -9,6 +9,7 @@ from paperclip.db import PaperclipDB
 from paperclip.dispatch import HermesDispatchClient
 from paperclip.state_machine import assert_transition
 from scripts.contracts import validate_payload
+from scripts.storage_layout import PaperclipStorageLayout
 from scripts.trace_log import TraceLogger
 
 
@@ -21,6 +22,7 @@ class PaperclipService:
         self.db = PaperclipDB(db_path)
         self.dispatch_client = dispatch_client or HermesDispatchClient()
         self.traces = TraceLogger(db_path.parent.parent if db_path.parent.name == 'data' else db_path.parent)
+        self.storage = PaperclipStorageLayout(db_path.parent.parent if db_path.parent.name == 'data' else db_path.parent)
         self.approval_ttl_seconds = int(os.environ.get("PAPERCLIP_APPROVAL_TTL_SECONDS", "3600"))
         self.queue_max_attempts = int(os.environ.get("PAPERCLIP_QUEUE_MAX_ATTEMPTS", "3"))
         self.queue_backoff_seconds = int(os.environ.get("PAPERCLIP_QUEUE_BACKOFF_SECONDS", "5"))
@@ -223,6 +225,7 @@ class PaperclipService:
         self.transition_task(task_id, target_state, actor="hermes", details={"run_status": status})
         created_at = utcnow()
         self.db.store_result_with_audit(task_id, result, status, created_at)
+        self.storage.persist_result(task_id, result)
         trace_id = (result.get("trace") or {}).get("trace_id")
         if trace_id:
             self.traces.record(trace_id, "paperclip", "result_recorded", task_id=task_id, status=status)
