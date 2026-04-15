@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 
@@ -25,3 +26,8 @@ class PaperclipStorageLayout:
         path = self.result_path(task_id)
         path.write_text(json.dumps(payload, indent=2) + "\n")
         return path
+
+    def delete_task_storage(self, task_id: str) -> None:
+        task_dir = self.task_dir(task_id)
+        if task_dir.exists():
+            shutil.rmtree(task_dir)

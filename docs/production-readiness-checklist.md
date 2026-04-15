@@ -36,7 +36,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add transactional state updates where needed
 - [x] Add durable storage layout for artifacts and results
 - [x] Add backup and restore plan
-- [ ] Add retention and deletion workflows
+- [x] Add retention and deletion workflows
 
 ### Security and secrets
 - [x] Add secret storage and handling strategy

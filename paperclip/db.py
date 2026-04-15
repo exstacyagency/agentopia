@@ -199,6 +199,16 @@ class PaperclipDB:
             "created_at": row["created_at"],
         }
 
+    def delete_task_data(self, task_id: str) -> None:
+        def operations(db: PaperclipDB) -> None:
+            db.conn.execute("DELETE FROM task_idempotency WHERE task_id = ?", (task_id,))
+            db.conn.execute("DELETE FROM task_results WHERE task_id = ?", (task_id,))
+            db.conn.execute("DELETE FROM task_queue WHERE task_id = ?", (task_id,))
+            db.conn.execute("DELETE FROM audit_events WHERE task_id = ?", (task_id,))
+            db.conn.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+
+        self.run_in_transaction(operations)
+
     def transition_task_with_audit(self, task_id: str, state: str, updated_at: str, actor: str, details: dict, approval_status: str | None = None) -> None:
         def operations(db: PaperclipDB) -> None:
             db.update_task_state(task_id, state, updated_at, approval_status=approval_status)
