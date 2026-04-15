@@ -146,6 +146,12 @@ class PaperclipDB:
             ("dead_letter", attempt_count, last_error, updated_at, task_id),
         )
 
+    def mark_queue_cancelled(self, task_id: str, updated_at: str, last_error: str = "cancelled") -> None:
+        self.conn.execute(
+            "UPDATE task_queue SET status = ?, last_error = ?, updated_at = ? WHERE task_id = ?",
+            ("cancelled", last_error, updated_at, task_id),
+        )
+
     def mark_queue_dispatched(self, task_id: str, updated_at: str) -> None:
         self.conn.execute(
             "UPDATE task_queue SET status = ?, updated_at = ? WHERE task_id = ?",

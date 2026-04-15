@@ -130,6 +130,7 @@ class PaperclipHandler(BaseHTTPRequestHandler):
       <li><code>POST /tasks</code></li>
       <li><code>GET /tasks/&lt;id&gt;</code></li>
       <li><code>GET /tasks/&lt;id&gt;/audit</code></li>
+      <li><code>POST /tasks/&lt;id&gt;/cancel</code></li>
       <li><code>POST /internal/tasks/&lt;id&gt;/result</code></li>
     </ul>
   </body>
@@ -218,7 +219,20 @@ class PaperclipHandler(BaseHTTPRequestHandler):
                 task = SERVICE.record_result(parts[2], body)
                 self._send(200, task)
                 return
-            if len(parts) == 3 and parts[0] == "tasks" and parts[2] in {"approve", "reject"}:
+            if len(parts) == 3 and parts[0] == "tasks" and parts[2] in {"approve", "reject", "cancel"}:
+                if parts[2] == "cancel":
+                    if not self._require_client_auth():
+                        return
+                    task = SERVICE.get_task(parts[1])
+                    if task is None:
+                        self._send(404, {"error": "task not found"})
+                        return
+                    if not self._tenant_can_access_task(task):
+                        self._send(403, {"error": "forbidden", "reason": "tenant_mismatch"})
+                        return
+                    cancelled = SERVICE.cancel_task(parts[1], actor="client", reason=(body.get("reason") if isinstance(body, dict) else None) or "cancelled")
+                    self._send(200, cancelled)
+                    return
                 target_state = "approved" if parts[2] == "approve" else "rejected"
                 task = SERVICE.transition_task(parts[1], target_state, actor="human", details={"action": parts[2]})
                 if target_state == "approved":
