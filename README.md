@@ -189,6 +189,10 @@ Use `docs/durable-queue.md` for the current queue baseline. Paperclip now persis
 
 Use `docs/retries-backoff.md` for the current retry baseline. Queue items now persist retry counters, next-at timestamps, and latest errors when dispatch fails.
 
+## Worker claiming and leasing
+
+Use `docs/worker-claiming-leasing.md` for the current lease baseline. Queue items now persist worker ownership and lease expiry so active claims cannot be stolen before expiration.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.
