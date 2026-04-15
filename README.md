@@ -233,6 +233,10 @@ Use `docs/per-tool-permissions.md` for the current permission baseline. Hermes n
 
 Use `docs/resource-time-limits.md` for the current execution-limit baseline. Hermes now enforces runtime limits for `shell_command` tasks through the command runner boundary.
 
+## Network egress controls
+
+Use `docs/network-egress-controls.md` for the current network policy baseline. Hermes now rejects network-oriented shell commands when `allow_network` is false.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline. Paperclip can now select a Postgres-backed DB implementation via `PAPERCLIP_DATABASE_URL`, while SQLite remains the default local path.

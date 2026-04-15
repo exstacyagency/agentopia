@@ -4,6 +4,7 @@ from pathlib import Path
 
 from hermes.action_labels import derive_action_labels
 from hermes.file_ops import preview_change, revert_workspace_file, write_workspace_file
+from hermes.network_policy import NetworkEgressDeniedError, enforce_network_policy
 from hermes.repo_ops import apply_repo_write, preview_repo_write
 from hermes.runner import CommandRequest, DenyByDefaultRunner, ExecutionLimitError, SandboxDeniedError
 from hermes.tool_permissions import ToolPermissionError, enforce_tool_permission
@@ -45,6 +46,8 @@ class HermesExecutor:
             return self._success(task_id, trace_id, payload)
         except ToolPermissionError as exc:
             return self._failure(task_id, trace_id, str(exc), code="TOOL_PERMISSION_DENIED")
+        except NetworkEgressDeniedError as exc:
+            return self._failure(task_id, trace_id, str(exc), code="NETWORK_EGRESS_DENIED")
         except SandboxDeniedError as exc:
             return self._failure(task_id, trace_id, str(exc), code="SANDBOX_DENIED")
         except ExecutionLimitError as exc:
@@ -134,6 +137,7 @@ class HermesExecutor:
 
     def _handle_shell_command(self, task_request: dict, preview_only: bool = False) -> dict:
         command = task_request.get("task", {}).get("context", {}).get("command") or task_request.get("task", {}).get("description", "")
+        enforce_network_policy(task_request, command)
         runtime_minutes = task_request.get("execution_policy", {}).get("budget", {}).get("max_runtime_minutes", 0)
         max_runtime_seconds = max(1, int(runtime_minutes * 60)) if runtime_minutes else None
         result = self.runner.run(CommandRequest(command=command, cwd=self.workspace, max_runtime_seconds=max_runtime_seconds))
