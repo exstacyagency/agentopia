@@ -9,6 +9,7 @@ description = "Agentopia Paperclip and Hermes integration scaffold"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+  "psycopg[binary]>=3.2,<4",
   "jsonschema>=4.23.0,<5",
 ]
 
