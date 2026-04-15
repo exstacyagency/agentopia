@@ -142,6 +142,10 @@ Use `docs/sandbox-adapter.md` for the current OS-level sandbox baseline and run 
 
 Use `docs/safer-shell-execution-layer.md` for the current shell-safety baseline and run `./.venv/bin/python scripts/test_shell_safety.py` to verify unsafe shell syntax and disallowed executables are rejected before runner execution.
 
+## Resource and time limits
+
+Use `docs/resource-time-limits.md` for the current Hermes execution-limit baseline and run `./.venv/bin/python scripts/test_execution_limits.py` to verify runtime enforcement now applies beyond the shell runner and that oversized execution payloads are rejected.
+
 ## Public API contract
 
 Use `docs/public-api-contract.md` for the stable v1 Paperclip public endpoint contract and run `./.venv/bin/python scripts/test_public_api_contract.py` to verify submit, fetch, audit, and tenant-isolation behavior at the HTTP layer.
@@ -324,6 +328,7 @@ See `docs/container-image-versioning.md`.
 - If network-egress readiness is unclear, review `docs/network-egress-controls.md` and run `./.venv/bin/python scripts/test_network_egress_controls.py`.
 - If sandbox-adapter readiness is unclear, review `docs/sandbox-adapter.md` and run `./.venv/bin/python scripts/test_sandbox_adapter.py`.
 - If shell-safety readiness is unclear, review `docs/safer-shell-execution-layer.md` and run `./.venv/bin/python scripts/test_shell_safety.py`.
+- If resource-limit readiness is unclear, review `docs/resource-time-limits.md` and run `./.venv/bin/python scripts/test_execution_limits.py`.
 - If public-API-contract readiness is unclear, review `docs/public-api-contract.md` and run `./.venv/bin/python scripts/test_public_api_contract.py`.
 - If Postgres persistence readiness is unclear, review `docs/postgres-persistence.md` and run `./.venv/bin/python scripts/test_postgres_persistence.py`.
 - If transactional state readiness is unclear, review `docs/transactional-state-updates.md` and run `./.venv/bin/python scripts/test_transactional_state_updates.py`.

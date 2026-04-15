@@ -16,7 +16,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add per-tool permission enforcement
 - [ ] Add network egress controls
 - [x] Add strict write boundaries
-- [ ] Add resource and time limits
+- [x] Add resource and time limits
 - [ ] Add cancellation support
 - [x] Add a safer shell execution layer
 
