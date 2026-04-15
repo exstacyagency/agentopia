@@ -220,6 +220,16 @@ class PaperclipService:
                 raise KeyError(task_id)
             return existing_task
 
+        task = self.db.get_task(task_id)
+        if task is None:
+            raise KeyError(task_id)
+        if task["state"] == "cancelled":
+            self.db.add_audit_event(task_id, "result_ignored_after_cancellation", "paperclip", {"run_status": result.get("run", {}).get("status")}, utcnow())
+            existing_task = self.get_task(task_id)
+            if existing_task is None:
+                raise KeyError(task_id)
+            return existing_task
+
         status = result["run"]["status"]
         target_state = "succeeded" if status == "succeeded" else "failed"
         self.transition_task(task_id, target_state, actor="hermes", details={"run_status": status})
@@ -229,6 +239,23 @@ class PaperclipService:
         trace_id = (result.get("trace") or {}).get("trace_id")
         if trace_id:
             self.traces.record(trace_id, "paperclip", "result_recorded", task_id=task_id, status=status)
+        return self.get_task(task_id)
+
+    def cancel_task(self, task_id: str, actor: str = "operator", reason: str = "cancelled") -> dict | None:
+        task = self.db.get_task(task_id)
+        if task is None:
+            return None
+        if task["state"] == "cancelled":
+            return self.get_task(task_id)
+        if task["state"] in {"succeeded", "failed", "rejected"}:
+            raise ValueError(f"task cannot be cancelled from terminal state: {task['state']}")
+
+        updated_at = utcnow()
+        queue_item = self.db.get_queue_item(task_id)
+        self.db.update_task_state(task_id, "cancelled", updated_at)
+        if queue_item is not None:
+            self.db.mark_queue_cancelled(task_id, updated_at, last_error=reason)
+        self.db.add_audit_event(task_id, "task_cancelled", actor, {"reason": reason, "previous_state": task["state"]}, updated_at)
         return self.get_task(task_id)
 
     def get_task(self, task_id: str) -> dict | None:

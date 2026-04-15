@@ -253,6 +253,10 @@ Use `docs/resource-time-limits.md` for the current Hermes execution-limit baseli
 
 Use `docs/network-egress-controls.md` for the current Hermes network-control baseline. Network-oriented commands are classified at the policy layer, and the macOS sandbox adapter now ties network allowance or denial into the OS sandbox profile.
 
+## Cancellation support
+
+Use `docs/cancellation-support.md` for the current control-plane cancellation baseline. Paperclip now supports cancelling queued or running tasks durably and ignores late Hermes results after cancellation.
+
 ## Public API contract
 
 Use `docs/public-api-contract.md` for the stable v1 Paperclip client-facing API surface, including which endpoints are public, which are internal-only, and the current auth and error expectations.
