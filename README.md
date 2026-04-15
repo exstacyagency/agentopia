@@ -213,6 +213,10 @@ Use `docs/dead-letter-handling.md` for the current terminal-failure baseline. Qu
 
 Use `docs/migrations.md` for the current schema migration baseline. Paperclip now applies ordered SQL migrations from `migrations/` and records applied versions in `schema_migrations`.
 
+## Hermes executor dispatch boundary
+
+Use `docs/hermes-executor-dispatch-boundary.md` for the current executor refactor baseline. Hermes now routes supported task types through a single internal dispatch map while preserving the v1 result envelope.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline. Paperclip can now select a Postgres-backed DB implementation via `PAPERCLIP_DATABASE_URL`, while SQLite remains the default local path.
