@@ -58,6 +58,13 @@ CREATE TABLE IF NOT EXISTS task_queue (
     updated_at TEXT NOT NULL,
     FOREIGN KEY(task_id) REFERENCES tasks(id)
 );
+
+CREATE TABLE IF NOT EXISTS task_idempotency (
+    idempotency_key TEXT PRIMARY KEY,
+    task_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY(task_id) REFERENCES tasks(id)
+);
 """
 
 
@@ -210,6 +217,20 @@ class PaperclipDB:
                 (status,),
             ).fetchall()
         return [dict(row) for row in rows]
+
+    def create_idempotency_record(self, idempotency_key: str, task_id: str, created_at: str) -> None:
+        self.conn.execute(
+            "INSERT INTO task_idempotency (idempotency_key, task_id, created_at) VALUES (?, ?, ?)",
+            (idempotency_key, task_id, created_at),
+        )
+        self.conn.commit()
+
+    def get_idempotent_task_id(self, idempotency_key: str) -> str | None:
+        row = self.conn.execute(
+            "SELECT task_id FROM task_idempotency WHERE idempotency_key = ?",
+            (idempotency_key,),
+        ).fetchone()
+        return row["task_id"] if row is not None else None
 
     def store_result(self, task_id: str, payload: dict, created_at: str) -> None:
         self.conn.execute(
