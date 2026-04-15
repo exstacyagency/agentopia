@@ -90,6 +90,10 @@ Use `docs/retries-backoff.md` for the current retry baseline and run `./.venv/bi
 
 Use `docs/worker-claiming-leasing.md` for the current leasing baseline and run `./.venv/bin/python scripts/test_worker_leasing.py` to verify active claims block other workers until the lease expires.
 
+## Idempotent task submission
+
+Use `docs/idempotent-task-submission.md` for the current submission baseline and run `./.venv/bin/python scripts/test_idempotent_task_submission.py` to verify repeated submits with the same key do not create duplicate work.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval consistency baseline and run `./.venv/bin/python scripts/test_approval_reconciliation.py` to verify mismatch detection.
@@ -235,6 +239,7 @@ See `docs/container-image-versioning.md`.
 - If durable queue readiness is unclear, review `docs/durable-queue.md` and run `./.venv/bin/python scripts/test_durable_queue.py`.
 - If retry readiness is unclear, review `docs/retries-backoff.md` and run `./.venv/bin/python scripts/test_retries_backoff.py`.
 - If worker lease readiness is unclear, review `docs/worker-claiming-leasing.md` and run `./.venv/bin/python scripts/test_worker_leasing.py`.
+- If idempotent submission readiness is unclear, review `docs/idempotent-task-submission.md` and run `./.venv/bin/python scripts/test_idempotent_task_submission.py`.
 - If approval reconciliation readiness is unclear, review `docs/approval-reconciliation.md` and run `./.venv/bin/python scripts/test_approval_reconciliation.py`.
 - If approval expiration readiness is unclear, review `docs/approval-expiration.md` and run `./.venv/bin/python scripts/test_approval_expiration.py`.
 - If approval audit readiness is unclear, review `docs/approval-audit-trail.md` and run `./.venv/bin/python scripts/test_approval_audit_trail.py`.
