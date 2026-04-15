@@ -225,6 +225,10 @@ Use `docs/transactional-state-updates.md` for the current transactional safety b
 
 Use `docs/backup-restore-plan.md` for the current operational backup baseline and `./scripts/backup-restore-checklist.sh` to verify the active backend and restore checks.
 
+## Durable storage layout
+
+Use `docs/durable-storage-layout.md` for the current filesystem persistence baseline. Paperclip now writes durable task-owned result files under `var/paperclip/tasks/<task_id>/` alongside an `artifacts/` directory for future task files.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.
