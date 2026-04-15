@@ -18,7 +18,7 @@ def ensure_within_write_boundary(root: Path, relative_path: str) -> Path:
 
 def validate_repo_changes(root: Path, changes: list[dict]) -> None:
     for change in changes:
-        path = change.get("path") or change.get("relative_path")
+        path = change.get("file_path") or change.get("path") or change.get("relative_path")
         if not path:
             raise WriteBoundaryError("repo change is missing path")
         ensure_within_write_boundary(root, path)
