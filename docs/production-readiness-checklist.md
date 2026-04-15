@@ -22,7 +22,7 @@ This checklist captures the minimum work required before Agentopia should be use
 
 ### Durable job/runtime system
 - [x] Add a durable queue
-- [ ] Add retries with backoff
+- [x] Add retries with backoff
 - [ ] Add timeout enforcement
 - [ ] Add worker claiming and leasing
 - [ ] Add idempotent task submission
@@ -100,7 +100,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add auth tests
 - [x] Add tenancy isolation tests
 - [ ] Add dangerous action tests for file_write, repo_write, and shell_command
-- [ ] Add retry and reconciliation tests
+- [x] Add retry and reconciliation tests
 - [ ] Add end-to-end HTTP/process tests
 - [ ] Add failure-path tests
 
