@@ -322,6 +322,28 @@ class PaperclipService:
     def get_queue(self, status: str | None = None) -> list[dict]:
         return self.db.list_queue_items(status=status)
 
+    def list_retention_candidates(self, older_than: datetime) -> list[dict]:
+        candidates: list[dict] = []
+        for task in self.db.list_tasks():
+            created_at = datetime.fromisoformat(task["created_at"].replace("Z", "+00:00"))
+            if created_at <= older_than and task["state"] in {"succeeded", "failed", "rejected"}:
+                candidates.append(
+                    {
+                        "task_id": task["id"],
+                        "state": task["state"],
+                        "created_at": task["created_at"],
+                    }
+                )
+        return candidates
+
+    def delete_task(self, task_id: str, actor: str = "operator") -> bool:
+        task = self.db.get_task(task_id)
+        if task is None:
+            return False
+        self.db.delete_task_data(task_id)
+        self.storage.delete_task_storage(task_id)
+        return True
+
     def get_approval_audit(self, task_id: str) -> list[dict]:
         return [
             event
