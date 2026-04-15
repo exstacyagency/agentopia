@@ -51,9 +51,18 @@ CREATE TABLE IF NOT EXISTS task_queue (
     next_attempt_at TEXT,
     started_at TEXT,
     timeout_at TEXT,
+    worker_id TEXT,
+    lease_expires_at TEXT,
     last_error TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
+    FOREIGN KEY(task_id) REFERENCES tasks(id)
+);
+
+CREATE TABLE IF NOT EXISTS task_idempotency (
+    idempotency_key TEXT PRIMARY KEY,
+    task_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
     FOREIGN KEY(task_id) REFERENCES tasks(id)
 );
 """
@@ -150,8 +159,36 @@ class PaperclipDB:
 
     def enqueue_task(self, task_id: str, correlation_id: str | None, created_at: str, max_attempts: int = 3) -> None:
         self.conn.execute(
-            "INSERT OR REPLACE INTO task_queue (task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, started_at, timeout_at, last_error, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (task_id, "queued", correlation_id, 0, max_attempts, created_at, None, None, None, created_at, created_at),
+            "INSERT OR REPLACE INTO task_queue (task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, started_at, timeout_at, worker_id, lease_expires_at, last_error, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (task_id, "queued", correlation_id, 0, max_attempts, created_at, None, None, None, None, None, created_at, created_at),
+        )
+        self.conn.commit()
+
+    def claim_queue_item(self, task_id: str, worker_id: str, lease_expires_at: str, updated_at: str) -> None:
+        self.conn.execute(
+            "UPDATE task_queue SET worker_id = ?, lease_expires_at = ?, updated_at = ? WHERE task_id = ?",
+            (worker_id, lease_expires_at, updated_at, task_id),
+        )
+        self.conn.commit()
+
+    def mark_queue_running(self, task_id: str, started_at: str, timeout_at: str, updated_at: str) -> None:
+        self.conn.execute(
+            "UPDATE task_queue SET status = ?, started_at = ?, timeout_at = ?, updated_at = ? WHERE task_id = ?",
+            ("running", started_at, timeout_at, updated_at, task_id),
+        )
+        self.conn.commit()
+
+    def mark_queue_timed_out(self, task_id: str, last_error: str, updated_at: str) -> None:
+        self.conn.execute(
+            "UPDATE task_queue SET status = ?, last_error = ?, updated_at = ? WHERE task_id = ?",
+            ("timed_out", last_error, updated_at, task_id),
+        )
+        self.conn.commit()
+
+    def reset_queue_to_queued(self, task_id: str, updated_at: str) -> None:
+        self.conn.execute(
+            "UPDATE task_queue SET status = ?, worker_id = NULL, lease_expires_at = NULL, started_at = NULL, timeout_at = NULL, updated_at = ? WHERE task_id = ?",
+            ("queued", updated_at, task_id),
         )
         self.conn.commit()
 
@@ -185,7 +222,7 @@ class PaperclipDB:
 
     def get_queue_item(self, task_id: str) -> dict | None:
         row = self.conn.execute(
-            "SELECT task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, started_at, timeout_at, last_error, created_at, updated_at FROM task_queue WHERE task_id = ?",
+            "SELECT task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, started_at, timeout_at, worker_id, lease_expires_at, last_error, created_at, updated_at FROM task_queue WHERE task_id = ?",
             (task_id,),
         ).fetchone()
         return dict(row) if row is not None else None
@@ -193,14 +230,28 @@ class PaperclipDB:
     def list_queue_items(self, status: str | None = None) -> list[dict]:
         if status is None:
             rows = self.conn.execute(
-                "SELECT task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, started_at, timeout_at, last_error, created_at, updated_at FROM task_queue ORDER BY created_at ASC"
+                "SELECT task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, started_at, timeout_at, worker_id, lease_expires_at, last_error, created_at, updated_at FROM task_queue ORDER BY created_at ASC"
             ).fetchall()
         else:
             rows = self.conn.execute(
-                "SELECT task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, started_at, timeout_at, last_error, created_at, updated_at FROM task_queue WHERE status = ? ORDER BY created_at ASC",
+                "SELECT task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, started_at, timeout_at, worker_id, lease_expires_at, last_error, created_at, updated_at FROM task_queue WHERE status = ? ORDER BY created_at ASC",
                 (status,),
             ).fetchall()
         return [dict(row) for row in rows]
+
+    def create_idempotency_record(self, idempotency_key: str, task_id: str, created_at: str) -> None:
+        self.conn.execute(
+            "INSERT INTO task_idempotency (idempotency_key, task_id, created_at) VALUES (?, ?, ?)",
+            (idempotency_key, task_id, created_at),
+        )
+        self.conn.commit()
+
+    def get_idempotent_task_id(self, idempotency_key: str) -> str | None:
+        row = self.conn.execute(
+            "SELECT task_id FROM task_idempotency WHERE idempotency_key = ?",
+            (idempotency_key,),
+        ).fetchone()
+        return row["task_id"] if row is not None else None
 
     def store_result(self, task_id: str, payload: dict, created_at: str) -> None:
         self.conn.execute(

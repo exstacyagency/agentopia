@@ -189,9 +189,21 @@ Use `docs/durable-queue.md` for the current queue baseline. Paperclip now persis
 
 Use `docs/retries-backoff.md` for the current retry baseline. Queue items now persist retry counters, next-at timestamps, and latest errors when dispatch fails.
 
-## Timeout enforcement
+## Worker claiming and leasing
 
-Use `docs/timeout-enforcement.md` for the current timeout baseline. Running queue items now record timeout deadlines and can be failed when they exceed the configured queue timeout window.
+Use `docs/worker-claiming-leasing.md` for the current lease baseline. Queue items now persist worker ownership and lease expiry so active claims cannot be stolen before expiration.
+
+## Idempotent task submission
+
+Use `docs/idempotent-task-submission.md` for the current submission baseline. Paperclip now stores `Idempotency-Key` mappings so repeated client submits can return the original task instead of creating duplicate work.
+
+## Idempotent result handling
+
+Use `docs/idempotent-result-handling.md` for the current callback baseline. Paperclip now treats repeated result callbacks for the same task as safe no-ops that return the original stored task.
+
+## Stuck job recovery
+
+Use `docs/stuck-job-recovery.md` for the current recovery baseline. Paperclip can now detect expired running leases and reset those jobs back to queued work.
 
 ## Approval reconciliation
 

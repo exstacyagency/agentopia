@@ -201,6 +201,7 @@ class PaperclipHandler(BaseHTTPRequestHandler):
                         "org_id": (self.client_api_identity or {}).get("org_id", ""),
                         "client_id": (self.client_api_identity or {}).get("client_id", ""),
                     },
+                    idempotency_key=self.headers.get("Idempotency-Key", "").strip() or None,
                 )
                 log_event(
                     "paperclip",

@@ -25,8 +25,16 @@ class PaperclipService:
         self.queue_max_attempts = int(os.environ.get("PAPERCLIP_QUEUE_MAX_ATTEMPTS", "3"))
         self.queue_backoff_seconds = int(os.environ.get("PAPERCLIP_QUEUE_BACKOFF_SECONDS", "5"))
         self.queue_timeout_seconds = int(os.environ.get("PAPERCLIP_QUEUE_TIMEOUT_SECONDS", "300"))
+        self.queue_lease_seconds = int(os.environ.get("PAPERCLIP_QUEUE_LEASE_SECONDS", "60"))
 
-    def submit_task(self, payload: dict, tenant_context: dict | None = None) -> dict:
+    def submit_task(self, payload: dict, tenant_context: dict | None = None, idempotency_key: str | None = None) -> dict:
+        if idempotency_key:
+            existing_task_id = self.db.get_idempotent_task_id(idempotency_key)
+            if existing_task_id:
+                existing_task = self.get_task(existing_task_id)
+                if existing_task is not None:
+                    return existing_task
+
         errors = validate_payload("task_request_v1.json", payload)
         if errors:
             raise ValueError("; ".join(errors))
@@ -58,6 +66,9 @@ class PaperclipService:
             }
         )
         self.db.add_audit_event(task["id"], "task_received", "paperclip", {"state": initial_state}, created_at)
+        if idempotency_key:
+            self.db.create_idempotency_record(idempotency_key, task["id"], created_at)
+            self.db.add_audit_event(task["id"], "idempotency_key_recorded", "paperclip", {"idempotency_key": idempotency_key}, created_at)
         if approval["required"]:
             self.db.add_audit_event(task["id"], "approval_requested", "paperclip", {"approval_status": approval["status"]}, created_at)
         self.traces.record(payload["trace"]["trace_id"], "paperclip", "task_submitted", task_id=task["id"], state=initial_state)
@@ -112,23 +123,24 @@ class PaperclipService:
     def _queue_backoff_seconds(self, attempt_count: int) -> int:
         return self.queue_backoff_seconds * (2 ** max(0, attempt_count - 1))
 
-    def enforce_timeouts(self, now: datetime | None = None) -> list[dict]:
+    def claim_queue_item(self, task_id: str, worker_id: str, now: datetime | None = None) -> dict:
+        queue_item = self.db.get_queue_item(task_id)
+        if queue_item is None:
+            raise KeyError(task_id)
         now = now or datetime.now(timezone.utc)
-        timed_out: list[dict] = []
-        for item in self.db.list_queue_items(status="running"):
-            timeout_at = item.get("timeout_at")
-            if not timeout_at:
-                continue
-            deadline = datetime.fromisoformat(timeout_at.replace("Z", "+00:00"))
-            if deadline <= now:
-                updated_at = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
-                self.db.mark_queue_timed_out(item["task_id"], "queue timeout exceeded", updated_at)
-                self.transition_task(item["task_id"], "failed", actor="paperclip", details={"reason": "timeout"})
-                self.db.add_audit_event(item["task_id"], "task_timed_out", "paperclip", {"timeout_at": timeout_at}, updated_at)
-                timed_out.append({"task_id": item["task_id"], "timeout_at": timeout_at})
-        return timed_out
+        lease_expires_at = queue_item.get("lease_expires_at")
+        current_worker = queue_item.get("worker_id")
+        if current_worker and lease_expires_at:
+            lease_deadline = datetime.fromisoformat(lease_expires_at.replace("Z", "+00:00"))
+            if lease_deadline > now and current_worker != worker_id:
+                raise ValueError(f"queue item already leased by {current_worker}")
+        updated_at = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        new_lease_expires_at = (now + timedelta(seconds=self.queue_lease_seconds)).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        self.db.claim_queue_item(task_id, worker_id, new_lease_expires_at, updated_at)
+        self.db.add_audit_event(task_id, "task_claimed", worker_id, {"lease_expires_at": new_lease_expires_at}, updated_at)
+        return self.get_task(task_id)
 
-    def process_queue(self, task_id: str, now: datetime | None = None) -> dict:
+    def process_queue(self, task_id: str, now: datetime | None = None, worker_id: str | None = None) -> dict:
         queue_item = self.db.get_queue_item(task_id)
         if queue_item is None:
             raise KeyError(task_id)
@@ -140,8 +152,11 @@ class PaperclipService:
             scheduled = datetime.fromisoformat(next_attempt_at.replace("Z", "+00:00"))
             if scheduled > now:
                 return self.get_task(task_id)
+        if worker_id is not None:
+            self.claim_queue_item(task_id, worker_id=worker_id, now=now)
+            queue_item = self.db.get_queue_item(task_id)
         try:
-            return self.dispatch_task(task_id, correlation_id=queue_item.get("correlation_id"))
+            return self.dispatch_task(task_id, correlation_id=queue_item.get("correlation_id"), worker_id=worker_id)
         except Exception as exc:
             self.db.update_task_state(task_id, "queued", utcnow())
             attempt_count = int(queue_item.get("attempt_count", 0)) + 1
@@ -158,7 +173,7 @@ class PaperclipService:
             )
             return self.get_task(task_id)
 
-    def dispatch_task(self, task_id: str, correlation_id: str | None = None) -> dict:
+    def dispatch_task(self, task_id: str, correlation_id: str | None = None, worker_id: str | None = None) -> dict:
         task = self.db.get_task(task_id)
         if task is None:
             raise KeyError(task_id)
@@ -167,6 +182,9 @@ class PaperclipService:
             task = self.db.get_task(task_id)
         if task is None or task["state"] != "queued":
             raise ValueError(f"task must be queued before dispatch: {task_id}")
+        queue_item = self.db.get_queue_item(task_id)
+        if worker_id is not None and (queue_item is None or queue_item.get("worker_id") != worker_id):
+            raise ValueError(f"task must be leased by worker before dispatch: {task_id}")
         self.transition_task(task_id, "running", actor="paperclip", details={"dispatch": "hermes"})
         started_at = utcnow()
         timeout_at = (datetime.fromisoformat(started_at.replace("Z", "+00:00")) + timedelta(seconds=self.queue_timeout_seconds)).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -179,6 +197,13 @@ class PaperclipService:
         return self.get_task(task_id)
 
     def record_result(self, task_id: str, result: dict) -> dict:
+        existing_result = self.db.get_result(task_id)
+        if existing_result is not None:
+            existing_task = self.get_task(task_id)
+            if existing_task is None:
+                raise KeyError(task_id)
+            return existing_task
+
         status = result["run"]["status"]
         target_state = "succeeded" if status == "succeeded" else "failed"
         self.transition_task(task_id, target_state, actor="hermes", details={"run_status": status})
@@ -223,6 +248,60 @@ class PaperclipService:
 
     def get_audit(self, task_id: str) -> list[dict]:
         return self.db.get_audit_events(task_id)
+
+    def list_recoverable_stuck_jobs(self, now: datetime | None = None) -> list[dict]:
+        now = now or datetime.now(timezone.utc)
+        recoverable: list[dict] = []
+        for item in self.db.list_queue_items(status="running"):
+            worker_id = item.get("worker_id")
+            lease_expires_at = item.get("lease_expires_at")
+            if not worker_id or not lease_expires_at:
+                continue
+            deadline = datetime.fromisoformat(lease_expires_at.replace("Z", "+00:00"))
+            if deadline <= now:
+                recoverable.append(
+                    {
+                        "task_id": item["task_id"],
+                        "worker_id": worker_id,
+                        "lease_expires_at": lease_expires_at,
+                    }
+                )
+        return recoverable
+
+    def recover_stuck_job(self, task_id: str, actor: str = "operator", now: datetime | None = None) -> dict | None:
+        task = self.db.get_task(task_id)
+        queue_item = self.db.get_queue_item(task_id)
+        if task is None or queue_item is None:
+            return None
+        now = now or datetime.now(timezone.utc)
+        lease_expires_at = queue_item.get("lease_expires_at")
+        worker_id = queue_item.get("worker_id")
+        if not worker_id or not lease_expires_at:
+            return None
+        deadline = datetime.fromisoformat(lease_expires_at.replace("Z", "+00:00"))
+        if deadline > now:
+            return None
+        updated_at = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        self.db.reset_queue_to_queued(task_id, updated_at)
+        self.db.update_task_state(task_id, "queued", updated_at)
+        self.db.add_audit_event(task_id, "task_recovered_from_stuck", actor, {"previous_worker_id": worker_id}, updated_at)
+        return self.get_task(task_id)
+
+    def enforce_timeouts(self, now: datetime | None = None) -> list[dict]:
+        now = now or datetime.now(timezone.utc)
+        timed_out: list[dict] = []
+        for item in self.db.list_queue_items(status="running"):
+            timeout_at = item.get("timeout_at")
+            if not timeout_at:
+                continue
+            deadline = datetime.fromisoformat(timeout_at.replace("Z", "+00:00"))
+            if deadline <= now:
+                updated_at = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+                self.db.mark_queue_timed_out(item["task_id"], "queue timeout exceeded", updated_at)
+                self.transition_task(item["task_id"], "failed", actor="paperclip", details={"reason": "timeout"})
+                self.db.add_audit_event(item["task_id"], "task_timed_out", "paperclip", {"timeout_at": timeout_at}, updated_at)
+                timed_out.append({"task_id": item["task_id"], "timeout_at": timeout_at})
+        return timed_out
 
     def get_queue(self, status: str | None = None) -> list[dict]:
         return self.db.list_queue_items(status=status)
