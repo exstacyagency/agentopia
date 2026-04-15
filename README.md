@@ -241,6 +241,10 @@ Use `docs/network-egress-controls.md` for the current network policy baseline. H
 
 Use `docs/sandbox-adapter.md` for the current OS-level sandbox baseline. Hermes now has a macOS sandbox adapter for `shell_command` execution that restricts writes to the workspace and denies network access.
 
+## Safer shell execution layer
+
+Use `docs/safer-shell-execution-layer.md` for the current shell-safety baseline. Hermes now validates `shell_command` requests against a restricted syntax and executable allowlist before runner execution.
+
 ## Public API contract
 
 Use `docs/public-api-contract.md` for the stable v1 Paperclip client-facing API surface, including which endpoints are public, which are internal-only, and the current auth and error expectations.

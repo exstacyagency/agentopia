@@ -18,7 +18,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add strict write boundaries
 - [ ] Add resource and time limits
 - [ ] Add cancellation support
-- [ ] Add a safer shell execution layer
+- [x] Add a safer shell execution layer
 
 ### Durable job/runtime system
 - [x] Add a durable queue
