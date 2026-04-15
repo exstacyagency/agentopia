@@ -49,6 +49,10 @@ CREATE TABLE IF NOT EXISTS task_queue (
     attempt_count INTEGER NOT NULL DEFAULT 0,
     max_attempts INTEGER NOT NULL DEFAULT 3,
     next_attempt_at TEXT,
+    started_at TEXT,
+    timeout_at TEXT,
+    worker_id TEXT,
+    lease_expires_at TEXT,
     last_error TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
@@ -148,8 +152,29 @@ class PaperclipDB:
 
     def enqueue_task(self, task_id: str, correlation_id: str | None, created_at: str, max_attempts: int = 3) -> None:
         self.conn.execute(
-            "INSERT OR REPLACE INTO task_queue (task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, last_error, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (task_id, "queued", correlation_id, 0, max_attempts, created_at, None, created_at, created_at),
+            "INSERT OR REPLACE INTO task_queue (task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, started_at, timeout_at, worker_id, lease_expires_at, last_error, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (task_id, "queued", correlation_id, 0, max_attempts, created_at, None, None, None, None, None, created_at, created_at),
+        )
+        self.conn.commit()
+
+    def claim_queue_item(self, task_id: str, worker_id: str, lease_expires_at: str, updated_at: str) -> None:
+        self.conn.execute(
+            "UPDATE task_queue SET worker_id = ?, lease_expires_at = ?, updated_at = ? WHERE task_id = ?",
+            (worker_id, lease_expires_at, updated_at, task_id),
+        )
+        self.conn.commit()
+
+    def mark_queue_running(self, task_id: str, started_at: str, timeout_at: str, updated_at: str) -> None:
+        self.conn.execute(
+            "UPDATE task_queue SET status = ?, started_at = ?, timeout_at = ?, updated_at = ? WHERE task_id = ?",
+            ("running", started_at, timeout_at, updated_at, task_id),
+        )
+        self.conn.commit()
+
+    def mark_queue_timed_out(self, task_id: str, last_error: str, updated_at: str) -> None:
+        self.conn.execute(
+            "UPDATE task_queue SET status = ?, last_error = ?, updated_at = ? WHERE task_id = ?",
+            ("timed_out", last_error, updated_at, task_id),
         )
         self.conn.commit()
 
@@ -169,7 +194,7 @@ class PaperclipDB:
 
     def get_queue_item(self, task_id: str) -> dict | None:
         row = self.conn.execute(
-            "SELECT task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, last_error, created_at, updated_at FROM task_queue WHERE task_id = ?",
+            "SELECT task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, started_at, timeout_at, worker_id, lease_expires_at, last_error, created_at, updated_at FROM task_queue WHERE task_id = ?",
             (task_id,),
         ).fetchone()
         return dict(row) if row is not None else None
@@ -177,11 +202,11 @@ class PaperclipDB:
     def list_queue_items(self, status: str | None = None) -> list[dict]:
         if status is None:
             rows = self.conn.execute(
-                "SELECT task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, last_error, created_at, updated_at FROM task_queue ORDER BY created_at ASC"
+                "SELECT task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, started_at, timeout_at, worker_id, lease_expires_at, last_error, created_at, updated_at FROM task_queue ORDER BY created_at ASC"
             ).fetchall()
         else:
             rows = self.conn.execute(
-                "SELECT task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, last_error, created_at, updated_at FROM task_queue WHERE status = ? ORDER BY created_at ASC",
+                "SELECT task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, started_at, timeout_at, worker_id, lease_expires_at, last_error, created_at, updated_at FROM task_queue WHERE status = ? ORDER BY created_at ASC",
                 (status,),
             ).fetchall()
         return [dict(row) for row in rows]

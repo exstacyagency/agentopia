@@ -86,6 +86,10 @@ Use `docs/durable-queue.md` for the current queue baseline and run `./.venv/bin/
 
 Use `docs/retries-backoff.md` for the current retry baseline and run `./.venv/bin/python scripts/test_retries_backoff.py` to verify failed dispatches stay queued and reschedule the next attempt.
 
+## Worker claiming and leasing
+
+Use `docs/worker-claiming-leasing.md` for the current leasing baseline and run `./.venv/bin/python scripts/test_worker_leasing.py` to verify active claims block other workers until the lease expires.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval consistency baseline and run `./.venv/bin/python scripts/test_approval_reconciliation.py` to verify mismatch detection.
@@ -230,6 +234,7 @@ See `docs/container-image-versioning.md`.
 - If tenant isolation readiness is unclear, review `docs/tenant-isolation.md` and run `./.venv/bin/python scripts/test_tenant_isolation.py`.
 - If durable queue readiness is unclear, review `docs/durable-queue.md` and run `./.venv/bin/python scripts/test_durable_queue.py`.
 - If retry readiness is unclear, review `docs/retries-backoff.md` and run `./.venv/bin/python scripts/test_retries_backoff.py`.
+- If worker lease readiness is unclear, review `docs/worker-claiming-leasing.md` and run `./.venv/bin/python scripts/test_worker_leasing.py`.
 - If approval reconciliation readiness is unclear, review `docs/approval-reconciliation.md` and run `./.venv/bin/python scripts/test_approval_reconciliation.py`.
 - If approval expiration readiness is unclear, review `docs/approval-expiration.md` and run `./.venv/bin/python scripts/test_approval_expiration.py`.
 - If approval audit readiness is unclear, review `docs/approval-audit-trail.md` and run `./.venv/bin/python scripts/test_approval_audit_trail.py`.
