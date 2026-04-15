@@ -114,6 +114,10 @@ Use `docs/migrations.md` for the current schema migration baseline and run `./.v
 
 Use `docs/hermes-executor-dispatch-boundary.md` for the current executor refactor baseline and run `./.venv/bin/python scripts/test_hermes_dispatch_boundary.py` plus `./.venv/bin/python scripts/test_hermes_executor.py` to verify the internal dispatch map while preserving the v1 result envelope.
 
+## Hermes command runner boundary
+
+Use `docs/sandbox-execution-runner.md` for the current deny-by-default command baseline and run `./.venv/bin/python scripts/test_hermes_runner_boundary.py` plus `./.venv/bin/python scripts/test_hermes_executor.py` to verify `shell_command` is denied by default unless an explicit runner is injected.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline and run `./.venv/bin/python scripts/test_postgres_persistence.py` to verify Postgres backend selection through `PAPERCLIP_DATABASE_URL`.
@@ -285,6 +289,7 @@ See `docs/container-image-versioning.md`.
 - If dead-letter readiness is unclear, review `docs/dead-letter-handling.md` and run `./.venv/bin/python scripts/test_dead_letter_handling.py`.
 - If migration readiness is unclear, review `docs/migrations.md` and run `./.venv/bin/python scripts/test_migrations.py`.
 - If Hermes executor-boundary readiness is unclear, review `docs/hermes-executor-dispatch-boundary.md` and run `./.venv/bin/python scripts/test_hermes_dispatch_boundary.py` plus `./.venv/bin/python scripts/test_hermes_executor.py`.
+- If Hermes command-runner readiness is unclear, review `docs/sandbox-execution-runner.md` and run `./.venv/bin/python scripts/test_hermes_runner_boundary.py` plus `./.venv/bin/python scripts/test_hermes_executor.py`.
 - If Postgres persistence readiness is unclear, review `docs/postgres-persistence.md` and run `./.venv/bin/python scripts/test_postgres_persistence.py`.
 - If transactional state readiness is unclear, review `docs/transactional-state-updates.md` and run `./.venv/bin/python scripts/test_transactional_state_updates.py`.
 - If backup/restore readiness is unclear, review `docs/backup-restore-plan.md`, run `./scripts/backup-restore-checklist.sh`, and run `./.venv/bin/python scripts/test_backup_restore_checklist.py`.

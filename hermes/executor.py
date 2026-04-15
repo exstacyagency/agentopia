@@ -5,20 +5,23 @@ from pathlib import Path
 from hermes.action_labels import derive_action_labels
 from hermes.file_ops import preview_change, revert_workspace_file, write_workspace_file
 from hermes.repo_ops import apply_repo_write, preview_repo_write
+from hermes.runner import CommandRequest, DenyByDefaultRunner, SandboxDeniedError
 from scripts.contracts import validate_payload
 
-SUPPORTED_TASK_TYPES = {"repo_summary", "text_generation", "file_write", "repo_write", "file_revert"}
+SUPPORTED_TASK_TYPES = {"repo_summary", "text_generation", "file_write", "repo_write", "file_revert", "shell_command"}
 
 
 class HermesExecutor:
-    def __init__(self, workspace: Path):
+    def __init__(self, workspace: Path, runner=None):
         self.workspace = workspace
+        self.runner = runner or DenyByDefaultRunner()
         self._dispatch = {
             "repo_summary": self._handle_repo_summary,
             "text_generation": self._handle_text_generation,
             "file_write": self._handle_file_write,
             "repo_write": self._handle_repo_write,
             "file_revert": self._handle_file_revert,
+            "shell_command": self._handle_shell_command,
         }
 
     def execute(self, task_request: dict, preview_only: bool = False) -> dict:
@@ -37,6 +40,8 @@ class HermesExecutor:
         try:
             payload = self._dispatch[task_type](task_request, preview_only=preview_only)
             return self._success(task_id, trace_id, payload)
+        except SandboxDeniedError as exc:
+            return self._failure(task_id, trace_id, str(exc), code="SANDBOX_DENIED")
         except Exception as exc:
             return self._failure(task_id, trace_id, str(exc))
 
@@ -68,7 +73,7 @@ class HermesExecutor:
         if preview_only:
             previous = (self.workspace / relative_path).read_text() if (self.workspace / relative_path).exists() else ""
             preview = preview_change(previous, content)
-            artifacts = [{"type": "file_preview", "path": relative_path, "content_type": "text/plain"}]
+            artifacts = [{"type": "file_preview", "path": relative_path, "content_type": "text/plain", "metadata": {"preview": preview}}]
             summary = f"Previewed file write for {relative_path}"
             notes = ["Preview only, no files changed"]
         else:
@@ -112,6 +117,17 @@ class HermesExecutor:
             "output": summary,
             "notes": ["Reverted file change in workspace"],
             "artifacts": [{"type": "file_revert", "path": relative_path, "content_type": "text/plain", "metadata": {"restored": result.restored}}],
+            "tool_calls": 1,
+        }
+
+    def _handle_shell_command(self, task_request: dict, preview_only: bool = False) -> dict:
+        command = task_request.get("task", {}).get("context", {}).get("command") or task_request.get("task", {}).get("description", "")
+        result = self.runner.run(CommandRequest(command=command, cwd=self.workspace))
+        return {
+            "summary": f"Executed shell command: {command}",
+            "output": f"Executed shell command: {command}",
+            "notes": [f"Sandbox adapter returned: {result}"],
+            "artifacts": [],
             "tool_calls": 1,
         }
 

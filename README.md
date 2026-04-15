@@ -217,6 +217,10 @@ Use `docs/migrations.md` for the current schema migration baseline. Paperclip no
 
 Use `docs/hermes-executor-dispatch-boundary.md` for the current executor refactor baseline. Hermes now routes supported task types through a single internal dispatch map while preserving the v1 result envelope.
 
+## Hermes command runner boundary
+
+Use `docs/sandbox-execution-runner.md` for the current deny-by-default command execution baseline. Hermes `shell_command` tasks now only execute through an explicit runner, and the default path denies execution.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline. Paperclip can now select a Postgres-backed DB implementation via `PAPERCLIP_DATABASE_URL`, while SQLite remains the default local path.

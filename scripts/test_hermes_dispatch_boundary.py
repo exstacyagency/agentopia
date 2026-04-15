@@ -19,7 +19,7 @@ class HermesDispatchBoundaryTests(unittest.TestCase):
     def test_executor_exposes_dispatch_map_for_supported_task_types(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             executor = HermesExecutor(Path(tmp))
-            self.assertEqual(set(executor._dispatch.keys()), {"repo_summary", "text_generation", "file_write", "repo_write", "file_revert"})
+            self.assertEqual(set(executor._dispatch.keys()), {"repo_summary", "text_generation", "file_write", "repo_write", "file_revert", "shell_command"})
 
     def test_dispatch_boundary_still_returns_v1_result_envelope(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
