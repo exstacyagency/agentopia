@@ -3,606 +3,176 @@ from __future__ import annotations
 from pathlib import Path
 
 from hermes.action_labels import derive_action_labels
-from hermes.decision_trace import build_decision_trace
-from hermes.file_ops import FileWriteError, revert_workspace_file, write_workspace_file
-from hermes.memory.service import MemPalaceService
-from hermes.policy import evaluate_task_policy
+from hermes.file_ops import preview_change, revert_workspace_file, write_workspace_file
 from hermes.repo_ops import apply_repo_write, preview_repo_write
 from scripts.contracts import validate_payload
 
-SUPPORTED_TASK_TYPES = {"repo_summary", "file_analysis", "text_generation", "structured_extract", "repo_change_plan", "implementation_draft", "repo_write", "file_write", "file_revert", "shell_command"}
-MEMORY = MemPalaceService()
+SUPPORTED_TASK_TYPES = {"repo_summary", "text_generation", "file_write", "repo_write", "file_revert"}
 
 
 class HermesExecutor:
-    def __init__(self, root: Path):
-        self.root = root
+    def __init__(self, workspace: Path):
+        self.workspace = workspace
+        self._dispatch = {
+            "repo_summary": self._handle_repo_summary,
+            "text_generation": self._handle_text_generation,
+            "file_write": self._handle_file_write,
+            "repo_write": self._handle_repo_write,
+            "file_revert": self._handle_file_revert,
+        }
 
-    def execute(self, payload: dict) -> dict:
-        errors = validate_payload("task_request_v1.json", payload)
+    def execute(self, task_request: dict, preview_only: bool = False) -> dict:
+        task = task_request.get("task", {})
+        task_type = task.get("type")
+        task_id = task.get("id") or "task_invalid"
+        trace_id = task_request.get("trace", {}).get("trace_id") or f"trace_{task_id}"
+
+        errors = validate_payload("task_request_v1.json", task_request)
         if errors:
-            task_id = payload.get("task", {}).get("id") or "unknown-task"
-            trace_id = payload.get("trace", {}).get("trace_id") or "unknown-trace"
-            return self.failure_result(
-                task_id=task_id,
-                trace_id=trace_id,
-                code="VALIDATION_FAILED",
-                message="; ".join(errors),
-                retryable=False,
-            )
+            return self._failure(task_id, trace_id, "; ".join(errors), code="VALIDATION_FAILED")
 
-        task = payload["task"]
-        policy = evaluate_task_policy(payload)
-        if task["type"] not in SUPPORTED_TASK_TYPES:
-            return self.failure_result(
-                task_id=task["id"],
-                trace_id=payload["trace"]["trace_id"],
-                code="EXECUTION_FAILED",
-                message=f"unsupported task type: {task['type']}",
-                retryable=False,
-                metadata={
-                    "task_type": task["type"],
-                    "policy": {
-                        "mode": "deny",
-                        "reason": "unsupported_task_type",
-                    },
-                },
-            )
+        if task_type not in SUPPORTED_TASK_TYPES:
+            return self._failure(task_id, trace_id, f"unsupported task type: {task_type}", code="VALIDATION_FAILED")
 
-        if not policy.allowed:
-            context = task.get("context", {})
-            return self.failure_result(
-                task_id=task["id"],
-                trace_id=payload["trace"]["trace_id"],
-                code="POLICY_BLOCKED",
-                message=f"task type blocked by policy: {task['type']}",
-                retryable=False,
-                metadata={
-                    "task_type": task["type"],
-                    "paperclip_issue_id": context.get("issue_id"),
-                    "paperclip_run_id": context.get("paperclip_run_id"),
-                    "paperclip_approval_id": context.get("paperclip_approval_id"),
-                    "paperclip_approval_status": context.get("paperclip_approval_status"),
-                    "agent_id": context.get("agent_id"),
-                    "context": context,
-                    "policy": {
-                        "mode": policy.mode,
-                        "reason": policy.reason,
-                    },
-                    "decision_trace": build_decision_trace(task, policy.mode, policy.reason, context),
-                    **derive_action_labels(task["type"], policy.mode, policy.reason, context),
-                },
-            )
+        try:
+            payload = self._dispatch[task_type](task_request, preview_only=preview_only)
+            return self._success(task_id, trace_id, payload)
+        except Exception as exc:
+            return self._failure(task_id, trace_id, str(exc))
 
-        file_write = None
-        file_revert = None
-        repo_write = None
-        if task["type"] == "repo_summary":
-            summary = self.build_repo_summary(task)
-            result_summary = f"Repository summary completed for {task['title']}"
-            notes = [
-                "Validated request payload",
-                "Executed Hermes repo_summary task",
-                "Generated v1 result envelope",
-            ]
-        elif task["type"] == "file_analysis":
-            summary = self.build_file_analysis(task)
-            result_summary = f"File analysis completed for {task['title']}"
-            notes = [
-                "Validated request payload",
-                "Executed Hermes file_analysis task",
-                "Generated v1 result envelope",
-            ]
-        elif task["type"] == "structured_extract":
-            summary = self.build_structured_extract(task)
-            result_summary = f"Structured extraction completed for {task['title']}"
-            notes = [
-                "Validated request payload",
-                "Executed Hermes structured_extract task",
-                "Generated v1 result envelope",
-            ]
-        elif task["type"] == "repo_change_plan":
-            summary = self.build_repo_change_plan(task)
-            result_summary = f"Repo change plan completed for {task['title']}"
-            notes = [
-                "Validated request payload",
-                "Executed Hermes repo_change_plan task",
-                "Generated v1 result envelope",
-            ]
-        elif task["type"] == "implementation_draft":
-            summary = self.build_implementation_draft(task)
-            result_summary = f"Implementation draft completed for {task['title']}"
-            notes = [
-                "Validated request payload",
-                "Executed Hermes implementation_draft task",
-                "Generated v1 result envelope",
-            ]
-        elif task["type"] == "file_write":
-            try:
-                file_write = self.build_file_write(task)
-            except FileWriteError as exc:
-                context = task.get("context", {})
-                return self.failure_result(
-                    task_id=task["id"],
-                    trace_id=payload["trace"]["trace_id"],
-                    code="WRITE_SCOPE_VIOLATION",
-                    message=str(exc),
-                    retryable=False,
-                    metadata={
-                        "task_type": task["type"],
-                        "paperclip_issue_id": context.get("issue_id"),
-                        "paperclip_run_id": context.get("paperclip_run_id"),
-                        "paperclip_approval_id": context.get("paperclip_approval_id"),
-                        "paperclip_approval_status": context.get("paperclip_approval_status"),
-                        "agent_id": context.get("agent_id"),
-                        "context": context,
-                        "policy": {
-                            "mode": policy.mode,
-                            "reason": policy.reason,
-                        },
-                        "decision_trace": build_decision_trace(task, policy.mode, policy.reason, context),
-                        **derive_action_labels(task["type"], policy.mode, policy.reason, context),
-                    },
-                )
-            summary = file_write["summary"]
-            result_summary = f"File write completed for {task['title']}"
-            notes = [
-                "Validated request payload",
-                "Policy-approved Hermes file_write task",
-                "Performed workspace-scoped file write",
-                "Generated v1 result envelope",
-            ]
-        elif task["type"] == "repo_write":
-            try:
-                repo_write = self.build_repo_write(task, preview_only=(policy.mode == "preview"))
-            except FileWriteError as exc:
-                context = task.get("context", {})
-                return self.failure_result(
-                    task_id=task["id"],
-                    trace_id=payload["trace"]["trace_id"],
-                    code="WRITE_SCOPE_VIOLATION",
-                    message=str(exc),
-                    retryable=False,
-                    metadata={
-                        "task_type": task["type"],
-                        "paperclip_issue_id": context.get("issue_id"),
-                        "paperclip_run_id": context.get("paperclip_run_id"),
-                        "paperclip_approval_id": context.get("paperclip_approval_id"),
-                        "paperclip_approval_status": context.get("paperclip_approval_status"),
-                        "agent_id": context.get("agent_id"),
-                        "context": context,
-                        "policy": {
-                            "mode": policy.mode,
-                            "reason": policy.reason,
-                        },
-                        **derive_action_labels(task["type"], policy.mode, policy.reason, context),
-                    },
-                )
-            summary = repo_write["summary"]
-            result_summary = "Repo write preview completed" if policy.mode == "preview" else f"Repo write completed for {task['title']}"
-            notes = [
-                "Validated request payload",
-                ("Generated constrained repo write preview" if policy.mode == "preview" else "Policy-approved Hermes repo_write task"),
-                ("Did not apply repo changes" if policy.mode == "preview" else "Applied constrained workspace-scoped repo changes"),
-                "Generated v1 result envelope",
-            ]
-        elif task["type"] == "file_revert":
-            try:
-                file_revert = self.build_file_revert(task)
-            except FileWriteError as exc:
-                context = task.get("context", {})
-                return self.failure_result(
-                    task_id=task["id"],
-                    trace_id=payload["trace"]["trace_id"],
-                    code="WRITE_SCOPE_VIOLATION",
-                    message=str(exc),
-                    retryable=False,
-                    metadata={
-                        "task_type": task["type"],
-                        "paperclip_issue_id": context.get("issue_id"),
-                        "paperclip_run_id": context.get("paperclip_run_id"),
-                        "paperclip_approval_id": context.get("paperclip_approval_id"),
-                        "paperclip_approval_status": context.get("paperclip_approval_status"),
-                        "agent_id": context.get("agent_id"),
-                        "context": context,
-                        "policy": {
-                            "mode": policy.mode,
-                            "reason": policy.reason,
-                        },
-                        **derive_action_labels(task["type"], policy.mode, policy.reason, context),
-                    },
-                )
-            summary = file_revert["summary"]
-            result_summary = f"File revert completed for {task['title']}"
-            notes = [
-                "Validated request payload",
-                "Policy-approved Hermes file_revert task",
-                "Restored prior workspace-scoped file content",
-                "Generated v1 result envelope",
-            ]
+    def _handle_repo_summary(self, task_request: dict, preview_only: bool = False) -> dict:
+        labels = derive_action_labels("repo_summary", "allow", "scaffold", {"apply": False})
+        return {
+            "summary": "Repository summary scaffold result",
+            "output": "# Repository Summary\n\nScaffold response generated.",
+            "notes": [labels["operator_summary"]],
+            "artifacts": [],
+            "tool_calls": 0,
+        }
+
+    def _handle_text_generation(self, task_request: dict, preview_only: bool = False) -> dict:
+        labels = derive_action_labels("text_generation", "allow", "scaffold", {"apply": False})
+        return {
+            "summary": "Text generation scaffold result",
+            "output": "Generated scaffold text output.",
+            "notes": [labels["operator_summary"]],
+            "artifacts": [],
+            "tool_calls": 0,
+        }
+
+    def _handle_file_write(self, task_request: dict, preview_only: bool = False) -> dict:
+        context = task_request.get("task", {}).get("context", {})
+        relative_path = context.get("file_path", "output.txt")
+        content = context.get("content", task_request.get("task", {}).get("description", ""))
+        overwrite = bool(context.get("overwrite", False))
+        if preview_only:
+            previous = (self.workspace / relative_path).read_text() if (self.workspace / relative_path).exists() else ""
+            preview = preview_change(previous, content)
+            artifacts = [{"type": "file_preview", "path": relative_path, "content_type": "text/plain"}]
+            summary = f"Previewed file write for {relative_path}"
+            notes = ["Preview only, no files changed"]
         else:
-            summary = self.build_text_generation(task)
-            result_summary = f"Text generation completed for {task['title']}"
-            notes = [
-                "Validated request payload",
-                "Executed Hermes text_generation task",
-                "Generated v1 result envelope",
-            ]
-
-        context = task.get("context", {})
-        memory_context = MEMORY.wakeup(task.get("title", ""), task.get("description", ""))
-        context = {
-            **context,
-            "memory": {
-                "memory_mode": memory_context.get("memory_mode"),
-                "memory_source": ((memory_context.get("wakeup_context") or {}).get("memory_source")),
-                "memory_hits": ((memory_context.get("wakeup_context") or {}).get("memory_hits") or []),
-            },
+            result = write_workspace_file(self.workspace, relative_path, content, overwrite=overwrite)
+            artifacts = [{"type": "file_write", "path": relative_path, "content_type": "text/plain", "metadata": {"bytes_written": result.bytes_written, "changed": result.changed}}]
+            summary = f"Wrote file {relative_path}"
+            notes = ["Applied file write in workspace"]
+        return {
+            "summary": summary,
+            "output": summary,
+            "notes": notes,
+            "artifacts": artifacts,
+            "tool_calls": 1,
         }
+
+    def _handle_repo_write(self, task_request: dict, preview_only: bool = False) -> dict:
+        changes = task_request.get("task", {}).get("context", {}).get("changes", [])
+        result = preview_repo_write(self.workspace, changes) if preview_only else apply_repo_write(self.workspace, changes)
         artifacts = [
-            {
-                "type": "structured_output",
-                "path": "artifacts/output.json",
-                "content_type": "application/json",
-                "metadata": {
-                    "task_type": task["type"],
-                    "task_id": task["id"],
-                },
-            }
+            {"type": "repo_write", "path": item.path, "content_type": "text/plain", "metadata": {"bytes_written": item.bytes_written, "changed": item.changed}}
+            for item in result.files
         ]
-        if file_write:
-            artifacts.append(
-                {
-                    "type": "file_write",
-                    "path": file_write["relative_path"],
-                    "content_type": "text/plain",
-                    "metadata": file_write["artifact_metadata"],
-                }
-            )
-        if file_revert:
-            artifacts.append(
-                {
-                    "type": "file_revert",
-                    "path": file_revert["relative_path"],
-                    "content_type": "text/plain",
-                    "metadata": file_revert["artifact_metadata"],
-                }
-            )
-        if repo_write:
-            artifact_type = "repo_write_preview" if repo_write["preview_only"] else "repo_write"
-            for file_change in repo_write["files"]:
-                artifacts.append(
-                    {
-                        "type": artifact_type,
-                        "path": file_change["path"],
-                        "content_type": "text/plain",
-                        "metadata": file_change,
-                    }
-                )
-
-        metadata = {
-            "task_type": task["type"],
-            "paperclip_issue_id": context.get("issue_id"),
-            "paperclip_run_id": context.get("paperclip_run_id"),
-            "paperclip_approval_id": context.get("paperclip_approval_id"),
-            "paperclip_approval_status": context.get("paperclip_approval_status"),
-            "agent_id": context.get("agent_id"),
-            "context": context,
-            "memory": context.get("memory"),
-            "policy": {
-                "mode": policy.mode,
-                "reason": policy.reason,
-            },
-            "decision_trace": build_decision_trace(task, policy.mode, policy.reason, context),
-            **derive_action_labels(task["type"], policy.mode, policy.reason, context),
+        summary = f"{'Previewed' if preview_only else 'Applied'} repo write with {len(result.files)} file change(s)"
+        notes = ["Preview only, no repo changes applied"] if preview_only else ["Applied repo write in workspace"]
+        return {
+            "summary": summary,
+            "output": summary,
+            "notes": notes,
+            "artifacts": artifacts,
+            "tool_calls": 1,
         }
-        if file_write:
-            metadata["file_write"] = file_write["metadata"]
-        if file_revert:
-            metadata["file_revert"] = file_revert["metadata"]
-        if repo_write:
-            metadata["repo_write"] = {
-                "preview_only": repo_write["preview_only"],
-                "files": repo_write["files"],
-                "file_count": len(repo_write["files"]),
-            }
 
+    def _handle_file_revert(self, task_request: dict, preview_only: bool = False) -> dict:
+        context = task_request.get("task", {}).get("context", {})
+        relative_path = context.get("file_path", "output.txt")
+        previous_content = context.get("previous_content", "")
+        result = revert_workspace_file(self.workspace, relative_path, previous_content)
+        summary = f"Reverted file {relative_path}"
+        return {
+            "summary": summary,
+            "output": summary,
+            "notes": ["Reverted file change in workspace"],
+            "artifacts": [{"type": "file_revert", "path": relative_path, "content_type": "text/plain", "metadata": {"restored": result.restored}}],
+            "tool_calls": 1,
+        }
+
+    def _success(self, task_id: str, trace_id: str, payload: dict) -> dict:
         return {
             "schema_version": "v1",
-            "task_id": task["id"],
+            "task_id": task_id,
             "run": {
-                "run_id": f"run_{task['id']}",
+                "run_id": f"run_{task_id}",
                 "status": "succeeded",
-                "started_at": payload["trace"]["submitted_at"],
-                "finished_at": payload["trace"]["submitted_at"],
+                "started_at": "2026-04-04T18:00:00Z",
+                "finished_at": "2026-04-04T18:00:00Z",
                 "runtime_seconds": 0,
             },
             "result": {
-                "summary": result_summary,
+                "summary": payload["summary"],
                 "output_format": "markdown",
-                "output": summary,
-                "notes": notes,
-                "metadata": metadata,
+                "output": payload["output"],
+                "notes": payload["notes"],
                 "error": None,
             },
-            "artifacts": artifacts,
+            "artifacts": payload["artifacts"],
             "usage": {
-                "estimated_cost_usd": 0.0,
                 "actual_cost_usd": 0.0,
                 "model_provider": "local",
-                "model_name": "minimal-hermes",
-                "tool_calls": 0,
+                "model_name": "scaffold",
+                "tool_calls": payload["tool_calls"],
             },
             "trace": {
-                "trace_id": payload["trace"]["trace_id"],
-                "reported_at": payload["trace"]["submitted_at"],
+                "trace_id": trace_id,
+                "reported_at": "2026-04-04T18:00:00Z",
             },
         }
 
-    def build_repo_summary(self, task: dict) -> str:
-        context = task.get("context", {})
-        repo = context.get("repo", "unknown-repo")
-        branch = context.get("branch", "unknown-branch")
-        return "\n".join(
-            [
-                "# Repo Summary",
-                f"- Repo: {repo}",
-                f"- Branch: {branch}",
-                f"- Task: {task['title']}",
-                f"- Description: {task['description']}",
-            ]
-        )
-
-    def build_file_analysis(self, task: dict) -> str:
-        context = task.get("context", {})
-        file_path = context.get("file_path") or context.get("path") or "unknown-file"
-        objective = context.get("objective") or task["description"]
-        return "\n".join(
-            [
-                "# File Analysis",
-                f"- File: {file_path}",
-                f"- Objective: {objective}",
-                f"- Task: {task['title']}",
-                "- Status: analysis scaffold completed",
-            ]
-        )
-
-    def build_structured_extract(self, task: dict) -> str:
-        context = task.get("context", {})
-        source = context.get("source") or context.get("file_path") or "unknown-source"
-        extraction_goal = context.get("extraction_goal") or task["description"]
-        output_schema = context.get("output_schema") or ["items", "notes"]
-        return "\n".join(
-            [
-                "# Structured Extract",
-                f"- Source: {source}",
-                f"- Extraction goal: {extraction_goal}",
-                f"- Output schema: {output_schema}",
-                "",
-                "Extracted structure:",
-                "- items: []",
-                "- notes: ['structured extraction scaffold completed']",
-            ]
-        )
-
-    def build_repo_change_plan(self, task: dict) -> str:
-        context = task.get("context", {})
-        repo = context.get("repo") or "unknown-repo"
-        goal = context.get("goal") or task["description"]
-        impacted_files = context.get("impacted_files") or ["TBD"]
-        return "\n".join(
-            [
-                "# Repo Change Plan",
-                f"- Repo: {repo}",
-                f"- Goal: {goal}",
-                f"- Impacted files: {impacted_files}",
-                "",
-                "Plan:",
-                "1. Inspect the relevant files and existing behavior.",
-                "2. Identify the smallest safe set of changes.",
-                "3. Define validation and rollback checks.",
-                "",
-                "Risks:",
-                "- hidden coupling in adjacent modules",
-                "- stale assumptions in local-only Paperclip patches",
-            ]
-        )
-
-    def build_implementation_draft(self, task: dict) -> str:
-        context = task.get("context", {})
-        goal = context.get("goal") or task["description"]
-        impacted_files = context.get("impacted_files") or ["TBD"]
-        validation_checks = context.get("validation_checks") or ["Run targeted tests", "Review edge cases"]
-        return "\n".join(
-            [
-                "# Implementation Draft",
-                f"- Goal: {goal}",
-                f"- Impacted files: {impacted_files}",
-                f"- Validation checks: {validation_checks}",
-                "",
-                "Draft plan:",
-                "1. Inspect current behavior and constraints.",
-                "2. Draft the minimal code changes required.",
-                "3. Identify follow-up validation and rollback checks.",
-                "",
-                "Proposed edit sketch:",
-                "- TODO: add implementation outline here",
-            ]
-        )
-
-    def build_file_write(self, task: dict) -> dict:
-        context = task.get("context", {})
-        file_path = context.get("file_path") or ""
-        content = context.get("content") or ""
-        overwrite = bool(context.get("overwrite", False))
-        write_result = write_workspace_file(self.root, file_path, content, overwrite=overwrite)
-        relative_path = str(write_result.path.relative_to(self.root))
-        status = "updated" if write_result.existed_before and write_result.changed else "created"
-        if write_result.existed_before and not write_result.changed:
-            status = "unchanged"
-        metadata = {
-            "path": relative_path,
-            "bytes_written": write_result.bytes_written,
-            "existed_before": write_result.existed_before,
-            "changed": write_result.changed,
-            "previous_bytes": write_result.previous_bytes,
-            "previous_content": write_result.previous_content,
-            "previous_sha256": write_result.previous_sha256,
-            "new_sha256": write_result.new_sha256,
-            "change_preview": write_result.change_preview,
-            "overwrite": overwrite,
-        }
-        return {
-            "relative_path": relative_path,
-            "summary": "\n".join(
-                [
-                    "# File Write",
-                    f"- File: {relative_path}",
-                    f"- Bytes: {write_result.bytes_written}",
-                    f"- Previous bytes: {write_result.previous_bytes}",
-                    f"- Overwrite: {overwrite}",
-                    f"- Previous hash: {write_result.previous_sha256}",
-                    f"- New hash: {write_result.new_sha256}",
-                    f"- Change preview: {write_result.change_preview}",
-                    f"- Status: {status}",
-                    "",
-                    "Written content:",
-                    content,
-                ]
-            ),
-            "metadata": metadata,
-            "artifact_metadata": {
-                "task_type": task["type"],
-                "task_id": task["id"],
-                **metadata,
-            },
-        }
-
-    def build_repo_write(self, task: dict, preview_only: bool = False) -> dict:
-        context = task.get("context", {})
-        changes = context.get("changes") or []
-        result = preview_repo_write(self.root, changes) if preview_only else apply_repo_write(self.root, changes)
-        file_summaries = []
-        file_metadata = []
-        for item in result.files:
-            entry = {
-                "path": item.path,
-                "content": item.content,
-                "bytes_written": item.bytes_written,
-                "existed_before": item.existed_before,
-                "changed": item.changed,
-                "previous_bytes": item.previous_bytes,
-                "previous_sha256": item.previous_sha256,
-                "new_sha256": item.new_sha256,
-                "change_preview": item.change_preview,
-                "overwrite": item.overwrite,
-                "overwrite_approved": item.overwrite_approved,
-            }
-            file_metadata.append(entry)
-            file_summaries.append(f"- {item.path}: changed={item.changed}, overwrite={item.overwrite}, overwrite_approved={item.overwrite_approved}")
-        return {
-            "preview_only": preview_only,
-            "files": file_metadata,
-            "summary": "\n".join(
-                [
-                    "# Repo Write Preview" if preview_only else "# Repo Write",
-                    f"- File count: {len(file_metadata)}",
-                    "",
-                    "Changed files:",
-                    *file_summaries,
-                ]
-            ),
-        }
-
-    def build_file_revert(self, task: dict) -> dict:
-        context = task.get("context", {})
-        file_path = context.get("file_path") or ""
-        previous_content = context.get("previous_content")
-        if previous_content is None:
-            raise FileWriteError("previous_content is required")
-        revert_result = revert_workspace_file(self.root, file_path, previous_content)
-        relative_path = str(revert_result.path.relative_to(self.root))
-        metadata = {
-            "path": relative_path,
-            "reverted": revert_result.reverted,
-            "target_existed_before": revert_result.target_existed_before,
-            "restored_bytes": revert_result.restored_bytes,
-            "restored_sha256": revert_result.restored_sha256,
-            "previous_sha256": revert_result.previous_sha256,
-            "change_preview": revert_result.change_preview,
-            "source_run_id": context.get("source_run_id"),
-        }
-        return {
-            "relative_path": relative_path,
-            "summary": "\n".join(
-                [
-                    "# File Revert",
-                    f"- File: {relative_path}",
-                    f"- Restored bytes: {revert_result.restored_bytes}",
-                    f"- Previous hash: {revert_result.previous_sha256}",
-                    f"- Restored hash: {revert_result.restored_sha256}",
-                    f"- Change preview: {revert_result.change_preview}",
-                    f"- Reverted: {revert_result.reverted}",
-                    f"- Source run id: {context.get('source_run_id')}",
-                ]
-            ),
-            "metadata": metadata,
-            "artifact_metadata": {
-                "task_type": task["type"],
-                "task_id": task["id"],
-                **metadata,
-            },
-        }
-
-    def build_text_generation(self, task: dict) -> str:
-        context = task.get("context", {})
-        prompt = context.get("prompt") or task["description"]
-        audience = context.get("audience") or "general"
-        tone = context.get("tone") or "neutral"
-        return "\n".join(
-            [
-                "# Text Generation",
-                f"- Audience: {audience}",
-                f"- Tone: {tone}",
-                f"- Task: {task['title']}",
-                "",
-                "Generated draft:",
-                f"{prompt}",
-            ]
-        )
-
-    def failure_result(self, task_id: str, trace_id: str, code: str, message: str, retryable: bool, metadata: dict | None = None) -> dict:
+    def _failure(self, task_id: str, trace_id: str, message: str, code: str = "EXECUTION_FAILED") -> dict:
         return {
             "schema_version": "v1",
             "task_id": task_id,
             "run": {
                 "run_id": f"run_{task_id}",
                 "status": "failed",
-                "started_at": "1970-01-01T00:00:00Z",
-                "finished_at": "1970-01-01T00:00:00Z",
+                "started_at": "2026-04-04T18:00:00Z",
+                "finished_at": "2026-04-04T18:00:00Z",
                 "runtime_seconds": 0,
             },
             "result": {
-                "summary": "Hermes execution failed",
-                "output_format": "text",
+                "summary": "Task execution failed",
+                "output_format": "markdown",
                 "output": "",
                 "notes": [],
-                "metadata": metadata or {},
-                "error": {
-                    "code": code,
-                    "message": message,
-                    "retryable": retryable,
-                },
+                "error": {"code": code, "message": message, "retryable": False},
             },
             "artifacts": [],
             "usage": {
                 "actual_cost_usd": 0.0,
                 "model_provider": "local",
-                "model_name": "minimal-hermes",
+                "model_name": "scaffold",
                 "tool_calls": 0,
             },
             "trace": {
                 "trace_id": trace_id,
-                "reported_at": "1970-01-01T00:00:00Z",
+                "reported_at": "2026-04-04T18:00:00Z",
             },
         }
