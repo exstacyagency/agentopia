@@ -6,6 +6,7 @@ from hermes.action_labels import derive_action_labels
 from hermes.file_ops import preview_change, revert_workspace_file, write_workspace_file
 from hermes.repo_ops import apply_repo_write, preview_repo_write
 from hermes.runner import CommandRequest, DenyByDefaultRunner, SandboxDeniedError
+from hermes.write_boundaries import WriteBoundaryError, ensure_within_write_boundary, validate_repo_changes
 from scripts.contracts import validate_payload
 
 SUPPORTED_TASK_TYPES = {"repo_summary", "text_generation", "file_write", "repo_write", "file_revert", "shell_command"}
@@ -42,6 +43,8 @@ class HermesExecutor:
             return self._success(task_id, trace_id, payload)
         except SandboxDeniedError as exc:
             return self._failure(task_id, trace_id, str(exc), code="SANDBOX_DENIED")
+        except WriteBoundaryError as exc:
+            return self._failure(task_id, trace_id, str(exc), code="WRITE_BOUNDARY_DENIED")
         except Exception as exc:
             return self._failure(task_id, trace_id, str(exc))
 
@@ -68,6 +71,7 @@ class HermesExecutor:
     def _handle_file_write(self, task_request: dict, preview_only: bool = False) -> dict:
         context = task_request.get("task", {}).get("context", {})
         relative_path = context.get("file_path", "output.txt")
+        ensure_within_write_boundary(self.workspace, relative_path)
         content = context.get("content", task_request.get("task", {}).get("description", ""))
         overwrite = bool(context.get("overwrite", False))
         if preview_only:
@@ -91,6 +95,7 @@ class HermesExecutor:
 
     def _handle_repo_write(self, task_request: dict, preview_only: bool = False) -> dict:
         changes = task_request.get("task", {}).get("context", {}).get("changes", [])
+        validate_repo_changes(self.workspace, changes)
         result = preview_repo_write(self.workspace, changes) if preview_only else apply_repo_write(self.workspace, changes)
         artifacts = [
             {"type": "repo_write", "path": item.path, "content_type": "text/plain", "metadata": {"bytes_written": item.bytes_written, "changed": item.changed}}
@@ -109,6 +114,7 @@ class HermesExecutor:
     def _handle_file_revert(self, task_request: dict, preview_only: bool = False) -> dict:
         context = task_request.get("task", {}).get("context", {})
         relative_path = context.get("file_path", "output.txt")
+        ensure_within_write_boundary(self.workspace, relative_path)
         previous_content = context.get("previous_content", "")
         result = revert_workspace_file(self.workspace, relative_path, previous_content)
         summary = f"Reverted file {relative_path}"
