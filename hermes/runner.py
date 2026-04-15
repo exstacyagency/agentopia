@@ -36,7 +36,10 @@ class SandboxAdapterRunner(CommandRunner):
 
     def run(self, request: CommandRequest) -> dict:
         started = time.monotonic()
-        result = self.adapter.run(request)
+        try:
+            result = self.adapter.run(request)
+        except TimeoutError as exc:
+            raise ExecutionLimitError(f"command exceeded runtime limit of {request.max_runtime_seconds} seconds") from exc
         if request.max_runtime_seconds is not None and time.monotonic() - started > request.max_runtime_seconds:
             raise ExecutionLimitError(f"command exceeded runtime limit of {request.max_runtime_seconds} seconds")
         return result
