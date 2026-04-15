@@ -221,6 +221,10 @@ Use `docs/hermes-executor-dispatch-boundary.md` for the current executor refacto
 
 Use `docs/sandbox-execution-runner.md` for the current deny-by-default command execution baseline. Hermes `shell_command` tasks now only execute through an explicit runner, and the default path denies execution.
 
+## Strict write boundaries
+
+Use `docs/strict-write-boundaries.md` for the current workspace mutation boundary baseline. Hermes now rejects file and repo write paths that escape the workspace root.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline. Paperclip can now select a Postgres-backed DB implementation via `PAPERCLIP_DATABASE_URL`, while SQLite remains the default local path.
