@@ -213,6 +213,20 @@ class PaperclipDB:
         )
         self.conn.commit()
 
+    def mark_queue_running(self, task_id: str, started_at: str, timeout_at: str, updated_at: str) -> None:
+        self.conn.execute(
+            "UPDATE task_queue SET status = ?, started_at = ?, timeout_at = ?, updated_at = ? WHERE task_id = ?",
+            ("running", started_at, timeout_at, updated_at, task_id),
+        )
+        self.conn.commit()
+
+    def mark_queue_timed_out(self, task_id: str, last_error: str, updated_at: str) -> None:
+        self.conn.execute(
+            "UPDATE task_queue SET status = ?, last_error = ?, updated_at = ? WHERE task_id = ?",
+            ("timed_out", last_error, updated_at, task_id),
+        )
+        self.conn.commit()
+
     def get_queue_item(self, task_id: str) -> dict | None:
         row = self.conn.execute(
             "SELECT task_id, status, correlation_id, attempt_count, max_attempts, next_attempt_at, started_at, timeout_at, worker_id, lease_expires_at, last_error, created_at, updated_at FROM task_queue WHERE task_id = ?",
