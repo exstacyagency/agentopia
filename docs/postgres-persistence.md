@@ -25,19 +25,20 @@ If it is unset:
 
 ## Current scope
 
-This is the first Postgres slice.
+This slice now provides a Postgres-backed implementation for the Paperclip DB helper surface used by the current service layer.
 
 It provides:
 
 - Postgres DB selection
 - Postgres connection bootstrap
+- helper parity for task, audit, queue, idempotency, and result operations
 - dependency setup for psycopg
 
-It does not yet provide:
+Still not included:
 
-- full parity of every DB helper method
-- production migration execution against Postgres
+- production migration execution against Postgres itself
 - deployment wiring for managed Postgres
+- a live integration test against a running Postgres instance in this repo
 
 ## Verification
 
