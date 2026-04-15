@@ -229,6 +229,10 @@ Use `docs/strict-write-boundaries.md` for the current workspace mutation boundar
 
 Use `docs/per-tool-permissions.md` for the current permission baseline. Hermes now maps task types to explicit tool classes and rejects requests whose required tool class is not allowed.
 
+## Resource and time limits
+
+Use `docs/resource-time-limits.md` for the current execution-limit baseline. Hermes now enforces runtime limits for `shell_command` tasks through the command runner boundary.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline. Paperclip can now select a Postgres-backed DB implementation via `PAPERCLIP_DATABASE_URL`, while SQLite remains the default local path.

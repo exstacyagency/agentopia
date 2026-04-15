@@ -5,7 +5,7 @@ from pathlib import Path
 from hermes.action_labels import derive_action_labels
 from hermes.file_ops import preview_change, revert_workspace_file, write_workspace_file
 from hermes.repo_ops import apply_repo_write, preview_repo_write
-from hermes.runner import CommandRequest, DenyByDefaultRunner, SandboxDeniedError
+from hermes.runner import CommandRequest, DenyByDefaultRunner, ExecutionLimitError, SandboxDeniedError
 from hermes.tool_permissions import ToolPermissionError, enforce_tool_permission
 from hermes.write_boundaries import WriteBoundaryError, ensure_within_write_boundary, validate_repo_changes
 from scripts.contracts import validate_payload
@@ -47,6 +47,8 @@ class HermesExecutor:
             return self._failure(task_id, trace_id, str(exc), code="TOOL_PERMISSION_DENIED")
         except SandboxDeniedError as exc:
             return self._failure(task_id, trace_id, str(exc), code="SANDBOX_DENIED")
+        except ExecutionLimitError as exc:
+            return self._failure(task_id, trace_id, str(exc), code="EXECUTION_LIMIT_EXCEEDED")
         except WriteBoundaryError as exc:
             return self._failure(task_id, trace_id, str(exc), code="WRITE_BOUNDARY_DENIED")
         except Exception as exc:
@@ -132,7 +134,9 @@ class HermesExecutor:
 
     def _handle_shell_command(self, task_request: dict, preview_only: bool = False) -> dict:
         command = task_request.get("task", {}).get("context", {}).get("command") or task_request.get("task", {}).get("description", "")
-        result = self.runner.run(CommandRequest(command=command, cwd=self.workspace))
+        runtime_minutes = task_request.get("execution_policy", {}).get("budget", {}).get("max_runtime_minutes", 0)
+        max_runtime_seconds = max(1, int(runtime_minutes * 60)) if runtime_minutes else None
+        result = self.runner.run(CommandRequest(command=command, cwd=self.workspace, max_runtime_seconds=max_runtime_seconds))
         return {
             "summary": f"Executed shell command: {command}",
             "output": f"Executed shell command: {command}",
