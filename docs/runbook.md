@@ -118,6 +118,10 @@ Use `docs/postgres-persistence.md` for the current production DB baseline and ru
 
 Use `docs/transactional-state-updates.md` for the current transactional baseline and run `./.venv/bin/python scripts/test_transactional_state_updates.py` to verify transactional rollback for coupled state/audit writes.
 
+## Backup and restore plan
+
+Use `docs/backup-restore-plan.md` for the current backup baseline and run `./scripts/backup-restore-checklist.sh` plus `./.venv/bin/python scripts/test_backup_restore_checklist.py` to verify backend-aware backup/restore checks.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval consistency baseline and run `./.venv/bin/python scripts/test_approval_reconciliation.py` to verify mismatch detection.
@@ -270,6 +274,7 @@ See `docs/container-image-versioning.md`.
 - If migration readiness is unclear, review `docs/migrations.md` and run `./.venv/bin/python scripts/test_migrations.py`.
 - If Postgres persistence readiness is unclear, review `docs/postgres-persistence.md` and run `./.venv/bin/python scripts/test_postgres_persistence.py`.
 - If transactional state readiness is unclear, review `docs/transactional-state-updates.md` and run `./.venv/bin/python scripts/test_transactional_state_updates.py`.
+- If backup/restore readiness is unclear, review `docs/backup-restore-plan.md`, run `./scripts/backup-restore-checklist.sh`, and run `./.venv/bin/python scripts/test_backup_restore_checklist.py`.
 - If approval reconciliation readiness is unclear, review `docs/approval-reconciliation.md` and run `./.venv/bin/python scripts/test_approval_reconciliation.py`.
 - If approval expiration readiness is unclear, review `docs/approval-expiration.md` and run `./.venv/bin/python scripts/test_approval_expiration.py`.
 - If approval audit readiness is unclear, review `docs/approval-audit-trail.md` and run `./.venv/bin/python scripts/test_approval_audit_trail.py`.

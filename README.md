@@ -221,6 +221,10 @@ Use `docs/postgres-persistence.md` for the current production DB baseline. Paper
 
 Use `docs/transactional-state-updates.md` for the current transactional safety baseline. Paperclip now wraps state transitions and result persistence with audit side effects in DB transactions on the SQLite path.
 
+## Backup and restore plan
+
+Use `docs/backup-restore-plan.md` for the current operational backup baseline and `./scripts/backup-restore-checklist.sh` to verify the active backend and restore checks.
+
 ## Approval reconciliation
 
 Use `docs/approval-reconciliation.md` for the current approval state consistency baseline and `./.venv/bin/python scripts/reconcile_approval_status.py` to detect mismatches.
