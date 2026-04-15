@@ -7,6 +7,7 @@ from hermes.file_ops import preview_change, revert_workspace_file, write_workspa
 from hermes.network_policy import NetworkEgressDeniedError, enforce_network_policy
 from hermes.repo_ops import apply_repo_write, preview_repo_write
 from hermes.runner import CommandRequest, DenyByDefaultRunner, ExecutionLimitError, SandboxDeniedError
+from hermes.shell_safety import ShellSafetyError, validate_shell_command
 from hermes.tool_permissions import ToolPermissionError, enforce_tool_permission
 from hermes.write_boundaries import WriteBoundaryError, ensure_within_write_boundary, validate_repo_changes
 from scripts.contracts import validate_payload
@@ -48,6 +49,8 @@ class HermesExecutor:
             return self._failure(task_id, trace_id, str(exc), code="TOOL_PERMISSION_DENIED")
         except NetworkEgressDeniedError as exc:
             return self._failure(task_id, trace_id, str(exc), code="NETWORK_EGRESS_DENIED")
+        except ShellSafetyError as exc:
+            return self._failure(task_id, trace_id, str(exc), code="SHELL_SAFETY_DENIED")
         except SandboxDeniedError as exc:
             return self._failure(task_id, trace_id, str(exc), code="SANDBOX_DENIED")
         except ExecutionLimitError as exc:
@@ -137,6 +140,7 @@ class HermesExecutor:
 
     def _handle_shell_command(self, task_request: dict, preview_only: bool = False) -> dict:
         command = task_request.get("task", {}).get("context", {}).get("command") or task_request.get("task", {}).get("description", "")
+        validate_shell_command(command)
         enforce_network_policy(task_request, command)
         runtime_minutes = task_request.get("execution_policy", {}).get("budget", {}).get("max_runtime_minutes", 0)
         max_runtime_seconds = max(1, int(runtime_minutes * 60)) if runtime_minutes else None
