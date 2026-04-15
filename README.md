@@ -241,6 +241,10 @@ Use `docs/network-egress-controls.md` for the current network policy baseline. H
 
 Use `docs/sandbox-adapter.md` for the current OS-level sandbox baseline. Hermes now has a macOS sandbox adapter for `shell_command` execution that restricts writes to the workspace and denies network access.
 
+## Public API contract
+
+Use `docs/public-api-contract.md` for the stable v1 Paperclip client-facing API surface, including which endpoints are public, which are internal-only, and the current auth and error expectations.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline. Paperclip can now select a Postgres-backed DB implementation via `PAPERCLIP_DATABASE_URL`, while SQLite remains the default local path.
