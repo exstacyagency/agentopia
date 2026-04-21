@@ -265,6 +265,10 @@ Use `docs/tenant-scoped-memory-boundaries.md` for the current memory-surface inv
 
 Use `docs/memory-provenance.md` for the current provenance baseline. Memory contribution is now summarized into execution metadata and Paperclip audit events when memory participates in a result.
 
+## MemPalace fallback behavior
+
+Use `docs/mempalace-fallback.md` for the current fallback baseline. When MemPalace is unavailable, Hermes now continues execution with native-only memory context and records the fallback reason in memory metadata.
+
 ## Public API contract
 
 Use `docs/public-api-contract.md` for the stable v1 Paperclip client-facing API surface, including which endpoints are public, which are internal-only, and the current auth and error expectations.

@@ -75,7 +75,7 @@ This checklist captures the minimum work required before Agentopia should be use
 ### Memory safety
 - [x] Add tenant-scoped memory boundaries
 - [ ] Add memory deletion workflows
-- [ ] Add fallback behavior when MemPalace is unavailable
+- [x] Add fallback behavior when MemPalace is unavailable
 - [ ] Clarify native memory vs MemPalace contracts
 - [x] Add memory provenance to execution and audit surfaces
 
