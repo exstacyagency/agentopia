@@ -166,6 +166,10 @@ Use `docs/memory-provenance.md` for the current provenance baseline and run `./.
 
 Use `docs/mempalace-fallback.md` for the current fallback baseline and run `./.venv/bin/python scripts/test_memory_fallback.py` to verify Hermes continues with native-only memory context when MemPalace is unavailable.
 
+## Memory deletion workflows
+
+Use `docs/memory-deletion-workflows.md` for the current tenant-scoped memory deletion baseline and run `./.venv/bin/python scripts/test_memory_deletion_workflows.py` to verify one tenant's memory deletion does not remove another tenant's state.
+
 ## Public API contract
 
 Use `docs/public-api-contract.md` for the stable v1 Paperclip public endpoint contract and run `./.venv/bin/python scripts/test_public_api_contract.py` to verify submit, fetch, audit, and tenant-isolation behavior at the HTTP layer.
@@ -354,6 +358,7 @@ See `docs/container-image-versioning.md`.
 - If tenant-memory-boundary readiness is unclear, review `docs/tenant-scoped-memory-boundaries.md` and inspect `hermes/app.py` plus `hermes/memory/service.py`.
 - If memory-provenance readiness is unclear, review `docs/memory-provenance.md` and run `./.venv/bin/python scripts/test_memory_provenance.py`.
 - If mempalace fallback readiness is unclear, review `docs/mempalace-fallback.md` and run `./.venv/bin/python scripts/test_memory_fallback.py`.
+- If memory deletion readiness is unclear, review `docs/memory-deletion-workflows.md` and run `./.venv/bin/python scripts/test_memory_deletion_workflows.py`.
 - If public-API-contract readiness is unclear, review `docs/public-api-contract.md` and run `./.venv/bin/python scripts/test_public_api_contract.py`.
 - If Postgres persistence readiness is unclear, review `docs/postgres-persistence.md` and run `./.venv/bin/python scripts/test_postgres_persistence.py`.
 - If transactional state readiness is unclear, review `docs/transactional-state-updates.md` and run `./.venv/bin/python scripts/test_transactional_state_updates.py`.

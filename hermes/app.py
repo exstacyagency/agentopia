@@ -192,6 +192,10 @@ class HermesHandler(BaseHTTPRequestHandler):
             self._send(200, MEMPALACE.run_operation(body, "reindex"))
             return
 
+        if parsed.path == "/internal/memory/delete":
+            self._send(200, MEMPALACE.delete(body))
+            return
+
         if parsed.path != "/internal/execute":
             self._send(404, {"error": "not found"})
             return
