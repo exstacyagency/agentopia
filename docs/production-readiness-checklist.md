@@ -101,7 +101,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add tenancy isolation tests
 - [x] Add dangerous action tests for file_write, repo_write, and shell_command
 - [x] Add retry and reconciliation tests
-- [ ] Add end-to-end HTTP/process tests
+- [x] Add end-to-end HTTP/process tests
 - [x] Add failure-path tests
 
 ## P1: Important soon after first paid usage
