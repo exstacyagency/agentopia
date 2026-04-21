@@ -182,6 +182,10 @@ Use `docs/customer-api-docs.md` for practical customer-facing usage guidance tie
 
 Use `docs/onboarding-and-setup.md` for the first-run onboarding path tied to the current local stack and customer API flow.
 
+## Clean base repo prep
+
+Use `docs/clean-base-repo-prep.md` and `docs/transfer-readiness-checklist.md` when preparing Agentopia to be copied into a new base repository.
+
 ## Consistent error messages
 
 Use `docs/consistent-error-messages.md` for the current customer-facing API error contract and run `./.venv/bin/python scripts/test_consistent_error_messages.py` to verify the normalized error shape.
@@ -382,6 +386,7 @@ See `docs/container-image-versioning.md`.
 - If public-API-contract readiness is unclear, review `docs/public-api-contract.md` and run `./.venv/bin/python scripts/test_public_api_contract.py`.
 - If customer API usage is unclear, review `docs/customer-api-docs.md`.
 - If onboarding or first-run setup is unclear, review `docs/onboarding-and-setup.md`.
+- If preparing a clean transfer into a new repo, review `docs/clean-base-repo-prep.md` and `docs/transfer-readiness-checklist.md`.
 - If API errors are unclear, review `docs/consistent-error-messages.md` and run `./.venv/bin/python scripts/test_consistent_error_messages.py`.
 - If key management is unclear, review `docs/key-management-path.md` and run `./.venv/bin/python scripts/test_manage_client_api_keys.py`.
 - If approval/review visibility is unclear, review `docs/approval-review-visibility.md` and run `./.venv/bin/python scripts/test_approval_review_visibility.py`.
