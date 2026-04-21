@@ -62,6 +62,27 @@ Example response shape:
 }
 ```
 
+## List task history
+
+```bash
+curl http://localhost:3100/tasks \
+  -H 'Authorization: Bearer tenant-a-key'
+```
+
+### Success response
+
+- `200 OK`
+
+Example response:
+
+```json
+{
+  "tasks": []
+}
+```
+
+This returns the current tenant's visible task history.
+
 ## Fetch task status
 
 ```bash
@@ -156,9 +177,10 @@ Returned when:
 Typical customer flow:
 
 1. submit a task with `POST /tasks`
-2. poll task state with `GET /tasks/<id>`
-3. inspect audit history with `GET /tasks/<id>/audit` when needed
-4. cancel with `POST /tasks/<id>/cancel` if work should stop
+2. list current task history with `GET /tasks`
+3. poll task state with `GET /tasks/<id>`
+4. inspect audit history with `GET /tasks/<id>/audit` when needed
+5. cancel with `POST /tasks/<id>/cancel` if work should stop
 
 ## Notes
 

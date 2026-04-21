@@ -265,6 +265,16 @@ class PaperclipService:
         self.db.add_audit_event(task_id, "task_cancelled", actor, {"reason": reason, "previous_state": task["state"]}, updated_at)
         return self.get_task(task_id)
 
+    def list_tasks_for_tenant(self, tenant_id: str) -> list[dict]:
+        tasks = []
+        for task in self.db.list_tasks():
+            if task.get("tenant_id") != tenant_id:
+                continue
+            hydrated = self.get_task(task["id"])
+            if hydrated is not None:
+                tasks.append(hydrated)
+        return tasks
+
     def get_task(self, task_id: str) -> dict | None:
         task = self.db.get_task(task_id)
         if task is None:
