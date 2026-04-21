@@ -1,0 +1,519 @@
+openapi: 3.1.0
+info:
+  title: Agentopia Paperclip API
+  version: 1.0.0
+  description: |
+    The current public Paperclip API for task submission, task history, task detail,
+    audit visibility, cancellation, and operational health.
+servers:
+  - url: http://localhost:3100
+security:
+  - bearerAuth: []
+tags:
+  - name: tasks
+  - name: health
+  - name: metrics
+paths:
+  /tasks:
+    get:
+      tags: [tasks]
+      summary: List task history for the authenticated tenant
+      responses:
+        '200':
+          description: Tenant task history
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [tasks]
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TaskRecord'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      tags: [tasks]
+      summary: Submit a task
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskRequestV1'
+      responses:
+        '201':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRecord'
+        '400':
+          $ref: '#/components/responses/InvalidRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '413':
+          $ref: '#/components/responses/RequestTooLargeError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+  /tasks/{taskId}:
+    get:
+      tags: [tasks]
+      summary: Fetch task detail
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRecord'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/TaskNotFoundError'
+  /tasks/{taskId}/audit:
+    get:
+      tags: [tasks]
+      summary: Fetch task audit history
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Audit history
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [events]
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuditEvent'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/TaskNotFoundError'
+  /tasks/{taskId}/cancel:
+    post:
+      tags: [tasks]
+      summary: Cancel a task
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Task cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRecord'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/TaskNotFoundError'
+  /health:
+    get:
+      tags: [health]
+      security: []
+      summary: Dependency-aware health check
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /metrics:
+    get:
+      tags: [metrics]
+      security: []
+      summary: Prometheus metrics
+      responses:
+        '200':
+          description: Metrics payload
+          content:
+            text/plain:
+              schema:
+                type: string
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  responses:
+    UnauthorizedError:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorEnvelope'
+          example:
+            error:
+              code: unauthorized
+              message: Unauthorized
+              status: 401
+    ForbiddenError:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorEnvelope'
+          example:
+            error:
+              code: forbidden
+              message: Forbidden
+              status: 403
+              details:
+                reason: tenant_mismatch
+    TaskNotFoundError:
+      description: Task not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorEnvelope'
+          example:
+            error:
+              code: task_not_found
+              message: Task not found
+              status: 404
+    InvalidRequestError:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorEnvelope'
+          example:
+            error:
+              code: invalid_request
+              message: Invalid request
+              status: 400
+    RequestTooLargeError:
+      description: Request too large
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorEnvelope'
+          example:
+            error:
+              code: request_too_large
+              message: Request body too large
+              status: 413
+              details:
+                max_bytes: 1048576
+    RateLimitError:
+      description: Rate limited
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorEnvelope'
+          example:
+            error:
+              code: rate_limit_exceeded
+              message: Rate limit exceeded
+              status: 429
+              details:
+                limit: 30
+                window_seconds: 60
+  schemas:
+    ApiErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, status]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            status:
+              type: integer
+            details:
+              type: object
+              additionalProperties: true
+    HealthResponse:
+      type: object
+      required: [ok, service, dependencies]
+      properties:
+        ok:
+          type: boolean
+        service:
+          type: string
+        dependencies:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: boolean
+              - type: string
+    TaskRequestV1:
+      type: object
+      required: [schema_version, task, execution_policy, routing, trace]
+      properties:
+        schema_version:
+          type: string
+          const: v1
+        task:
+          type: object
+          required: [id, type, title, description, priority, risk_level, requester, created_at]
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            title:
+              type: string
+            description:
+              type: string
+            priority:
+              type: string
+              enum: [low, medium, high, urgent]
+            risk_level:
+              type: string
+              enum: [low, medium, high]
+            requester:
+              type: object
+              required: [id, display_name]
+              properties:
+                id:
+                  type: string
+                display_name:
+                  type: string
+            context:
+              type: object
+              additionalProperties: true
+            created_at:
+              type: string
+              format: date-time
+        execution_policy:
+          type: object
+          required: [budget, approval, permissions, output_requirements]
+          properties:
+            budget:
+              type: object
+              required: [max_cost_usd, max_runtime_minutes]
+              properties:
+                max_cost_usd:
+                  type: number
+                max_runtime_minutes:
+                  type: integer
+                max_output_bytes:
+                  type: integer
+            approval:
+              type: object
+              required: [required, status]
+              properties:
+                required:
+                  type: boolean
+                status:
+                  type: string
+                  enum: [not_required, pending, approved, rejected]
+                approved_by:
+                  type: string
+                approved_at:
+                  type: string
+                  format: date-time
+            permissions:
+              type: object
+              required: [allow_network, allow_memory, allow_tools, allowed_tool_classes, write_scope]
+              properties:
+                allow_network:
+                  type: boolean
+                allow_memory:
+                  type: boolean
+                allow_tools:
+                  type: boolean
+                allowed_tool_classes:
+                  type: array
+                  items:
+                    type: string
+                write_scope:
+                  type: string
+                  enum: [none, artifacts_only, workspace_scoped]
+            output_requirements:
+              type: object
+              required: [format, length, include_artifacts]
+              properties:
+                format:
+                  type: string
+                  enum: [markdown, json, text]
+                length:
+                  type: string
+                  enum: [short, medium, long]
+                include_artifacts:
+                  type: boolean
+        routing:
+          type: object
+          required: [source, destination, callback]
+          properties:
+            source:
+              type: string
+              const: paperclip
+            destination:
+              type: string
+              const: hermes
+            callback:
+              type: object
+              required: [result_url, auth_mode]
+              properties:
+                result_url:
+                  type: string
+                  format: uri
+                auth_mode:
+                  type: string
+                  enum: [shared_token]
+        trace:
+          type: object
+          required: [trace_id, submitted_at]
+          properties:
+            trace_id:
+              type: string
+            submitted_at:
+              type: string
+              format: date-time
+    TaskRecord:
+      type: object
+      required:
+        - id
+        - schema_version
+        - type
+        - title
+        - description
+        - priority
+        - risk_level
+        - requester
+        - tenant
+        - state
+        - approval_status
+        - created_at
+        - updated_at
+        - approval_review
+      properties:
+        id:
+          type: string
+        schema_version:
+          type: string
+        type:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+        risk_level:
+          type: string
+        requester:
+          type: object
+          properties:
+            id:
+              type: string
+            display_name:
+              type: string
+        tenant:
+          type: object
+          properties:
+            tenant_id:
+              type: string
+            org_id:
+              type: string
+            client_id:
+              type: string
+        state:
+          type: string
+        approval_status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        result:
+          type: object
+          additionalProperties: true
+        approval_review:
+          type: object
+          required: [approval_status, current_state, review_required, latest_review_event]
+          properties:
+            approval_status:
+              type: string
+            current_state:
+              type: string
+            review_required:
+              type: boolean
+            latest_review_event:
+              oneOf:
+                - type: 'null'
+                - $ref: '#/components/schemas/ReviewEventSummary'
+    ReviewEventSummary:
+      type: object
+      required: [event_type, actor, created_at, payload]
+      properties:
+        event_type:
+          type: string
+        actor:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        payload:
+          type: object
+          additionalProperties: true
+    AuditEvent:
+      type: object
+      required: [event_type, actor, payload, created_at]
+      properties:
+        event_type:
+          type: string
+        actor:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time

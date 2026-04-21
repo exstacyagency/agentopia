@@ -22,6 +22,10 @@ The current public contract version is `v1`.
 
 For task submission and Hermes result payloads, `schema_version` must be `v1`.
 
+A machine-readable version of the current public API is also published in:
+
+- `openapi.yaml`
+
 ## Authentication
 
 ### Client-facing endpoints

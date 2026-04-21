@@ -178,6 +178,10 @@ Use `docs/public-api-contract.md` for the stable v1 Paperclip public endpoint co
 
 Use `docs/customer-api-docs.md` for practical customer-facing usage guidance tied to the current public contract.
 
+## OpenAPI spec
+
+Use `openapi.yaml` for the machine-readable Paperclip API contract and run `./.venv/bin/python scripts/test_openapi_spec.py` to verify the current public surface is represented.
+
 ## Onboarding and setup
 
 Use `docs/onboarding-and-setup.md` for the first-run onboarding path tied to the current local stack and customer API flow.
@@ -385,6 +389,7 @@ See `docs/container-image-versioning.md`.
 - If memory deletion readiness is unclear, review `docs/memory-deletion-workflows.md` and run `./.venv/bin/python scripts/test_memory_deletion_workflows.py`.
 - If public-API-contract readiness is unclear, review `docs/public-api-contract.md` and run `./.venv/bin/python scripts/test_public_api_contract.py`.
 - If customer API usage is unclear, review `docs/customer-api-docs.md`.
+- If the machine-readable API contract is unclear, review `openapi.yaml` and run `./.venv/bin/python scripts/test_openapi_spec.py`.
 - If onboarding or first-run setup is unclear, review `docs/onboarding-and-setup.md`.
 - If preparing a clean transfer into a new repo, review `docs/clean-base-repo-prep.md` and `docs/transfer-readiness-checklist.md`.
 - If API errors are unclear, review `docs/consistent-error-messages.md` and run `./.venv/bin/python scripts/test_consistent_error_messages.py`.

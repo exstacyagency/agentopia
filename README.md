@@ -281,6 +281,10 @@ Use `docs/public-api-contract.md` for the stable v1 Paperclip client-facing API 
 
 Use `docs/customer-api-docs.md` for practical customer-facing usage guidance, including auth, submit, status, audit, cancellation, and common error handling.
 
+## OpenAPI spec
+
+Use `openapi.yaml` for the machine-readable Paperclip public API contract.
+
 ## Onboarding and setup
 
 Use `docs/onboarding-and-setup.md` for the first-run path, including environment setup, stack start, health verification, and first successful API calls.
