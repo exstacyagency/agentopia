@@ -99,7 +99,7 @@ This checklist captures the minimum work required before Agentopia should be use
 ### Test coverage for dangerous paths
 - [x] Add auth tests
 - [x] Add tenancy isolation tests
-- [ ] Add dangerous action tests for file_write, repo_write, and shell_command
+- [x] Add dangerous action tests for file_write, repo_write, and shell_command
 - [x] Add retry and reconciliation tests
 - [ ] Add end-to-end HTTP/process tests
 - [ ] Add failure-path tests
