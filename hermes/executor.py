@@ -5,6 +5,7 @@ from pathlib import Path
 from hermes.action_labels import derive_action_labels
 from hermes.execution_limits import enforce_execution_runtime, enforce_output_size, max_output_bytes_for, max_runtime_seconds_for
 from hermes.file_ops import preview_change, revert_workspace_file, write_workspace_file
+from hermes.memory.service import MemPalaceService
 from hermes.network_policy import NetworkEgressDeniedError, enforce_network_policy
 from hermes.repo_ops import apply_repo_write, preview_repo_write
 from hermes.runner import CommandRequest, DenyByDefaultRunner, ExecutionLimitError, SandboxDeniedError
@@ -17,9 +18,10 @@ SUPPORTED_TASK_TYPES = {"repo_summary", "text_generation", "file_write", "repo_w
 
 
 class HermesExecutor:
-    def __init__(self, workspace: Path, runner=None):
+    def __init__(self, workspace: Path, runner=None, memory_service: MemPalaceService | None = None):
         self.workspace = workspace
         self.runner = runner or DenyByDefaultRunner()
+        self.memory_service = memory_service or MemPalaceService()
         self._dispatch = {
             "repo_summary": self._handle_repo_summary,
             "text_generation": self._handle_text_generation,
@@ -44,8 +46,13 @@ class HermesExecutor:
 
         try:
             enforce_tool_permission(task_request)
+            memory_context = self._build_memory_context(task_request)
             with enforce_execution_runtime(max_runtime_seconds_for(task_request)):
                 payload = self._dispatch[task_type](task_request, preview_only=preview_only)
+                if memory_context is not None:
+                    payload.setdefault("metadata", {})
+                    payload["metadata"]["memory"] = memory_context
+                    payload.setdefault("notes", []).append(f"Memory source: {memory_context.get('memory_source')}")
                 enforce_output_size(payload, max_output_bytes_for(task_request))
             return self._success(task_id, trace_id, payload)
         except ToolPermissionError as exc:
@@ -62,6 +69,35 @@ class HermesExecutor:
             return self._failure(task_id, trace_id, str(exc), code="WRITE_BOUNDARY_DENIED")
         except Exception as exc:
             return self._failure(task_id, trace_id, str(exc))
+
+    def _memory_scope(self, task_request: dict) -> dict | None:
+        tenant = task_request.get("task", {}).get("tenant") or {}
+        tenant_id = str(tenant.get("tenant_id") or "").strip()
+        if not tenant_id:
+            return None
+        return {
+            "tenant_id": tenant_id,
+            "org_id": str(tenant.get("org_id") or "").strip(),
+            "client_id": str(tenant.get("client_id") or "").strip(),
+        }
+
+    def _build_memory_context(self, task_request: dict) -> dict | None:
+        permissions = task_request.get("execution_policy", {}).get("permissions", {})
+        if not permissions.get("allow_memory", False):
+            return None
+        scope = self._memory_scope(task_request)
+        if scope is None:
+            return None
+        task = task_request.get("task", {})
+        wakeup = self.memory_service.wakeup(scope, task.get("title", ""), task.get("description", ""))
+        return {
+            "tenant_id": scope["tenant_id"],
+            "org_id": scope.get("org_id", ""),
+            "client_id": scope.get("client_id", ""),
+            "memory_mode": wakeup.get("memory_mode"),
+            "memory_source": (wakeup.get("wakeup_context") or {}).get("memory_source"),
+            "memory_hits": (wakeup.get("wakeup_context") or {}).get("memory_hits") or [],
+        }
 
     def _handle_repo_summary(self, task_request: dict, preview_only: bool = False) -> dict:
         labels = derive_action_labels("repo_summary", "allow", "scaffold", {"apply": False})
@@ -171,6 +207,7 @@ class HermesExecutor:
                 "output_format": "markdown",
                 "output": payload["output"],
                 "notes": payload["notes"],
+                "metadata": payload.get("metadata", {}),
                 "error": None,
             },
             "artifacts": payload["artifacts"],
