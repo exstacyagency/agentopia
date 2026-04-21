@@ -81,7 +81,7 @@ This checklist captures the minimum work required before Agentopia should be use
 
 ### Client-usable product surface
 - [x] Publish a stable public API contract
-- [ ] Add customer-usable API docs
+- [x] Add customer-usable API docs
 - [ ] Add onboarding and setup instructions
 - [ ] Add task status and history visibility
 - [ ] Add approval and review visibility where relevant

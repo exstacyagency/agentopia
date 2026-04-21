@@ -277,6 +277,10 @@ Use `docs/memory-deletion-workflows.md` for the current tenant-scoped memory del
 
 Use `docs/public-api-contract.md` for the stable v1 Paperclip client-facing API surface, including which endpoints are public, which are internal-only, and the current auth and error expectations.
 
+## Customer API docs
+
+Use `docs/customer-api-docs.md` for practical customer-facing usage guidance, including auth, submit, status, audit, cancellation, and common error handling.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline. Paperclip can now select a Postgres-backed DB implementation via `PAPERCLIP_DATABASE_URL`, while SQLite remains the default local path.
