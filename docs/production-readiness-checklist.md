@@ -84,7 +84,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add customer-usable API docs
 - [x] Add onboarding and setup instructions
 - [ ] Add task status and history visibility
-- [ ] Add approval and review visibility where relevant
+- [x] Add approval and review visibility where relevant
 - [x] Add key management path
 - [x] Return sane, consistent error messages
 

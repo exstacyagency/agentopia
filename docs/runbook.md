@@ -190,6 +190,10 @@ Use `docs/consistent-error-messages.md` for the current customer-facing API erro
 
 Use `docs/key-management-path.md` for the current supported client key issuance, revocation, and rotation workflow and run `./.venv/bin/python scripts/test_manage_client_api_keys.py` to verify the file-based key-management helper.
 
+## Approval and review visibility
+
+Use `docs/approval-review-visibility.md` for the current customer-facing approval/review summary baseline and run `./.venv/bin/python scripts/test_approval_review_visibility.py` to verify task responses include approval/review visibility when relevant.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline and run `./.venv/bin/python scripts/test_postgres_persistence.py` to verify Postgres backend selection through `PAPERCLIP_DATABASE_URL`.
@@ -380,6 +384,7 @@ See `docs/container-image-versioning.md`.
 - If onboarding or first-run setup is unclear, review `docs/onboarding-and-setup.md`.
 - If API errors are unclear, review `docs/consistent-error-messages.md` and run `./.venv/bin/python scripts/test_consistent_error_messages.py`.
 - If key management is unclear, review `docs/key-management-path.md` and run `./.venv/bin/python scripts/test_manage_client_api_keys.py`.
+- If approval/review visibility is unclear, review `docs/approval-review-visibility.md` and run `./.venv/bin/python scripts/test_approval_review_visibility.py`.
 - If Postgres persistence readiness is unclear, review `docs/postgres-persistence.md` and run `./.venv/bin/python scripts/test_postgres_persistence.py`.
 - If transactional state readiness is unclear, review `docs/transactional-state-updates.md` and run `./.venv/bin/python scripts/test_transactional_state_updates.py`.
 - If backup/restore readiness is unclear, review `docs/backup-restore-plan.md`, run `./scripts/backup-restore-checklist.sh`, and run `./.venv/bin/python scripts/test_backup_restore_checklist.py`.

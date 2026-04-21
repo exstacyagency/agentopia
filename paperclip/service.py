@@ -248,6 +248,44 @@ class PaperclipService:
             self.traces.record(trace_id, "paperclip", "result_recorded", task_id=task_id, status=status)
         return self.get_task(task_id)
 
+    def approval_review_summary(self, task_id: str) -> dict:
+        task = self.db.get_task(task_id)
+        if task is None:
+            raise KeyError(task_id)
+        events = self.db.get_audit_events(task_id)
+        relevant = [
+            event for event in events
+            if event["event_type"] in {
+                "approval_requested",
+                "approval_granted",
+                "approval_rejected",
+                "approval_expired",
+                "approval_recovery_reset_pending",
+            }
+        ]
+        last_event = relevant[-1] if relevant else None
+        return {
+            "approval_status": task.get("approval_status"),
+            "current_state": task.get("state"),
+            "review_required": task.get("state") == "pending_approval",
+            "latest_review_event": {
+                "event_type": last_event["event_type"],
+                "actor": last_event["actor"],
+                "created_at": last_event["created_at"],
+                "payload": last_event["payload"],
+            } if last_event else None,
+        }
+
+    def list_tasks_for_tenant(self, tenant_id: str) -> list[dict]:
+        tasks = []
+        for task in self.db.list_tasks():
+            if task.get("tenant_id") != tenant_id:
+                continue
+            hydrated = self.get_task(task["id"])
+            if hydrated is not None:
+                tasks.append(hydrated)
+        return tasks
+
     def cancel_task(self, task_id: str, actor: str = "operator", reason: str = "cancelled") -> dict | None:
         task = self.db.get_task(task_id)
         if task is None:
@@ -294,6 +332,7 @@ class PaperclipService:
         }
         if result is not None:
             response["result"] = result["payload"]
+        response["approval_review"] = self.approval_review_summary(task_id)
         return response
 
     def get_audit(self, task_id: str) -> list[dict]:
