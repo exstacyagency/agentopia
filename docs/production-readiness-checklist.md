@@ -107,8 +107,8 @@ This checklist captures the minimum work required before Agentopia should be use
 ## P1: Important soon after first paid usage
 - [ ] Add OpenAPI spec
 - [ ] Add webhook ergonomics and client helpers
-- [ ] Add approval dashboard improvements
-- [ ] Add richer governance reporting
+- [x] Add approval dashboard improvements
+- [x] Add richer governance reporting
 - [ ] Add stronger memory quality evaluation
 - [ ] Add broader performance and load testing
 
