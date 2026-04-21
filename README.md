@@ -269,6 +269,10 @@ Use `docs/memory-provenance.md` for the current provenance baseline. Memory cont
 
 Use `docs/mempalace-fallback.md` for the current fallback baseline. When MemPalace is unavailable, Hermes now continues execution with native-only memory context and records the fallback reason in memory metadata.
 
+## Memory deletion workflows
+
+Use `docs/memory-deletion-workflows.md` for the current tenant-scoped memory deletion baseline. Hermes now supports deleting tenant-partitioned memory state without affecting other tenants.
+
 ## Public API contract
 
 Use `docs/public-api-contract.md` for the stable v1 Paperclip client-facing API surface, including which endpoints are public, which are internal-only, and the current auth and error expectations.

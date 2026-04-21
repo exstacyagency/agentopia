@@ -6,6 +6,7 @@ from typing import Any
 
 from hermes.memory.config import (
     MemoryScope,
+    delete_tenant_memory,
     load_mempalace_config,
     memory_scope_dict,
     mempalace_config_dict,
@@ -135,6 +136,15 @@ class MemPalaceService:
             "config": mempalace_config_dict(config),
             "memory_mode": config.memory_mode,
             **client.search(query),
+        }
+
+    def delete(self, scope_payload: dict[str, Any]) -> dict[str, Any]:
+        scope = require_memory_scope(scope_payload)
+        result = delete_tenant_memory(scope)
+        return {
+            "ok": True,
+            "reason": "tenant_memory_deleted" if result["deleted"] else "tenant_memory_already_absent",
+            **result,
         }
 
     def wakeup(self, scope_payload: dict[str, Any], issue_title: str, issue_description: str) -> dict[str, Any]:

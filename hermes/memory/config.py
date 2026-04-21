@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -93,3 +94,15 @@ def mempalace_config_dict(config: MemPalaceConfig) -> dict[str, Any]:
 
 def memory_scope_dict(scope: MemoryScope) -> dict[str, Any]:
     return asdict(scope)
+
+
+def delete_tenant_memory(scope: MemoryScope) -> dict[str, Any]:
+    memory_dir = tenant_memory_dir(scope)
+    existed = memory_dir.exists()
+    if existed:
+        shutil.rmtree(memory_dir)
+    return {
+        "scope": memory_scope_dict(scope),
+        "deleted": existed,
+        "path": str(memory_dir),
+    }
