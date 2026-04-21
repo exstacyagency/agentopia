@@ -265,6 +265,10 @@ Use `docs/tenant-scoped-memory-boundaries.md` for the current memory-surface inv
 
 Use `docs/memory-provenance.md` for the current provenance baseline. Memory contribution is now summarized into execution metadata and Paperclip audit events when memory participates in a result.
 
+## Native vs MemPalace memory contract
+
+Use `docs/native-vs-mempalace-contract.md` for the canonical semantic boundary between native platform records and MemPalace retrieval/enrichment.
+
 ## Public API contract
 
 Use `docs/public-api-contract.md` for the stable v1 Paperclip client-facing API surface, including which endpoints are public, which are internal-only, and the current auth and error expectations.
