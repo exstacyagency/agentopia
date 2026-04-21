@@ -117,6 +117,12 @@ curl -X POST http://localhost:3100/tasks/task_123/cancel \
 
 Cancellation is tenant-scoped and only applies to tasks owned by the authenticated tenant.
 
+## Key management path
+
+Customer keys are currently operator-issued through the file-based registry flow described in:
+
+- `docs/key-management-path.md`
+
 ## Common errors
 
 ### `401 Unauthorized`
