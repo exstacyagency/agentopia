@@ -257,6 +257,10 @@ Use `docs/network-egress-controls.md` for the current Hermes network-control bas
 
 Use `docs/cancellation-support.md` for the current control-plane cancellation baseline. Paperclip now supports cancelling queued or running tasks durably and ignores late Hermes results after cancellation.
 
+## Tenant-scoped memory boundaries
+
+Use `docs/tenant-scoped-memory-boundaries.md` for the current memory-surface inventory and the enforcement contract needed before multi-tenant memory isolation can be considered complete.
+
 ## Public API contract
 
 Use `docs/public-api-contract.md` for the stable v1 Paperclip client-facing API surface, including which endpoints are public, which are internal-only, and the current auth and error expectations.
