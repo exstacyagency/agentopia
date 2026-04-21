@@ -5,6 +5,7 @@ import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from hermes.memory.provenance import extract_memory_provenance
 from paperclip.db import PaperclipDB
 from paperclip.dispatch import HermesDispatchClient
 from paperclip.state_machine import assert_transition
@@ -232,9 +233,15 @@ class PaperclipService:
 
         status = result["run"]["status"]
         target_state = "succeeded" if status == "succeeded" else "failed"
-        self.transition_task(task_id, target_state, actor="hermes", details={"run_status": status})
+        memory_provenance = extract_memory_provenance(result)
+        transition_details = {"run_status": status}
+        if memory_provenance is not None:
+            transition_details["memory_provenance"] = memory_provenance
+        self.transition_task(task_id, target_state, actor="hermes", details=transition_details)
         created_at = utcnow()
         self.db.store_result_with_audit(task_id, result, status, created_at)
+        if memory_provenance is not None:
+            self.db.add_audit_event(task_id, "memory_provenance_recorded", "paperclip", memory_provenance, created_at)
         self.storage.persist_result(task_id, result)
         trace_id = (result.get("trace") or {}).get("trace_id")
         if trace_id:
