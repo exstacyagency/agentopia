@@ -2,6 +2,10 @@
 
 These docs describe how a customer should use the current Agentopia Paperclip API.
 
+For a machine-readable API description, use:
+
+- `openapi.yaml`
+
 ## Base concept
 
 Paperclip is the customer-facing control-plane API.
