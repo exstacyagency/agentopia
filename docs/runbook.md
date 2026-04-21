@@ -154,6 +154,10 @@ Use `docs/network-egress-controls.md` for the current Hermes network-control bas
 
 Use `docs/cancellation-support.md` for the current control-plane cancellation baseline and run `./.venv/bin/python scripts/test_cancellation_support.py` to verify queued or running tasks can be cancelled durably and that late results are ignored.
 
+## Tenant-scoped memory boundaries
+
+Use `docs/tenant-scoped-memory-boundaries.md` for the current memory-surface inventory and tenant-boundary contract before attempting enforcement work.
+
 ## Public API contract
 
 Use `docs/public-api-contract.md` for the stable v1 Paperclip public endpoint contract and run `./.venv/bin/python scripts/test_public_api_contract.py` to verify submit, fetch, audit, and tenant-isolation behavior at the HTTP layer.
@@ -339,6 +343,7 @@ See `docs/container-image-versioning.md`.
 - If resource-limit readiness is unclear, review `docs/resource-time-limits.md` and run `./.venv/bin/python scripts/test_execution_limits.py`.
 - If network-egress readiness is unclear, review `docs/network-egress-controls.md` and run `./.venv/bin/python scripts/test_network_egress_controls.py`.
 - If cancellation readiness is unclear, review `docs/cancellation-support.md` and run `./.venv/bin/python scripts/test_cancellation_support.py`.
+- If tenant-memory-boundary readiness is unclear, review `docs/tenant-scoped-memory-boundaries.md` and inspect `hermes/app.py` plus `hermes/memory/service.py`.
 - If public-API-contract readiness is unclear, review `docs/public-api-contract.md` and run `./.venv/bin/python scripts/test_public_api_contract.py`.
 - If Postgres persistence readiness is unclear, review `docs/postgres-persistence.md` and run `./.venv/bin/python scripts/test_postgres_persistence.py`.
 - If transactional state readiness is unclear, review `docs/transactional-state-updates.md` and run `./.venv/bin/python scripts/test_transactional_state_updates.py`.
