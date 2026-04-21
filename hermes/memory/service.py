@@ -2,87 +2,94 @@ from __future__ import annotations
 
 import subprocess
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any
 
 from hermes.memory.config import (
+    MemoryScope,
     load_mempalace_config,
+    memory_scope_dict,
     mempalace_config_dict,
+    require_memory_scope,
     save_mempalace_config,
+    tenant_status_path,
 )
 from hermes.memory.mempalace_client import MemPalaceClient
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-STATUS_PATH = ROOT / "var" / "hermes" / "memory" / "mempalace-status.json"
-
 
 class MemPalaceService:
-    def __init__(self) -> None:
-        self._reload()
+    def _client_for(self, scope: MemoryScope) -> tuple:
+        config = load_mempalace_config(scope)
+        return config, MemPalaceClient(config)
 
-    def _reload(self) -> None:
-        self.config = load_mempalace_config()
-        self.client = MemPalaceClient(self.config)
-
-    def _read_status_file(self) -> dict[str, Any]:
-        if STATUS_PATH.exists():
+    def _read_status_file(self, scope: MemoryScope) -> dict[str, Any]:
+        status_path = tenant_status_path(scope)
+        if status_path.exists():
             try:
                 import json
-                return json.loads(STATUS_PATH.read_text())
+                return json.loads(status_path.read_text())
             except Exception:
                 return {}
         return {}
 
-    def _write_status_file(self, payload: dict[str, Any]) -> None:
+    def _write_status_file(self, scope: MemoryScope, payload: dict[str, Any]) -> None:
         import json
-        STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
-        STATUS_PATH.write_text(json.dumps(payload, indent=2) + "\n")
+        status_path = tenant_status_path(scope)
+        status_path.parent.mkdir(parents=True, exist_ok=True)
+        status_path.write_text(json.dumps(payload, indent=2) + "\n")
 
-    def get_config(self) -> dict[str, Any]:
-        return mempalace_config_dict(self.config)
+    def get_config(self, scope_payload: dict[str, Any]) -> dict[str, Any]:
+        scope = require_memory_scope(scope_payload)
+        config = load_mempalace_config(scope)
+        return {"scope": memory_scope_dict(scope), **mempalace_config_dict(config)}
 
-    def set_config(self, payload: dict[str, Any]) -> dict[str, Any]:
-        config = save_mempalace_config(payload)
-        self._reload()
-        return mempalace_config_dict(config)
+    def set_config(self, scope_payload: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+        scope = require_memory_scope(scope_payload)
+        config = save_mempalace_config(scope, payload)
+        return {"scope": memory_scope_dict(scope), **mempalace_config_dict(config)}
 
-    def status(self) -> dict[str, Any]:
+    def status(self, scope_payload: dict[str, Any]) -> dict[str, Any]:
+        scope = require_memory_scope(scope_payload)
+        config, _client = self._client_for(scope)
         command_found = True
         command_error = None
         try:
-            subprocess.run([self.config.command, "--help"], check=False, capture_output=True, text=True)
+            subprocess.run([config.command, "--help"], check=False, capture_output=True, text=True)
         except FileNotFoundError:
             command_found = False
             command_error = "mempalace_command_not_found"
 
-        persisted = self._read_status_file()
+        persisted = self._read_status_file(scope)
         return {
-            "config": self.get_config(),
+            "scope": memory_scope_dict(scope),
+            "config": mempalace_config_dict(config),
             "command_found": command_found,
             "error": command_error,
-            "memory_mode": self.config.memory_mode,
+            "memory_mode": config.memory_mode,
             "last_operation": persisted.get("last_operation"),
             "last_synced_at": persisted.get("last_synced_at"),
             "last_error": persisted.get("last_error"),
         }
 
-    def run_operation(self, operation: str) -> dict[str, Any]:
+    def run_operation(self, scope_payload: dict[str, Any], operation: str) -> dict[str, Any]:
+        scope = require_memory_scope(scope_payload)
+        config, _client = self._client_for(scope)
         now = datetime.now(timezone.utc).isoformat()
-        if not self.config.enabled:
+        if not config.enabled:
             result = {
                 "ok": False,
                 "reason": "mempalace_disabled",
                 "operation": operation,
+                "scope": memory_scope_dict(scope),
             }
-            self._write_status_file({
+            self._write_status_file(scope, {
                 "last_operation": operation,
                 "last_synced_at": None,
                 "last_error": result["reason"],
             })
             return result
         try:
-            subprocess.run([self.config.command, operation], check=True, capture_output=True, text=True)
-            self._write_status_file({
+            subprocess.run([config.command, operation], check=True, capture_output=True, text=True)
+            self._write_status_file(scope, {
                 "last_operation": operation,
                 "last_synced_at": now,
                 "last_error": None,
@@ -92,9 +99,10 @@ class MemPalaceService:
                 "reason": f"mempalace_{operation}_ok",
                 "operation": operation,
                 "completed_at": now,
+                "scope": memory_scope_dict(scope),
             }
         except FileNotFoundError:
-            self._write_status_file({
+            self._write_status_file(scope, {
                 "last_operation": operation,
                 "last_synced_at": None,
                 "last_error": "mempalace_command_not_found",
@@ -103,9 +111,10 @@ class MemPalaceService:
                 "ok": False,
                 "reason": "mempalace_command_not_found",
                 "operation": operation,
+                "scope": memory_scope_dict(scope),
             }
         except subprocess.CalledProcessError as exc:
-            self._write_status_file({
+            self._write_status_file(scope, {
                 "last_operation": operation,
                 "last_synced_at": None,
                 "last_error": exc.stderr,
@@ -115,28 +124,35 @@ class MemPalaceService:
                 "reason": f"mempalace_{operation}_failed",
                 "operation": operation,
                 "stderr": exc.stderr,
+                "scope": memory_scope_dict(scope),
             }
 
-    def search(self, query: str) -> dict[str, Any]:
+    def search(self, scope_payload: dict[str, Any], query: str) -> dict[str, Any]:
+        scope = require_memory_scope(scope_payload)
+        config, client = self._client_for(scope)
         return {
-            "config": self.get_config(),
-            "memory_mode": self.config.memory_mode,
-            **self.client.search(query),
+            "scope": memory_scope_dict(scope),
+            "config": mempalace_config_dict(config),
+            "memory_mode": config.memory_mode,
+            **client.search(query),
         }
 
-    def wakeup(self, issue_title: str, issue_description: str) -> dict[str, Any]:
+    def wakeup(self, scope_payload: dict[str, Any], issue_title: str, issue_description: str) -> dict[str, Any]:
+        scope = require_memory_scope(scope_payload)
         query = "\n\n".join(part for part in [issue_title, issue_description] if part).strip()
-        search_result = self.search(query)
+        search_result = self.search(memory_scope_dict(scope), query)
+        memory_mode = search_result.get("memory_mode") or "augment"
         return {
+            "scope": memory_scope_dict(scope),
             "config": search_result.get("config", {}),
             "ok": search_result.get("ok", False),
             "reason": search_result.get("reason"),
             "query": query,
-            "memory_mode": self.config.memory_mode,
+            "memory_mode": memory_mode,
             "wakeup_context": {
                 "issue_title": issue_title,
                 "issue_description": issue_description,
                 "memory_hits": search_result.get("results") or [],
-                "memory_source": ("mempalace" if self.config.memory_mode in {"augment", "prefer_mempalace"} else "native_only"),
+                "memory_source": ("mempalace" if memory_mode in {"augment", "prefer_mempalace"} else "native_only"),
             },
         }

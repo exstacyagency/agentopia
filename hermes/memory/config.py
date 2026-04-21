@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-CONFIG_PATH = ROOT / "var" / "hermes" / "memory" / "mempalace-config.json"
+MEMORY_ROOT = ROOT / "var" / "hermes" / "memory"
 
 
 @dataclass(frozen=True)
@@ -16,6 +16,37 @@ class MemPalaceConfig:
     command: str
     palace_path: str | None
     memory_mode: str
+
+
+@dataclass(frozen=True)
+class MemoryScope:
+    tenant_id: str
+    org_id: str = ""
+    client_id: str = ""
+
+
+def require_memory_scope(payload: dict[str, Any] | None) -> MemoryScope:
+    payload = payload or {}
+    tenant_id = str(payload.get("tenant_id") or "").strip()
+    if not tenant_id:
+        raise ValueError("tenant_id is required for memory operations")
+    return MemoryScope(
+        tenant_id=tenant_id,
+        org_id=str(payload.get("org_id") or "").strip(),
+        client_id=str(payload.get("client_id") or "").strip(),
+    )
+
+
+def tenant_memory_dir(scope: MemoryScope) -> Path:
+    return MEMORY_ROOT / scope.tenant_id
+
+
+def tenant_config_path(scope: MemoryScope) -> Path:
+    return tenant_memory_dir(scope) / "mempalace-config.json"
+
+
+def tenant_status_path(scope: MemoryScope) -> Path:
+    return tenant_memory_dir(scope) / "mempalace-status.json"
 
 
 def _env_config() -> MemPalaceConfig:
@@ -27,10 +58,11 @@ def _env_config() -> MemPalaceConfig:
     )
 
 
-def load_mempalace_config() -> MemPalaceConfig:
-    if CONFIG_PATH.exists():
+def load_mempalace_config(scope: MemoryScope) -> MemPalaceConfig:
+    config_path = tenant_config_path(scope)
+    if config_path.exists():
         try:
-            data = json.loads(CONFIG_PATH.read_text())
+            data = json.loads(config_path.read_text())
             return MemPalaceConfig(
                 enabled=bool(data.get("enabled", False)),
                 command=str(data.get("command") or "mempalace"),
@@ -42,17 +74,22 @@ def load_mempalace_config() -> MemPalaceConfig:
     return _env_config()
 
 
-def save_mempalace_config(payload: dict[str, Any]) -> MemPalaceConfig:
+def save_mempalace_config(scope: MemoryScope, payload: dict[str, Any]) -> MemPalaceConfig:
     config = MemPalaceConfig(
         enabled=bool(payload.get("enabled", False)),
         command=str(payload.get("command") or "mempalace"),
         palace_path=payload.get("palace_path"),
         memory_mode=str(payload.get("memory_mode") or "augment"),
     )
-    CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    CONFIG_PATH.write_text(json.dumps(asdict(config), indent=2) + "\n")
+    config_path = tenant_config_path(scope)
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(json.dumps(asdict(config), indent=2) + "\n")
     return config
 
 
 def mempalace_config_dict(config: MemPalaceConfig) -> dict[str, Any]:
     return asdict(config)
+
+
+def memory_scope_dict(scope: MemoryScope) -> dict[str, Any]:
+    return asdict(scope)

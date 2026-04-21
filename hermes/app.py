@@ -115,10 +115,18 @@ class HermesHandler(BaseHTTPRequestHandler):
             self._send(200, build_operator_queue_state(os.path.abspath(ROOT)))
             return
         if parsed.path == "/internal/memory/config":
-            self._send(200, {"config": MEMPALACE.get_config()})
+            try:
+                body = self._read_json_body()
+            except Exception:
+                body = {}
+            self._send(200, {"config": MEMPALACE.get_config(body)})
             return
         if parsed.path == "/internal/memory/status":
-            self._send(200, MEMPALACE.status())
+            try:
+                body = self._read_json_body()
+            except Exception:
+                body = {}
+            self._send(200, MEMPALACE.status(body))
             return
         self._send(404, {"error": "not found"})
 
@@ -159,29 +167,29 @@ class HermesHandler(BaseHTTPRequestHandler):
 
         if parsed.path == "/internal/memory/search":
             query = body.get("query", "")
-            self._send(200, MEMPALACE.search(query))
+            self._send(200, MEMPALACE.search(body, query))
             return
 
         if parsed.path == "/internal/memory/wakeup":
             issue_title = body.get("issue_title", "")
             issue_description = body.get("issue_description", "")
-            self._send(200, MEMPALACE.wakeup(issue_title, issue_description))
+            self._send(200, MEMPALACE.wakeup(body, issue_title, issue_description))
             return
 
         if parsed.path == "/internal/memory/config":
-            self._send(200, {"config": MEMPALACE.set_config(body)})
+            self._send(200, {"config": MEMPALACE.set_config(body, body)})
             return
 
         if parsed.path == "/internal/memory/status":
-            self._send(200, MEMPALACE.status())
+            self._send(200, MEMPALACE.status(body))
             return
 
         if parsed.path == "/internal/memory/mine":
-            self._send(200, MEMPALACE.run_operation("mine"))
+            self._send(200, MEMPALACE.run_operation(body, "mine"))
             return
 
         if parsed.path == "/internal/memory/reindex":
-            self._send(200, MEMPALACE.run_operation("reindex"))
+            self._send(200, MEMPALACE.run_operation(body, "reindex"))
             return
 
         if parsed.path != "/internal/execute":
