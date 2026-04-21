@@ -261,6 +261,10 @@ Use `docs/cancellation-support.md` for the current control-plane cancellation ba
 
 Use `docs/tenant-scoped-memory-boundaries.md` for the current memory-surface inventory and the enforcement contract needed before multi-tenant memory isolation can be considered complete.
 
+## Memory provenance
+
+Use `docs/memory-provenance.md` for the current provenance baseline. Memory contribution is now summarized into execution metadata and Paperclip audit events when memory participates in a result.
+
 ## Public API contract
 
 Use `docs/public-api-contract.md` for the stable v1 Paperclip client-facing API surface, including which endpoints are public, which are internal-only, and the current auth and error expectations.
