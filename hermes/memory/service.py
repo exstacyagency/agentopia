@@ -142,6 +142,13 @@ class MemPalaceService:
         query = "\n\n".join(part for part in [issue_title, issue_description] if part).strip()
         search_result = self.search(memory_scope_dict(scope), query)
         memory_mode = search_result.get("memory_mode") or "augment"
+        fallback_reason = None
+        memory_source = "native_only"
+        if search_result.get("ok", False):
+            memory_source = "mempalace" if memory_mode in {"augment", "prefer_mempalace"} else "native_only"
+        else:
+            fallback_reason = search_result.get("reason") or "mempalace_unavailable"
+            memory_source = "native_only"
         return {
             "scope": memory_scope_dict(scope),
             "config": search_result.get("config", {}),
@@ -149,10 +156,11 @@ class MemPalaceService:
             "reason": search_result.get("reason"),
             "query": query,
             "memory_mode": memory_mode,
+            "fallback_reason": fallback_reason,
             "wakeup_context": {
                 "issue_title": issue_title,
                 "issue_description": issue_description,
                 "memory_hits": search_result.get("results") or [],
-                "memory_source": ("mempalace" if memory_mode in {"augment", "prefer_mempalace"} else "native_only"),
+                "memory_source": memory_source,
             },
         }

@@ -97,6 +97,7 @@ class HermesExecutor:
             "memory_mode": wakeup.get("memory_mode"),
             "memory_source": (wakeup.get("wakeup_context") or {}).get("memory_source"),
             "memory_hits": (wakeup.get("wakeup_context") or {}).get("memory_hits") or [],
+            "fallback_reason": wakeup.get("fallback_reason"),
         }
 
     def _handle_repo_summary(self, task_request: dict, preview_only: bool = False) -> dict:
