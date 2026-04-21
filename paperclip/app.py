@@ -31,6 +31,18 @@ METRICS = MetricsRegistry()
 
 
 class PaperclipHandler(BaseHTTPRequestHandler):
+    def _error(self, status: int, code: str, message: str, details: dict | None = None) -> None:
+        payload = {
+            "error": {
+                "code": code,
+                "message": message,
+                "status": status,
+            }
+        }
+        if details:
+            payload["error"]["details"] = details
+        self._send(status, payload)
+
     def _send(self, status: int, payload: dict) -> None:
         body = json.dumps(payload, indent=2).encode()
         correlation_id = getattr(self, "correlation_id", None)
@@ -50,7 +62,7 @@ class PaperclipHandler(BaseHTTPRequestHandler):
     def _enforce_rate_limit(self) -> bool:
         if RATE_LIMITER.allow(self._client_ip()):
             return True
-        self._send(429, {"error": "rate limit exceeded", "limit": RATE_LIMIT_COUNT, "window_seconds": RATE_LIMIT_WINDOW_SECONDS})
+        self._error(429, "rate_limit_exceeded", "Rate limit exceeded", {"limit": RATE_LIMIT_COUNT, "window_seconds": RATE_LIMIT_WINDOW_SECONDS})
         return False
 
     def _require_internal_auth(self) -> bool:
@@ -58,7 +70,7 @@ class PaperclipHandler(BaseHTTPRequestHandler):
         provided = self.headers.get("Authorization", "")
         if expected and provided == f"Bearer {expected}":
             return True
-        self._send(401, {"error": "unauthorized"})
+        self._error(401, "unauthorized", "Unauthorized")
         return False
 
     def _require_client_auth(self) -> bool:
@@ -66,7 +78,7 @@ class PaperclipHandler(BaseHTTPRequestHandler):
         identity = resolve_api_key_identity_from_file(provided, CLIENT_API_KEYS_FILE)
         if identity is not None:
             if identity.status != "active":
-                self._send(401, {"error": "unauthorized", "reason": "api_key_revoked"})
+                self._error(401, "unauthorized", "Unauthorized", {"reason": "api_key_revoked"})
                 return False
             if identity.scope == "tasks.write" or role_allows_scope(identity.role, "tasks.write"):
                 self.client_api_identity = {
@@ -87,13 +99,13 @@ class PaperclipHandler(BaseHTTPRequestHandler):
         if expected and provided == f"Bearer {expected}":
             self.client_api_identity = {"key_id": "legacy-client-key", "scope": "tasks.write", "source": "legacy"}
             return True
-        self._send(401, {"error": "unauthorized"})
+        self._error(401, "unauthorized", "Unauthorized")
         return False
 
     def _read_json_body(self) -> dict:
         length = int(self.headers.get("Content-Length", "0"))
         if length > MAX_REQUEST_BYTES:
-            self._send(413, {"error": "request body too large", "max_bytes": MAX_REQUEST_BYTES})
+            self._error(413, "request_too_large", "Request body too large", {"max_bytes": MAX_REQUEST_BYTES})
             raise ValueError("request_too_large")
         raw = self.rfile.read(length) if length else b"{}"
         body = json.loads(raw.decode())
@@ -128,6 +140,7 @@ class PaperclipHandler(BaseHTTPRequestHandler):
     <ul>
       <li><code>GET /health</code></li>
       <li><code>POST /tasks</code></li>
+      <li><code>GET /tasks</code></li>
       <li><code>GET /tasks/&lt;id&gt;</code></li>
       <li><code>GET /tasks/&lt;id&gt;/audit</code></li>
       <li><code>POST /tasks/&lt;id&gt;/cancel</code></li>
@@ -153,15 +166,21 @@ class PaperclipHandler(BaseHTTPRequestHandler):
             ok = all(dependencies.values())
             self._send(200 if ok else 503, {"ok": ok, "service": "paperclip", "dependencies": dependencies})
             return
+        if parsed.path == "/tasks":
+            if not self._require_client_auth():
+                return
+            tenant_id = (self.client_api_identity or {}).get("tenant_id", "")
+            self._send(200, {"tasks": SERVICE.list_tasks_for_tenant(tenant_id)})
+            return
         if len(parts) == 2 and parts[0] == "tasks":
             if not self._require_client_auth():
                 return
             task = SERVICE.get_task(parts[1])
             if task is None:
-                self._send(404, {"error": "task not found"})
+                self._error(404, "task_not_found", "Task not found")
                 return
             if not self._tenant_can_access_task(task):
-                self._send(403, {"error": "forbidden", "reason": "tenant_mismatch"})
+                self._error(403, "forbidden", "Forbidden", {"reason": "tenant_mismatch"})
                 return
             self._send(200, task)
             return
@@ -170,14 +189,14 @@ class PaperclipHandler(BaseHTTPRequestHandler):
                 return
             task = SERVICE.get_task(parts[1])
             if task is None:
-                self._send(404, {"error": "task not found"})
+                self._error(404, "task_not_found", "Task not found")
                 return
             if not self._tenant_can_access_task(task):
-                self._send(403, {"error": "forbidden", "reason": "tenant_mismatch"})
+                self._error(403, "forbidden", "Forbidden", {"reason": "tenant_mismatch"})
                 return
             self._send(200, {"events": SERVICE.get_audit(parts[1])})
             return
-        self._send(404, {"error": "not found"})
+        self._error(404, "not_found", "Not found")
 
     def do_POST(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
@@ -225,10 +244,10 @@ class PaperclipHandler(BaseHTTPRequestHandler):
                         return
                     task = SERVICE.get_task(parts[1])
                     if task is None:
-                        self._send(404, {"error": "task not found"})
+                        self._error(404, "task_not_found", "Task not found")
                         return
                     if not self._tenant_can_access_task(task):
-                        self._send(403, {"error": "forbidden", "reason": "tenant_mismatch"})
+                        self._error(403, "forbidden", "Forbidden", {"reason": "tenant_mismatch"})
                         return
                     cancelled = SERVICE.cancel_task(parts[1], actor="client", reason=(body.get("reason") if isinstance(body, dict) else None) or "cancelled")
                     self._send(200, cancelled)
@@ -240,17 +259,17 @@ class PaperclipHandler(BaseHTTPRequestHandler):
                 self._send(200, task)
                 return
         except InputValidationError as exc:
-            self._send(400, {"error": str(exc)})
+            self._error(400, "invalid_request", str(exc))
             return
         except ValueError as exc:
             if str(exc) == "request_too_large":
                 return
-            self._send(400, {"error": str(exc)})
+            self._error(400, "invalid_request", str(exc))
             return
         except KeyError:
-            self._send(404, {"error": "task not found"})
+            self._error(404, "task_not_found", "Task not found")
             return
-        self._send(404, {"error": "not found"})
+        self._error(404, "not_found", "Not found")
 
 
 def main() -> int:
