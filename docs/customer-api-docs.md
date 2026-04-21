@@ -73,7 +73,14 @@ curl http://localhost:3100/tasks/task_123 \
 
 - `200 OK`
 
-This returns the current task record, including state and any stored result.
+This returns the current task record, including state, any stored result, and approval/review visibility when relevant.
+
+The task response now includes an `approval_review` summary with fields like:
+
+- `approval_status`
+- `current_state`
+- `review_required`
+- `latest_review_event`
 
 ## Fetch task audit history
 
