@@ -61,6 +61,7 @@ Submit a task request.
 - `Authorization: Bearer <client-api-key>`
 - `Content-Type: application/json`
 - `Idempotency-Key: <optional-key>`
+- `X-Webhook-Url: <optional-webhook-url>`
 
 #### Request body
 

@@ -30,7 +30,7 @@ class PaperclipService:
         self.queue_timeout_seconds = int(os.environ.get("PAPERCLIP_QUEUE_TIMEOUT_SECONDS", "300"))
         self.queue_lease_seconds = int(os.environ.get("PAPERCLIP_QUEUE_LEASE_SECONDS", "60"))
 
-    def submit_task(self, payload: dict, tenant_context: dict | None = None, idempotency_key: str | None = None) -> dict:
+    def submit_task(self, payload: dict, tenant_context: dict | None = None, idempotency_key: str | None = None, webhook_url: str | None = None) -> dict:
         if idempotency_key:
             existing_task_id = self.db.get_idempotent_task_id(idempotency_key)
             if existing_task_id:
@@ -69,6 +69,8 @@ class PaperclipService:
             }
         )
         self.db.add_audit_event(task["id"], "task_received", "paperclip", {"state": initial_state}, created_at)
+        if webhook_url:
+            self.db.add_audit_event(task["id"], "webhook_registered", "paperclip", {"webhook_url": webhook_url}, created_at)
         if idempotency_key:
             self.db.create_idempotency_record(idempotency_key, task["id"], created_at)
             self.db.add_audit_event(task["id"], "idempotency_key_recorded", "paperclip", {"idempotency_key": idempotency_key}, created_at)
