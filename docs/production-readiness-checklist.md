@@ -76,14 +76,14 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add tenant-scoped memory boundaries
 - [x] Add memory deletion workflows
 - [x] Add fallback behavior when MemPalace is unavailable
-- [ ] Clarify native memory vs MemPalace contracts
+- [x] Clarify native memory vs MemPalace contracts
 - [x] Add memory provenance to execution and audit surfaces
 
 ### Client-usable product surface
 - [x] Publish a stable public API contract
 - [x] Add customer-usable API docs
 - [x] Add onboarding and setup instructions
-- [ ] Add task status and history visibility
+- [x] Add task status and history visibility
 - [x] Add approval and review visibility where relevant
 - [x] Add key management path
 - [x] Return sane, consistent error messages
