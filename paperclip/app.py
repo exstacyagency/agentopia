@@ -128,6 +128,7 @@ class PaperclipHandler(BaseHTTPRequestHandler):
     <ul>
       <li><code>GET /health</code></li>
       <li><code>POST /tasks</code></li>
+      <li><code>GET /tasks</code></li>
       <li><code>GET /tasks/&lt;id&gt;</code></li>
       <li><code>GET /tasks/&lt;id&gt;/audit</code></li>
       <li><code>POST /tasks/&lt;id&gt;/cancel</code></li>
@@ -152,6 +153,12 @@ class PaperclipHandler(BaseHTTPRequestHandler):
             }
             ok = all(dependencies.values())
             self._send(200 if ok else 503, {"ok": ok, "service": "paperclip", "dependencies": dependencies})
+            return
+        if parsed.path == "/tasks":
+            if not self._require_client_auth():
+                return
+            tenant_id = (self.client_api_identity or {}).get("tenant_id", "")
+            self._send(200, {"tasks": SERVICE.list_tasks_for_tenant(tenant_id)})
             return
         if len(parts) == 2 and parts[0] == "tasks":
             if not self._require_client_auth():
