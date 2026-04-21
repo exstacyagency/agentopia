@@ -42,6 +42,12 @@ paths:
           required: false
           schema:
             type: string
+        - in: header
+          name: X-Webhook-Url
+          required: false
+          schema:
+            type: string
+            format: uri
       requestBody:
         required: true
         content:

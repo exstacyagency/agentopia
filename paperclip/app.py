@@ -222,6 +222,7 @@ class PaperclipHandler(BaseHTTPRequestHandler):
                         "client_id": (self.client_api_identity or {}).get("client_id", ""),
                     },
                     idempotency_key=self.headers.get("Idempotency-Key", "").strip() or None,
+                    webhook_url=self.headers.get("X-Webhook-Url", "").strip() or None,
                 )
                 log_event(
                     "paperclip",

@@ -32,6 +32,7 @@ curl -X POST http://localhost:3100/tasks \
   -H 'Authorization: Bearer tenant-a-key' \
   -H 'Content-Type: application/json' \
   -H 'Idempotency-Key: task-123-once' \
+  -H 'X-Webhook-Url: https://example.com/webhook' \
   --data @fixtures/task_request_valid.json
 ```
 
@@ -127,6 +128,20 @@ curl -X POST http://localhost:3100/tasks/task_123/cancel \
 - `200 OK`
 
 Cancellation is tenant-scoped and only applies to tasks owned by the authenticated tenant.
+
+## Webhook ergonomics and client helper
+
+Current webhook/helper baseline:
+
+- optional webhook registration header on submit:
+  - `X-Webhook-Url`
+- lightweight client helper:
+  - `scripts/paperclip_client_helper.py`
+
+The current helper can:
+
+- submit a task
+- wait for terminal state by polling
 
 ## Key management path
 
