@@ -178,6 +178,10 @@ Use `docs/public-api-contract.md` for the stable v1 Paperclip public endpoint co
 
 Use `docs/customer-api-docs.md` for practical customer-facing usage guidance tied to the current public contract.
 
+## Onboarding and setup
+
+Use `docs/onboarding-and-setup.md` for the first-run onboarding path tied to the current local stack and customer API flow.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline and run `./.venv/bin/python scripts/test_postgres_persistence.py` to verify Postgres backend selection through `PAPERCLIP_DATABASE_URL`.
@@ -365,6 +369,7 @@ See `docs/container-image-versioning.md`.
 - If memory deletion readiness is unclear, review `docs/memory-deletion-workflows.md` and run `./.venv/bin/python scripts/test_memory_deletion_workflows.py`.
 - If public-API-contract readiness is unclear, review `docs/public-api-contract.md` and run `./.venv/bin/python scripts/test_public_api_contract.py`.
 - If customer API usage is unclear, review `docs/customer-api-docs.md`.
+- If onboarding or first-run setup is unclear, review `docs/onboarding-and-setup.md`.
 - If Postgres persistence readiness is unclear, review `docs/postgres-persistence.md` and run `./.venv/bin/python scripts/test_postgres_persistence.py`.
 - If transactional state readiness is unclear, review `docs/transactional-state-updates.md` and run `./.venv/bin/python scripts/test_transactional_state_updates.py`.
 - If backup/restore readiness is unclear, review `docs/backup-restore-plan.md`, run `./scripts/backup-restore-checklist.sh`, and run `./.venv/bin/python scripts/test_backup_restore_checklist.py`.
