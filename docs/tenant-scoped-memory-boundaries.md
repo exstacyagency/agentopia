@@ -7,8 +7,9 @@ This document defines the current memory surface in Agentopia and the required t
 Agentopia already exposes real memory behavior through Hermes and MemPalace integration.
 Before enforcing tenant-scoped memory isolation, the platform must identify every memory touchpoint and define what tenant scope is required at each boundary.
 
-This slice is the inventory and contract step.
-It does **not** claim that tenant memory isolation is fully enforced yet.
+This document started as the inventory and contract step.
+The current enforcement baseline now also requires tenant scope on the Hermes memory service API and partitions tenant config/status persistence paths.
+Full memory isolation is still not complete until all runtime memory retrieval paths and internal endpoint contracts are consistently tenant-scoped.
 
 ## Current memory surface inventory
 
@@ -180,15 +181,23 @@ Recommended implementation order:
 4. propagate tenant context from Paperclip task ownership into Hermes memory calls
 5. add tests proving cross-tenant memory config or retrieval cannot leak
 
+## Current enforcement baseline
+
+The current code now enforces these tenant-boundary basics:
+
+- memory service methods require tenant scope
+- tenant config paths are partitioned under tenant-specific directories
+- tenant status paths are partitioned under tenant-specific directories
+
 ## What is not complete yet
 
-This branch does **not** complete `Add tenant-scoped memory boundaries`.
+This is closer, but tenant-scoped memory boundaries are only truly complete when all live runtime memory retrieval and endpoint usage is consistently tenant-scoped end to end.
 
-It intentionally stops at:
+Remaining gap areas include:
 
-- current-surface inventory
-- boundary definition
-- enforcement contract for the next slice
+- stricter request-contract enforcement on every internal memory endpoint path
+- verified tenant propagation from Paperclip-owned task context into Hermes runtime memory retrieval
+- proof that runtime execution memory hits cannot cross tenant boundaries
 
 ## Verification for this slice
 
