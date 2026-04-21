@@ -86,7 +86,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [ ] Add task status and history visibility
 - [ ] Add approval and review visibility where relevant
 - [ ] Add key management path
-- [ ] Return sane, consistent error messages
+- [x] Return sane, consistent error messages
 
 ### Deployment maturity
 - [x] Add repeatable deployment process

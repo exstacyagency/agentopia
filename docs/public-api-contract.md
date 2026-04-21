@@ -84,6 +84,19 @@ The task record includes:
 - `413 Payload Too Large` when the request exceeds `PAPERCLIP_MAX_REQUEST_BYTES`
 - `429 Too Many Requests` when rate-limited
 
+Current public API errors now use a consistent shape:
+
+```json
+{
+  "error": {
+    "code": "task_not_found",
+    "message": "Task not found",
+    "status": 404,
+    "details": {}
+  }
+}
+```
+
 ### `GET /tasks/<id>`
 
 Fetch the current task record.

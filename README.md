@@ -285,6 +285,10 @@ Use `docs/customer-api-docs.md` for practical customer-facing usage guidance, in
 
 Use `docs/onboarding-and-setup.md` for the first-run path, including environment setup, stack start, health verification, and first successful API calls.
 
+## Consistent error messages
+
+Use `docs/consistent-error-messages.md` for the current customer-facing API error contract.
+
 ## Postgres persistence
 
 Use `docs/postgres-persistence.md` for the current production DB baseline. Paperclip can now select a Postgres-backed DB implementation via `PAPERCLIP_DATABASE_URL`, while SQLite remains the default local path.

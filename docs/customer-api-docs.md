@@ -127,6 +127,18 @@ Returned when:
 - the API key is invalid
 - the API key is revoked
 
+Example shape:
+
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Unauthorized",
+    "status": 401
+  }
+}
+```
+
 ### `403 Forbidden`
 
 Returned when:
@@ -138,6 +150,18 @@ Returned when:
 Returned when:
 
 - the task does not exist
+
+Example shape:
+
+```json
+{
+  "error": {
+    "code": "task_not_found",
+    "message": "Task not found",
+    "status": 404
+  }
+}
+```
 
 ### `413 Payload Too Large`
 
