@@ -109,7 +109,7 @@ This checklist captures the minimum work required before Agentopia should be use
 - [x] Add webhook ergonomics and client helpers
 - [x] Add approval dashboard improvements
 - [x] Add richer governance reporting
-- [ ] Add stronger memory quality evaluation
+- [x] Add stronger memory quality evaluation
 - [x] Add broader performance and load testing
 
 ## Later

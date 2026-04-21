@@ -1,0 +1,49 @@
+[
+  {
+    "name": "tenant scoped relevant recall",
+    "scope": {"tenant_id": "tenant-a", "org_id": "org-a", "client_id": "client-a"},
+    "query": "summarize prior repo review decisions",
+    "result": {
+      "ok": true,
+      "reason": "mempalace_search_ok",
+      "results": [
+        {"tenant_id": "tenant-a", "summary": "prior repo review decision"}
+      ]
+    },
+    "expect": {
+      "ok": true,
+      "min_hits": 1,
+      "tenant_id": "tenant-a"
+    }
+  },
+  {
+    "name": "cross tenant hit should fail evaluation",
+    "scope": {"tenant_id": "tenant-a", "org_id": "org-a", "client_id": "client-a"},
+    "query": "show previous customer decisions",
+    "result": {
+      "ok": true,
+      "reason": "mempalace_search_ok",
+      "results": [
+        {"tenant_id": "tenant-b", "summary": "other tenant memory"}
+      ]
+    },
+    "expect": {
+      "ok": false,
+      "tenant_id": "tenant-a"
+    }
+  },
+  {
+    "name": "fallback is acceptable but lower quality",
+    "scope": {"tenant_id": "tenant-a", "org_id": "org-a", "client_id": "client-a"},
+    "query": "find prior implementation notes",
+    "result": {
+      "ok": false,
+      "reason": "mempalace_disabled",
+      "results": []
+    },
+    "expect": {
+      "ok": false,
+      "tenant_id": "tenant-a"
+    }
+  }
+]
