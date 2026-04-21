@@ -285,6 +285,10 @@ Use `docs/customer-api-docs.md` for practical customer-facing usage guidance, in
 
 Use `docs/onboarding-and-setup.md` for the first-run path, including environment setup, stack start, health verification, and first successful API calls.
 
+## Clean base repo prep
+
+Use `docs/clean-base-repo-prep.md` and `docs/transfer-readiness-checklist.md` when copying Agentopia into a new repository as a production-ready foundation.
+
 ## Consistent error messages
 
 Use `docs/consistent-error-messages.md` for the current customer-facing API error contract.
